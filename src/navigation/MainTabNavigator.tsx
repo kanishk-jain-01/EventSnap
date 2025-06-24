@@ -1,47 +1,13 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { useAuthStore } from '../store/authStore';
+import { View, Text } from 'react-native';
 import { MainTabParamList } from '../types';
 import { CameraScreen } from '../screens/main/CameraScreen';
 
 const MainTab = createBottomTabNavigator<MainTabParamList>();
 
-// Placeholder screens - these will be implemented in later phases
-const HomeScreen: React.FC = () => {
-  const { logout, user } = useAuthStore();
-
-  const handleLogout = async () => {
-    await logout();
-  };
-
-  return (
-    <View className='flex-1 bg-snap-dark items-center justify-center p-5'>
-      <Text className='text-snap-yellow text-2xl font-bold mb-4 text-center'>
-        Welcome, {user?.displayName}!
-      </Text>
-      <Text className='text-white text-lg mb-8 text-center'>
-        Main app coming soon! 🚀
-      </Text>
-
-      <View className='bg-snap-gray p-4 rounded-lg mb-8 w-full'>
-        <Text className='text-white text-sm mb-2 text-center'>
-          Email: {user?.email}
-        </Text>
-        <Text className='text-white text-sm text-center'>
-          User ID: {user?.uid.substring(0, 8)}...
-        </Text>
-      </View>
-
-      <TouchableOpacity
-        className='bg-snap-red px-6 py-3 rounded-lg'
-        onPress={handleLogout}
-      >
-        <Text className='text-white font-semibold'>Logout</Text>
-      </TouchableOpacity>
-    </View>
-  );
-};
+// Import the HomeScreen from the screens directory
+import { HomeScreen } from '../screens/main/HomeScreen';
 
 // CameraScreen is now imported from screens/main/CameraScreen.tsx
 

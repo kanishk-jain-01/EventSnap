@@ -21,7 +21,7 @@
 - `src/services/firebase/config.ts` - Firebase SDK configuration with AsyncStorage persistence and React Native Auth setup (updated - Firebase integration with persistence)
 - `src/navigation/types.ts` - React Navigation type definitions for type-safe navigation (created - navigation types)
 - `src/store/authStore.ts` - Zustand store for authentication state management with login, register, logout actions and Firebase auth state listener (created - comprehensive auth state management)
-- `src/store/snapStore.ts` - Zustand store for snap-related state
+- `src/store/snapStore.ts` - Zustand store for snap-related state with comprehensive snap sending functionality, recipient selection, and state management (created - Task 5.4.1 complete)
 - `src/store/storyStore.ts` - Zustand store for story management
 - `src/store/chatStore.ts` - Zustand store for chat functionality
 - `src/services/auth.service.ts` - Firebase authentication service layer with email/password methods, user registration, login, logout, and error handling (created - comprehensive auth service)
@@ -35,11 +35,15 @@
 - `src/navigation/AppNavigator.tsx` - Main navigation configuration with authentication flow and protected routes (created - complete navigation structure)
 - `src/navigation/AuthNavigator.tsx` - Authentication flow navigation between login and register screens (created - complete auth navigation)
 - `src/navigation/MainTabNavigator.tsx` - Main app tab navigation with placeholder screens and logout functionality (created - complete main navigation)
+- `src/navigation/MainNavigator.tsx` - Main stack navigator containing tabs and modal screens for snap sending workflow (created - Task 5.4 complete)
 - `src/screens/auth/LoginScreen.tsx` - User login interface with email/password validation, error handling, forgot password, and React Navigation integration (updated - navigation integration)
 - `src/screens/auth/RegisterScreen.tsx` - User registration interface with form validation, error handling, display name input, consistent styling, and React Navigation integration (updated - navigation integration)
 - `src/screens/auth/AuthLoadingScreen.tsx` - Authentication state loading screen with loading indicators and error handling (created - complete loading screen)
 - `src/screens/main/HomeScreen.tsx` - Main home screen with stories
-- `src/screens/main/CameraScreen.tsx` - Professional camera interface with enhanced controls, automatic image optimization, compression feedback, context selection, optimization toggles, gallery integration, comprehensive image handling, and integrated image editing interface (updated - Task 4.6 complete with image editing capabilities)
+- `src/screens/main/CameraScreen.tsx` - Professional camera interface with enhanced controls, automatic image optimization, compression feedback, context selection, optimization toggles, gallery integration, comprehensive image handling, integrated image editing interface, and snap sending navigation (updated - Task 5.4 complete with snap sending functionality)
+- `src/screens/main/RecipientSelectionScreen.tsx` - Recipient selection interface for snap sending with user search, multi-selection, progress tracking, and professional UI (created - Task 5.4 complete)
+- `src/screens/main/SnapViewerScreen.tsx` - Full-screen snap viewing interface with automatic deletion, progress bar, swipe gestures, and professional UI (created - Task 5.5 complete)
+- `src/screens/main/HomeScreen.tsx` - Home screen displaying received snaps with real-time updates, sender information, expiration tracking, and navigation to snap viewer (created - Task 5.5 complete)
 - `src/screens/main/ChatListScreen.tsx` - List of chat conversations
 - `src/screens/main/ChatScreen.tsx` - Individual chat interface
 - `src/screens/main/ProfileScreen.tsx` - User profile management
@@ -116,8 +120,8 @@
   - [x] 5.1 Configure Firebase Storage with proper security rules
   - [x] 5.2 Implement image upload service with progress tracking
   - [x] 5.3 Create Firestore data model and collection for snaps
-  - [ ] 5.4 Build snap sending functionality with recipient selection
-  - [ ] 5.5 Implement snap viewing interface with automatic deletion
+  - [x] 5.4 Build snap sending functionality with recipient selection
+  - [x] 5.5 Implement snap viewing interface with automatic deletion
   - [ ] 5.6 Create Zustand store for snap state management
   - [ ] 5.7 Add snap metadata tracking (sender, recipient, timestamp, viewed status)
   - [ ] 5.8 Test complete snap sending and receiving workflow

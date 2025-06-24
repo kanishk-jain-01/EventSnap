@@ -104,6 +104,7 @@ export type MainStackParamList = {
   StoryViewer: { stories: Story[]; initialIndex: number };
   SnapViewer: { snap: Snap };
   UserProfile: { userId: string };
+  RecipientSelection: { imageUri: string };
 };
 
 // Camera Types

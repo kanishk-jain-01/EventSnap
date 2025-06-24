@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { CameraView, CameraType } from 'expo-camera';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   CameraService,
   CameraPermissions,
@@ -18,10 +20,17 @@ import { Button } from '../../components/ui/Button';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { formatFileSize } from '../../utils/imageUtils';
 import { ImageEditor } from '../../components/media/ImageEditor';
+import { MainStackParamList } from '../../navigation/types';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
+type CameraScreenNavigationProp = NativeStackNavigationProp<
+  MainStackParamList,
+  'MainTabs'
+>;
+
 export const CameraScreen: React.FC = () => {
+  const navigation = useNavigation<CameraScreenNavigationProp>();
   // Permission and loading states
   const [permissions, setPermissions] = useState<CameraPermissions | null>(
     null,
@@ -697,19 +706,34 @@ export const CameraScreen: React.FC = () => {
             </View>
 
             {/* Action Buttons */}
-            <View className='flex-row justify-center space-x-4 mt-4'>
+            <View className='flex-row justify-center space-x-3 mt-4'>
               <TouchableOpacity
                 onPress={() => setShowImageEditor(true)}
-                className='bg-snap-yellow px-6 py-3 rounded-full flex-1'
+                className='bg-snap-yellow px-4 py-3 rounded-full flex-1'
               >
                 <Text className='text-black font-semibold text-center'>
-                  ✏️ Edit Image
+                  ✏️ Edit
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  if (capturedPhoto) {
+                    navigation.navigate('RecipientSelection', {
+                      imageUri: capturedPhoto,
+                    });
+                  }
+                }}
+                className='bg-green-500 px-4 py-3 rounded-full flex-1'
+              >
+                <Text className='text-white font-semibold text-center'>
+                  📤 Send Snap
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={showImageSourceDialog}
-                className='bg-gray-600 px-6 py-3 rounded-full flex-1'
+                className='bg-gray-600 px-4 py-3 rounded-full flex-1'
               >
                 <Text className='text-white font-semibold text-center'>
                   🔄 Change
