@@ -17,6 +17,7 @@ import {
 import { Button } from '../../components/ui/Button';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { formatFileSize } from '../../utils/imageUtils';
+import { ImageEditor } from '../../components/media/ImageEditor';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -56,6 +57,9 @@ export const CameraScreen: React.FC = () => {
   const [autoOptimize, setAutoOptimize] = useState(true);
   const [showCompressionInfo] = useState(true);
   const [imageContext, setImageContext] = useState<'snap' | 'story' | 'avatar' | 'thumbnail'>('snap');
+
+  // Image editing states for Task 4.6
+  const [showImageEditor, setShowImageEditor] = useState(false);
 
   // Camera ref
   const cameraRef = useRef<CameraView>(null);
@@ -212,11 +216,11 @@ export const CameraScreen: React.FC = () => {
           } else {
             throw new Error('Optimization failed');
           }
-        } catch (optimizationError) {
-          console.warn(
-            'Image optimization failed, using original:',
-            optimizationError,
-          );
+        } catch {
+          // console.warn(
+          //   'Image optimization failed, using original:',
+          //   optimizationError,
+          // );
 
           // Fallback to original image
           setCapturedPhoto(photo.uri);
@@ -565,6 +569,54 @@ export const CameraScreen: React.FC = () => {
     );
   }
 
+  // Show image editor if editing
+  if (showImageEditor && selectedImage && capturedPhoto) {
+    return (
+      <ImageEditor
+        imageUri={capturedPhoto}
+        imageWidth={selectedImage.width}
+        imageHeight={selectedImage.height}
+        onSave={(editedUri: string) => {
+          // Update the selected image with edited version
+          setSelectedImage({
+            ...selectedImage,
+            uri: editedUri,
+          });
+          setCapturedPhoto(editedUri);
+          setShowImageEditor(false);
+          
+          Alert.alert(
+            'Image Saved!',
+            'Your edited image has been saved successfully.',
+            [{ text: 'OK' }],
+          );
+        }}
+        onCancel={() => {
+          setShowImageEditor(false);
+        }}
+        onDelete={() => {
+          Alert.alert(
+            'Delete Image',
+            'Are you sure you want to delete this image?',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Delete',
+                style: 'destructive',
+                onPress: () => {
+                  setSelectedImage(null);
+                  setCapturedPhoto(null);
+                  setImageSource(null);
+                  setShowImageEditor(false);
+                },
+              },
+            ],
+          );
+        }}
+      />
+    );
+  }
+
   // Show selected image preview if available
   if (selectedImage && capturedPhoto) {
     return (
@@ -590,10 +642,10 @@ export const CameraScreen: React.FC = () => {
             </Text>
 
             <TouchableOpacity
-              onPress={showImageSourceDialog}
+              onPress={() => setShowImageEditor(true)}
               className='bg-snap-yellow/80 px-4 py-2 rounded-full'
             >
-              <Text className='text-black font-semibold'>Change</Text>
+              <Text className='text-black font-semibold'>✏️ Edit</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -610,7 +662,7 @@ export const CameraScreen: React.FC = () => {
           />
         </View>
 
-        {/* Enhanced Bottom Info for Task 4.5 */}
+        {/* Enhanced Bottom Controls for Task 4.6 */}
         <View className='absolute bottom-8 left-0 right-0 px-4'>
           <View className='bg-black/60 p-4 rounded-xl'>
             <Text className='text-white text-center text-sm'>
@@ -640,6 +692,23 @@ export const CameraScreen: React.FC = () => {
                     🗜️ {selectedImage.compressionRatio.toFixed(1)}x
                   </Text>
                 )}
+            </View>
+
+            {/* Action Buttons */}
+            <View className='flex-row justify-center space-x-4 mt-4'>
+              <TouchableOpacity
+                onPress={() => setShowImageEditor(true)}
+                className='bg-snap-yellow px-6 py-3 rounded-full flex-1'
+              >
+                <Text className='text-black font-semibold text-center'>✏️ Edit Image</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={showImageSourceDialog}
+                className='bg-gray-600 px-6 py-3 rounded-full flex-1'
+              >
+                <Text className='text-white font-semibold text-center'>🔄 Change</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
