@@ -1,26 +1,113 @@
 rules_version = '2';
 
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
+// Firebase Storage Security Rules for Snapchat Clone MVP
+// Enhanced rules with comprehensive security for snaps, stories, and avatars
 service firebase.storage {
   match /b/{bucket}/o {
-    // Users can upload to their own folders
-    match /snaps/{userId}/{allPaths=**} {
-      allow write: if request.auth != null && request.auth.uid == userId;
-      allow read: if request.auth != null; // Snaps can be read by authenticated users
+    
+    // Helper functions for validation
+    function isAuthenticated() {
+      return request.auth != null;
     }
     
-    // Stories can be uploaded by users to their own folders
-    match /stories/{userId}/{allPaths=**} {
-      allow write: if request.auth != null && request.auth.uid == userId;
-      allow read: if request.auth != null; // Stories can be read by authenticated users
+    function isOwner(userId) {
+      return request.auth.uid == userId;
     }
     
-    // User avatars
-    match /avatars/{userId}/{allPaths=**} {
-      allow write: if request.auth != null && request.auth.uid == userId;
-      allow read: if request.auth != null; // Avatars can be read by authenticated users
+    function isValidImageSize() {
+      return request.resource.size < 10 * 1024 * 1024; // 10MB limit
+    }
+    
+    function isValidImageType() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isValidSnapSize() {
+      return request.resource.size < 5 * 1024 * 1024; // 5MB limit for snaps
+    }
+    
+    function isValidAvatarSize() {
+      return request.resource.size < 2 * 1024 * 1024; // 2MB limit for avatars
+    }
+
+    // Snaps - Ephemeral photo messages between users
+    match /snaps/{userId}/{snapId} {
+      // Users can upload snaps to their own folder
+      allow write: if isAuthenticated() && 
+                      isOwner(userId) && 
+                      isValidImageType() && 
+                      isValidSnapSize();
+      
+      // Snaps can be read by authenticated users (recipient will be validated in Firestore)
+      allow read: if isAuthenticated();
+      
+      // Allow deletion for cleanup (by owner or system)
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // Stories - 24-hour ephemeral content visible to contacts
+    match /stories/{userId}/{storyId} {
+      // Users can upload stories to their own folder
+      allow write: if isAuthenticated() && 
+                      isOwner(userId) && 
+                      isValidImageType() && 
+                      isValidSnapSize();
+      
+      // Stories can be read by authenticated users (visibility controlled in Firestore)
+      allow read: if isAuthenticated();
+      
+      // Allow deletion for cleanup and user management
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // User avatars - Profile pictures
+    match /avatars/{userId}/{avatarId} {
+      // Users can upload avatars to their own folder
+      allow write: if isAuthenticated() && 
+                      isOwner(userId) && 
+                      isValidImageType() && 
+                      isValidAvatarSize();
+      
+      // Avatars can be read by all authenticated users
+      allow read: if isAuthenticated();
+      
+      // Users can delete their own avatars
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // Thumbnails - Optimized versions of images
+    match /thumbnails/{userId}/{imageType}/{imageId} {
+      // Users can upload thumbnails to their own folder
+      allow write: if isAuthenticated() && 
+                      isOwner(userId) && 
+                      isValidImageType() && 
+                      isValidAvatarSize(); // Thumbnails should be small
+      
+      // Thumbnails can be read by authenticated users
+      allow read: if isAuthenticated();
+      
+      // Allow deletion for cleanup
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // Temporary uploads - For processing before moving to final location
+    match /temp/{userId}/{allPaths=**} {
+      // Users can upload to their temp folder
+      allow write: if isAuthenticated() && 
+                      isOwner(userId) && 
+                      isValidImageType() && 
+                      isValidImageSize();
+      
+      // Only owner can read temp files
+      allow read: if isAuthenticated() && isOwner(userId);
+      
+      // Allow deletion for cleanup
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // Deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }

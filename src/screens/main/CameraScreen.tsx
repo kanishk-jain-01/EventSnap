@@ -56,7 +56,9 @@ export const CameraScreen: React.FC = () => {
   // Image optimization states for Task 4.5
   const [autoOptimize, setAutoOptimize] = useState(true);
   const [showCompressionInfo] = useState(true);
-  const [imageContext, setImageContext] = useState<'snap' | 'story' | 'avatar' | 'thumbnail'>('snap');
+  const [imageContext, setImageContext] = useState<
+    'snap' | 'story' | 'avatar' | 'thumbnail'
+  >('snap');
 
   // Image editing states for Task 4.6
   const [showImageEditor, setShowImageEditor] = useState(false);
@@ -584,7 +586,7 @@ export const CameraScreen: React.FC = () => {
           });
           setCapturedPhoto(editedUri);
           setShowImageEditor(false);
-          
+
           Alert.alert(
             'Image Saved!',
             'Your edited image has been saved successfully.',
@@ -700,14 +702,18 @@ export const CameraScreen: React.FC = () => {
                 onPress={() => setShowImageEditor(true)}
                 className='bg-snap-yellow px-6 py-3 rounded-full flex-1'
               >
-                <Text className='text-black font-semibold text-center'>✏️ Edit Image</Text>
+                <Text className='text-black font-semibold text-center'>
+                  ✏️ Edit Image
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={showImageSourceDialog}
                 className='bg-gray-600 px-6 py-3 rounded-full flex-1'
               >
-                <Text className='text-white font-semibold text-center'>🔄 Change</Text>
+                <Text className='text-white font-semibold text-center'>
+                  🔄 Change
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

@@ -65,7 +65,6 @@ export const compressImage = async (
     let attempts = 0;
     const maxAttempts = 5;
 
-     
     while (true) {
       result = await manipulateAsync(
         uri,
@@ -332,7 +331,9 @@ export const batchProcessImages = async (
 /**
  * Get enhanced image dimensions with aspect ratio
  */
-export const getImageDimensions = async (uri: string): Promise<ImageDimensions> => {
+export const getImageDimensions = async (
+  uri: string,
+): Promise<ImageDimensions> => {
   try {
     const result = await manipulateAsync(uri, [], {});
     return {

@@ -26,12 +26,12 @@
 - `src/store/chatStore.ts` - Zustand store for chat functionality
 - `src/services/auth.service.ts` - Firebase authentication service layer with email/password methods, user registration, login, logout, and error handling (created - comprehensive auth service)
 - `src/services/camera.service.ts` - Enhanced camera service with automatic image optimization, comprehensive permission handling, image picker functionality, gallery selection, context-aware compression, and optimization feedback (updated - Task 4.5 complete with integrated image optimization)
-- `src/services/firestore.service.ts` - Firestore database operations
-- `src/services/storage.service.ts` - Firebase Storage file operations
+- `src/services/firestore.service.ts` - Firestore database operations with comprehensive snap data model, CRUD operations, real-time subscriptions, and cleanup utilities (created - Task 5.3 complete)
+- `src/services/storage.service.ts` - Firebase Storage file operations with comprehensive upload service, progress tracking, context-aware uploads, and error handling (created - Task 5.2 complete)
 - `src/services/realtime.service.ts` - Firebase Realtime Database chat operations
 - `src/hooks/useAuth.ts` - Custom hook for authentication logic with utility functions and convenience hooks (created - comprehensive auth hook interface)
 - `src/hooks/useCamera.ts` - Comprehensive custom hook for camera functionality and permissions with complete abstraction of camera logic, state management, and utility functions (created - Task 4.7 complete)
-- `src/hooks/useImageUpload.ts` - Custom hook for image upload operations
+- `src/hooks/useImageUpload.ts` - Custom hook for image upload operations with progress tracking, state management, and convenience hooks for snaps, stories, and avatars (created - Task 5.2 complete)
 - `src/navigation/AppNavigator.tsx` - Main navigation configuration with authentication flow and protected routes (created - complete navigation structure)
 - `src/navigation/AuthNavigator.tsx` - Authentication flow navigation between login and register screens (created - complete auth navigation)
 - `src/navigation/MainTabNavigator.tsx` - Main app tab navigation with placeholder screens and logout functionality (created - complete main navigation)
@@ -58,7 +58,8 @@
 - `src/utils/validation.ts` - Form validation utility functions
 - `tailwind.config.js` - TailwindCSS configuration for NativeWind
 - `firestore.rules` - Firestore security rules
-- `storage.rules` - Firebase Storage security rules
+- `firestore.indexes.json` - Firestore database indexes for efficient snap and story queries (updated - Task 5.3 complete)
+- `storage.rules` - Firebase Storage security rules with comprehensive snap system security, file size limits, and proper access controls (updated - Task 5.1 complete)
 
 ### Notes
 
@@ -112,9 +113,9 @@
   - [ ] 4.8 Test camera functionality on both iOS and Android devices
 
 - [ ] 5.0 Firebase Storage & Snap System
-  - [ ] 5.1 Configure Firebase Storage with proper security rules
-  - [ ] 5.2 Implement image upload service with progress tracking
-  - [ ] 5.3 Create Firestore data model and collection for snaps
+  - [x] 5.1 Configure Firebase Storage with proper security rules
+  - [x] 5.2 Implement image upload service with progress tracking
+  - [x] 5.3 Create Firestore data model and collection for snaps
   - [ ] 5.4 Build snap sending functionality with recipient selection
   - [ ] 5.5 Implement snap viewing interface with automatic deletion
   - [ ] 5.6 Create Zustand store for snap state management

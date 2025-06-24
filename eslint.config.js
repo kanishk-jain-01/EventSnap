@@ -28,11 +28,19 @@ module.exports = [
     },
     rules: {
       // Basic code quality rules
-      'no-console': 'warn',
+      'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'warn',
       'no-debugger': 'error',
       'prefer-const': 'error',
       'no-var': 'error',
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
+        },
+      ],
       'no-undef': 'off', // TypeScript handles this
 
       // Code style
