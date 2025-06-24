@@ -2,13 +2,21 @@
 
 ## Relevant Files
 
-- `package.json` - Project dependencies and scripts configuration (created - Expo project setup)
+- `package.json` - Project dependencies and scripts configuration (updated - added Firebase, Zustand, React Navigation, NativeWind, Camera, Image Manipulator dependencies)
+- `tailwind.config.js` - TailwindCSS configuration with Snapchat-inspired color palette (created - NativeWind setup)
+- `babel.config.js` - Babel configuration with NativeWind plugin (created - TailwindCSS integration)
 - `app.json` - Expo app configuration and metadata (created - Expo project setup)
 - `App.tsx` - Main app component entry point (created - Expo project setup)
 - `index.ts` - Project entry point (created - Expo project setup)
 - `tsconfig.json` - TypeScript configuration (created - Expo project setup)
 - `assets/` - Static assets directory (created - Expo project setup)
 - `firebase.config.js` - Firebase initialization and configuration
+- `src/types/index.ts` - TypeScript type definitions for all app interfaces and types (created - comprehensive type system)
+- `src/utils/constants.ts` - App-wide constants including Firebase collections, colors, validation rules (created - centralized configuration)
+- `src/utils/imageUtils.ts` - Image processing utilities for compression, thumbnails, and validation (created - image handling)
+- `src/utils/validation.ts` - Form validation utilities and input sanitization functions (created - validation system)
+- `src/services/firebase/config.ts` - Firebase SDK configuration with offline support and emulator setup (created - Firebase integration)
+- `src/navigation/types.ts` - React Navigation type definitions for type-safe navigation (created - navigation types)
 - `src/store/authStore.ts` - Zustand store for authentication state management
 - `src/store/snapStore.ts` - Zustand store for snap-related state
 - `src/store/storyStore.ts` - Zustand store for story management
@@ -61,8 +69,8 @@
   - [x] 1.2 Install Expo CLI globally and Firebase CLI tools
   - [x] 1.3 Create new Expo project with TypeScript template
   - [x] 1.4 Create Firebase project and configure all required services (Auth, Firestore, Realtime DB, Storage)
-  - [ ] 1.5 Install and configure project dependencies (Firebase, Zustand, React Navigation, NativeWind)
-  - [ ] 1.6 Set up basic project structure with src folders and initial file organization
+  - [x] 1.5 Install and configure project dependencies (Firebase, Zustand, React Navigation, NativeWind)
+  - [x] 1.6 Set up basic project structure with src folders and initial file organization
   - [ ] 1.7 Configure Firebase SDK and create initial configuration file
   - [ ] 1.8 Set up TailwindCSS with NativeWind for React Native styling
   - [ ] 1.9 Test basic Expo app launch on simulator/device to verify setup
