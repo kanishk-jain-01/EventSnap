@@ -2,8 +2,12 @@
 
 ## Relevant Files
 
-- `package.json` - Project dependencies and scripts configuration
-- `app.json` - Expo app configuration and metadata
+- `package.json` - Project dependencies and scripts configuration (created - Expo project setup)
+- `app.json` - Expo app configuration and metadata (created - Expo project setup)
+- `App.tsx` - Main app component entry point (created - Expo project setup)
+- `index.ts` - Project entry point (created - Expo project setup)
+- `tsconfig.json` - TypeScript configuration (created - Expo project setup)
+- `assets/` - Static assets directory (created - Expo project setup)
 - `firebase.config.js` - Firebase initialization and configuration
 - `src/store/authStore.ts` - Zustand store for authentication state management
 - `src/store/snapStore.ts` - Zustand store for snap-related state
@@ -53,9 +57,9 @@
 ## Tasks
 
 - [ ] 1.0 Development Environment Setup & Project Initialization
-  - [ ] 1.1 Verify Node.js 20+ installation and configure development environment
-  - [ ] 1.2 Install Expo CLI globally and Firebase CLI tools
-  - [ ] 1.3 Create new Expo project with TypeScript template
+  - [x] 1.1 Verify Node.js 20+ installation and configure development environment
+  - [x] 1.2 Install Expo CLI globally and Firebase CLI tools
+  - [x] 1.3 Create new Expo project with TypeScript template
   - [ ] 1.4 Create Firebase project and configure all required services (Auth, Firestore, Realtime DB, Storage)
   - [ ] 1.5 Install and configure project dependencies (Firebase, Zustand, React Navigation, NativeWind)
   - [ ] 1.6 Set up basic project structure with src folders and initial file organization
