@@ -1,0 +1,851 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Mobile App Development
+
+// Description: Comprehensive guide for native mobile app development using React Native, Expo SDK, TypeScript, and Firebase
+// Recommended Globs: **/*.{ts,tsx}, **/app.json, **/app.config.{js,ts}, **/assets/**/*
+
+## Project Structure
+```
+project_name/
+├── assets/
+│   ├── fonts/
+│   └── images/
+├── src/
+│   ├── components/
+│   │   ├── common/
+│   │   │   ├── Button.tsx
+│   │   │   ├── Card.tsx
+│   │   │   └── Modal.tsx
+│   │   └── features/
+│   │       ├── auth/
+│   │       ├── medications/
+│   │       └── profile/
+│   ├── screens/
+│   │   ├── auth/
+│   │   │   ├── LoginScreen.tsx
+│   │   │   └── RegisterScreen.tsx
+│   │   └── main/
+│   │       ├── HomeScreen.tsx
+│   │       └── ProfileScreen.tsx
+│   ├── navigation/
+│   │   ├── types.ts
+│   │   └── AppNavigator.tsx
+│   ├── hooks/
+│   │   ├── useAuth.ts
+│   │   ├── useFirestore.ts
+│   │   └── useTheme.ts
+│   ├── services/
+│   │   ├── firebase/
+│   │   │   ├── config.ts
+│   │   │   ├── auth.ts
+│   │   │   └── firestore.ts
+│   │   └── notifications/
+│   └── utils/
+│       ├── api.ts
+│       ├── storage.ts
+│       └── constants.ts
+├── functions/
+│   ├── src/
+│   │   └── index.ts
+│   └── package.json
+├── App.tsx
+├── app.json
+├── app.config.ts
+└── tsconfig.json
+```
+
+## Firebase Integration
+
+### Cloud Functions Setup
+- Use Node.js 20 for Cloud Functions (MANDATORY as v18 is being deprecated)
+- Follow modular SDK approach
+
+```typescript
+// functions/package.json
+{
+  "name": "functions",
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^4.5.0"
+  }
+}
+```
+
+### Firebase Configuration
+```typescript
+// src/services/firebase/config.ts
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore, enableNetwork, disableNetwork } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+
+const firebaseConfig = {
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+};
+
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+
+// Enable offline persistence
+export const enableOfflineSupport = () => enableNetwork(db);
+export const disableOfflineSupport = () => disableNetwork(db);
+```
+
+### Firestore Service Layer
+```typescript
+// src/services/firebase/firestore.ts
+import { 
+  collection, 
+  query, 
+  where, 
+  orderBy, 
+  getDocs, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  serverTimestamp 
+} from 'firebase/firestore';
+import { db } from './config';
+
+export async function getMedicationsBySchedule(userId: string, schedule: string) {
+  try {
+    const q = query(
+      collection(db, 'medications'),
+      where('userId', '==', userId),
+      where('schedule', '==', schedule),
+      orderBy('name')
+    );
+
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error('Error fetching medications:', error);
+    throw error;
+  }
+}
+
+export async function logMedicationAction(
+  userId: string,
+  medicationId: string,
+  action: 'take' | 'skip',
+  notes?: string
+) {
+  try {
+    await addDoc(collection(db, 'medication_logs'), {
+      userId,
+      medicationId,
+      action,
+      notes,
+      timestamp: serverTimestamp()
+    });
+  } catch (error) {
+    console.error('Error logging medication action:', error);
+    throw error;
+  }
+}
+```
+
+## Component Patterns
+
+### Reusable Card Component
+```typescript
+// src/components/common/Card.tsx
+import React from 'react';
+import { StyleSheet, Pressable, Text, View } from 'react-native';
+import { useTheme } from '@hooks/useTheme';
+
+interface CardProps {
+  title: string;
+  description?: string;
+  onPress?: () => void;
+  children?: React.ReactNode;
+}
+
+export const Card: React.FC<CardProps> = ({
+  title,
+  description,
+  onPress,
+  children
+}) => {
+  const { colors } = useTheme();
+
+  return (
+    <Pressable
+      style={[styles.container, { backgroundColor: colors.card }]}
+      onPress={onPress}
+      android_ripple={{ color: colors.ripple }}
+    >
+      <View style={styles.header}>
+        <Text style={[styles.title, { color: colors.text }]}>
+          {title}
+        </Text>
+        {description && (
+          <Text style={[styles.description, { color: colors.textSecondary }]}>
+            {description}
+          </Text>
+        )}
+      </View>
+      {children}
+    </Pressable>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+    borderRadius: 12,
+    marginVertical: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  header: {
+    marginBottom: 8,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  description: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+});
+```
+
+### Feature-Specific Component
+```typescript
+// src/components/features/medications/MedicationCard.tsx
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, Image, Pressable, Alert } from 'react-native';
+import { Card } from '@components/common/Card';
+import { useTheme } from '@hooks/useTheme';
+
+interface MedicationCardProps {
+  medication: Medication;
+  onTake: () => void;
+  onSkip: () => void;
+}
+
+export const MedicationCard: React.FC<MedicationCardProps> = ({
+  medication,
+  onTake,
+  onSkip
+}) => {
+  const { colors } = useTheme();
+  const [loading, setLoading] = useState(false);
+
+  const handleAction = async (action: () => void, actionName: string) => {
+    setLoading(true);
+    try {
+      await action();
+    } catch (error) {
+      Alert.alert('Error', `Failed to ${actionName.toLowerCase()} medication`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card title={medication.name} description={`${medication.dosage} • ${medication.schedule}`}>
+      <View style={styles.content}>
+        <Image
+          source={{ uri: medication.imageUrl }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        
+        <View style={styles.actions}>
+          <Pressable
+            style={[styles.button, styles.takeButton, { backgroundColor: colors.primary }]}
+            onPress={() => handleAction(onTake, 'Take')}
+            disabled={loading}
+          >
+            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
+              Take
+            </Text>
+          </Pressable>
+          
+          <Pressable
+            style={[styles.button, styles.skipButton, { borderColor: colors.border }]}
+            onPress={() => handleAction(onSkip, 'Skip')}
+            disabled={loading}
+          >
+            <Text style={[styles.buttonText, { color: colors.text }]}>
+              Skip
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    </Card>
+  );
+};
+
+const styles = StyleSheet.create({
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  image: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+  },
+  actions: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    minHeight: 44, // Accessibility requirement
+  },
+  takeButton: {
+    elevation: 1,
+  },
+  skipButton: {
+    borderWidth: 1,
+    backgroundColor: 'transparent',
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+});
+```
+
+## Navigation Setup
+
+### Navigation Types
+```typescript
+// src/navigation/types.ts
+import { NavigatorScreenParams } from '@react-navigation/native';
+
+export type RootStackParamList = {
+  Auth: NavigatorScreenParams<AuthStackParamList>;
+  Main: NavigatorScreenParams<MainTabParamList>;
+};
+
+export type AuthStackParamList = {
+  Login: undefined;
+  Register: undefined;
+  ForgotPassword: { email?: string };
+};
+
+export type MainTabParamList = {
+  Home: undefined;
+  Medications: undefined;
+  Reports: undefined;
+  Profile: { userId?: string };
+};
+
+declare global {
+  namespace ReactNavigation {
+    interface RootParamList extends RootStackParamList {}
+  }
+}
+```
+
+### Navigation Setup
+```typescript
+// src/navigation/AppNavigator.tsx
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useAuth } from '@hooks/useAuth';
+import { AuthStackParamList, MainTabParamList } from './types';
+
+const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator<MainTabParamList>();
+
+const AuthStack = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="Login" component={LoginScreen} />
+    <Stack.Screen name="Register" component={RegisterScreen} />
+    <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+  </Stack.Navigator>
+);
+
+const MainTabs = () => (
+  <Tab.Navigator
+    screenOptions={{
+      tabBarActiveTintColor: '#007AFF',
+      tabBarInactiveTintColor: '#8E8E93',
+    }}
+  >
+    <Tab.Screen name="Home" component={HomeScreen} />
+    <Tab.Screen name="Medications" component={MedicationsScreen} />
+    <Tab.Screen name="Reports" component={ReportsScreen} />
+    <Tab.Screen name="Profile" component={ProfileScreen} />
+  </Tab.Navigator>
+);
+
+export const AppNavigator = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {user ? (
+          <Stack.Screen name="Main" component={MainTabs} />
+        ) : (
+          <Stack.Screen name="Auth" component={AuthStack} />
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
+```
+
+## Custom Hooks
+
+### Firebase Authentication Hook
+```typescript
+// src/hooks/useAuth.ts
+import { useState, useEffect } from 'react';
+import { User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { auth } from '@services/firebase/config';
+import { useSecureStore } from './useSecureStore';
+
+interface AuthState {
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+}
+
+export const useAuth = () => {
+  const [state, setState] = useState<AuthState>({
+    user: null,
+    loading: true,
+    error: null,
+  });
+
+  const { setItem, removeItem } = useSecureStore();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setState(prev => ({ ...prev, user, loading: false }));
+      if (user) {
+        setItem('userId', user.uid);
+      } else {
+        removeItem('userId');
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      setState(prev => ({ ...prev, error: (error as Error).message, loading: false }));
+      throw error;
+    }
+  };
+
+  const register = async (email: string, password: string) => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      setState(prev => ({ ...prev, error: (error as Error).message, loading: false }));
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  return {
+    ...state,
+    login,
+    register,
+    logout,
+  };
+};
+```
+
+### Firestore Data Hook
+```typescript
+// src/hooks/useFirestore.ts
+import { useState, useEffect } from 'react';
+import { getMedicationsBySchedule, logMedicationAction } from '@services/firebase/firestore';
+import { useAuth } from './useAuth';
+
+export function useMedications(schedule: string) {
+  const [medications, setMedications] = useState<Medication[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+
+    async function fetchMedications() {
+      try {
+        setLoading(true);
+        const data = await getMedicationsBySchedule(user.uid, schedule);
+        setMedications(data);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMedications();
+  }, [user, schedule]);
+
+  const logAction = async (medicationId: string, action: 'take' | 'skip', notes?: string) => {
+    if (!user) return;
+    
+    try {
+      await logMedicationAction(user.uid, medicationId, action, notes);
+      // Optionally refresh medications list
+    } catch (error) {
+      console.error('Error logging action:', error);
+      throw error;
+    }
+  };
+
+  return { medications, loading, error, logAction };
+}
+```
+
+### Secure Storage Hook
+```typescript
+// src/hooks/useSecureStore.ts
+import { useState, useEffect } from 'react';
+import * as SecureStore from 'expo-secure-store';
+
+export const useSecureStore = () => {
+  const getItem = async (key: string): Promise<string | null> => {
+    try {
+      return await SecureStore.getItemAsync(key);
+    } catch (error) {
+      console.error('SecureStore getItem error:', error);
+      return null;
+    }
+  };
+
+  const setItem = async (key: string, value: string): Promise<void> => {
+    try {
+      await SecureStore.setItemAsync(key, value);
+    } catch (error) {
+      console.error('SecureStore setItem error:', error);
+    }
+  };
+
+  const removeItem = async (key: string): Promise<void> => {
+    try {
+      await SecureStore.deleteItemAsync(key);
+    } catch (error) {
+      console.error('SecureStore removeItem error:', error);
+    }
+  };
+
+  return { getItem, setItem, removeItem };
+};
+```
+
+## Expo Configuration
+
+### App Configuration
+```typescript
+// app.config.ts
+import { ExpoConfig } from '@expo/config';
+
+const config: ExpoConfig = {
+  name: 'MyMobileApp',
+  slug: 'my-mobile-app',
+  version: '1.0.0',
+  orientation: 'portrait',
+  icon: './assets/icon.png',
+  userInterfaceStyle: 'automatic',
+  splash: {
+    image: './assets/splash.png',
+    resizeMode: 'contain',
+    backgroundColor: '#ffffff',
+  },
+  assetBundlePatterns: [
+    'assets/images/*',
+    'assets/fonts/*',
+  ],
+  ios: {
+    supportsTablet: true,
+    bundleIdentifier: 'com.yourcompany.mymobileapp',
+  },
+  android: {
+    adaptiveIcon: {
+      foregroundImage: './assets/adaptive-icon.png',
+      backgroundColor: '#ffffff',
+    },
+    package: 'com.yourcompany.mymobileapp',
+  },
+  web: {
+    favicon: './assets/favicon.png',
+  },
+  extra: {
+    firebaseApiKey: process.env.FIREBASE_API_KEY,
+    firebaseAuthDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    firebaseProjectId: process.env.FIREBASE_PROJECT_ID,
+    firebaseStorageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    firebaseMessagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    firebaseAppId: process.env.FIREBASE_APP_ID,
+    eas: {
+      projectId: 'your-eas-project-id',
+    },
+  },
+  updates: {
+    fallbackToCacheTimeout: 0,
+    url: 'https://u.expo.dev/your-project-id',
+  },
+  runtimeVersion: {
+    policy: 'sdkVersion',
+  },
+  plugins: [
+    'expo-secure-store',
+    '@react-native-firebase/app',
+    [
+      'expo-notifications',
+      {
+        icon: './assets/notification-icon.png',
+        color: '#ffffff',
+      },
+    ],
+  ],
+};
+
+export default config;
+```
+
+## Push Notifications
+
+### Notification Setup
+```typescript
+// src/services/notifications/index.ts
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import { Platform } from 'react-native';
+
+export const registerForPushNotifications = async (): Promise<string | null> => {
+  if (!Device.isDevice) {
+    console.log('Must use physical device for Push Notifications');
+    return null;
+  }
+
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+
+  if (finalStatus !== 'granted') {
+    console.log('Permission not granted for push notifications');
+    return null;
+  }
+
+  const token = await Notifications.getExpoPushTokenAsync({
+    projectId: 'your-eas-project-id',
+  });
+
+  if (Platform.OS === 'android') {
+    Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  return token.data;
+};
+
+export const configurePushNotifications = () => {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+};
+```
+
+## Error Handling
+
+### Error Boundary
+```typescript
+// src/utils/ErrorBoundary.tsx
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import * as Sentry from 'sentry-expo';
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: Error;
+}
+
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('ErrorBoundary caught an error:', error, info);
+    Sentry.Native.captureException(error, {
+      contexts: {
+        react: {
+          componentStack: info.componentStack,
+        },
+      },
+    });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
+      return (
+        <View style={styles.container}>
+          <Text style={styles.title}>Something went wrong</Text>
+          <Text style={styles.message}>
+            We're sorry, but something unexpected happened. Please try restarting the app.
+          </Text>
+        </View>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  message: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#666',
+  },
+});
+```
+
+## Best Practices
+
+### Component Design
+- Use functional components with hooks consistently
+- Keep components small and focused on single responsibility
+- Implement proper TypeScript interfaces for all props
+- Use React.memo for performance optimization when appropriate
+- Follow consistent naming conventions (PascalCase for components)
+
+### State Management
+- Use Context API for global state management
+- Implement proper loading and error states for all async operations
+- Use custom hooks to encapsulate complex state logic
+- Handle offline scenarios gracefully with Firebase persistence
+
+### Performance Optimization
+- Implement FlatList for large datasets with proper keyExtractor
+- Use proper image optimization and caching strategies
+- Implement lazy loading for screens and components
+- Monitor bundle size and use code splitting when necessary
+- Use Flipper for debugging and performance monitoring
+
+### Security Best Practices
+- Store sensitive data only in Expo SecureStore
+- Implement proper Firebase security rules
+- Use environment variables for configuration
+- Validate all user inputs on both client and server
+- Implement proper session management and token refresh
+
+### Accessibility
+- Ensure all interactive elements have minimum 44px touch targets
+- Implement proper accessibility labels and hints
+- Support screen readers with semantic markup
+- Test with accessibility tools and real users
+- Handle dynamic type sizing appropriately
+
+### Firebase Integration
+- Enable offline persistence for better user experience
+- Implement proper error handling for network failures
+- Use batch operations for related database updates
+- Implement proper data validation rules
+- Monitor Firebase usage and costs
+
+### Testing Strategy
+- Write unit tests for utility functions and hooks
+- Implement integration tests for critical user flows
+- Use Detox for end-to-end testing
+- Test on both iOS and Android devices
+- Implement proper error tracking with Sentry
+
+## Resources
+- [Expo Documentation](mdc:https:/docs.expo.dev)
+- [React Navigation](mdc:https:/reactnavigation.org)
+- [Firebase Documentation](mdc:https:/firebase.google.com/docs)
+- [React Native Documentation](mdc:https:/reactnative.dev)
+- [Expo Vector Icons](mdc:https:/icons.expo.fyi)
+- [Sentry for React Native](mdc:https:/docs.sentry.io/platforms/react-native)

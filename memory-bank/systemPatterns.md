@@ -1,0 +1,230 @@
+# System Patterns: Snapchat Clone MVP
+
+## Architecture Overview
+
+### High-Level Architecture
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   React Native  │    │    Firebase     │    │   File Storage  │
+│   Frontend App  │◄──►│    Backend      │◄──►│   (Images)      │
+│                 │    │                 │    │                 │
+│ • Components    │    │ • Auth          │    │ • Snaps         │
+│ • Navigation    │    │ • Firestore     │    │ • Stories       │
+│ • State (Zustand│    │ • Realtime DB   │    │ • Avatars       │
+│ • Hooks         │    │ • Storage       │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+### Data Flow Patterns
+
+#### Authentication Flow
+1. User inputs credentials → Firebase Auth
+2. Auth state change → Zustand store update
+3. Navigation redirect based on auth status
+4. Protected routes check auth state
+
+#### Snap Sending Flow
+1. Camera capture → Local image
+2. Image compression → Optimized file
+3. Firebase Storage upload → URL returned
+4. Firestore document creation → Metadata stored
+5. Real-time listener → Recipient notification
+
+#### Story Posting Flow
+1. Image selection → Local processing
+2. Storage upload → Public URL
+3. Firestore document → With expiration timestamp
+4. Background cleanup → Expired stories removed
+
+## Component Architecture
+
+### Screen-Level Components
+```
+screens/
+├── auth/
+│   ├── LoginScreen.tsx      # Email/password login
+│   ├── RegisterScreen.tsx   # User registration
+│   └── AuthLoadingScreen.tsx # Auth state check
+└── main/
+    ├── CameraScreen.tsx     # Photo capture interface
+    ├── HomeScreen.tsx       # Story feed and navigation
+    ├── ChatListScreen.tsx   # Chat conversations
+    ├── ChatScreen.tsx       # Individual chat
+    └── ProfileScreen.tsx    # User profile management
+```
+
+### Reusable Components
+```
+components/
+├── ui/
+│   ├── Button.tsx           # Styled button component
+│   ├── Input.tsx            # Form input with validation
+│   ├── LoadingSpinner.tsx   # Loading states
+│   └── Modal.tsx            # Modal dialogs
+├── media/
+│   ├── ImageViewer.tsx      # Full-screen image display
+│   ├── CameraControls.tsx   # Camera interface controls
+│   └── ImagePicker.tsx      # Gallery selection
+└── social/
+    ├── StoryRing.tsx        # Story preview circle
+    ├── SnapPreview.tsx      # Snap thumbnail
+    └── UserAvatar.tsx       # User profile image
+```
+
+## State Management Patterns
+
+### Zustand Store Structure
+```typescript
+interface AppState {
+  // Authentication
+  user: User | null;
+  isAuthenticated: boolean;
+  authLoading: boolean;
+  
+  // Snaps
+  receivedSnaps: Snap[];
+  sentSnaps: Snap[];
+  
+  // Stories
+  stories: Story[];
+  viewedStories: string[];
+  
+  // Chat
+  conversations: Conversation[];
+  activeChat: string | null;
+  
+  // UI State
+  currentScreen: string;
+  cameraPermission: boolean;
+}
+```
+
+### Hook Patterns
+- **useAuth**: Authentication state and methods
+- **useCamera**: Camera permissions and capture logic
+- **useFirestore**: Firestore CRUD operations
+- **useRealtimeChat**: Real-time message synchronization
+- **useImageUpload**: File upload with progress tracking
+
+## Firebase Integration Patterns
+
+### Service Layer Architecture
+```
+services/
+├── auth.service.ts          # Authentication operations
+├── firestore.service.ts     # Database CRUD operations
+├── storage.service.ts       # File upload/download
+├── realtime.service.ts      # Real-time chat operations
+└── cleanup.service.ts       # Expired content removal
+```
+
+### Data Models and Relationships
+```
+Users Collection
+├── uid (document ID)
+├── email, displayName, avatarUrl
+└── createdAt
+
+Snaps Collection
+├── snapId (auto-generated)
+├── senderId → Users.uid
+├── receiverId → Users.uid
+├── imageUrl, timestamp, viewed
+└── expiresAt (24 hours)
+
+Stories Collection
+├── storyId (auto-generated)
+├── userId → Users.uid
+├── imageUrl, timestamp
+└── expiresAt (24 hours)
+
+Realtime Database
+└── chats/
+    └── {chatId}/
+        └── messages/
+            └── {messageId}
+```
+
+## Security Patterns
+
+### Firestore Security Rules
+```javascript
+// Users can only read/write their own data
+match /users/{userId} {
+  allow read, write: if request.auth != null && request.auth.uid == userId;
+}
+
+// Snaps readable by sender and recipient only
+match /snaps/{snapId} {
+  allow read: if request.auth != null && 
+    (request.auth.uid == resource.data.senderId || 
+     request.auth.uid == resource.data.receiverId);
+}
+```
+
+### Storage Security Rules
+```javascript
+// Users can upload to their own folders
+match /snaps/{userId}/{allPaths=**} {
+  allow write: if request.auth != null && request.auth.uid == userId;
+}
+```
+
+## Performance Optimization Patterns
+
+### Image Handling
+- Compress images before upload (max 1MB)
+- Generate thumbnails for story previews
+- Lazy load images in chat and story feeds
+- Cache downloaded images locally
+
+### Database Optimization
+- Use Firestore composite indexes for complex queries
+- Implement pagination for chat messages
+- Cache frequently accessed data in Zustand
+- Use real-time listeners only when necessary
+
+### Code Splitting
+```typescript
+// Lazy load screens for better performance
+const CameraScreen = lazy(() => import('./screens/main/CameraScreen'));
+const ChatScreen = lazy(() => import('./screens/main/ChatScreen'));
+```
+
+## Error Handling Patterns
+
+### Global Error Boundary
+```typescript
+// Catch and handle React errors gracefully
+<ErrorBoundary fallback={<ErrorScreen />}>
+  <App />
+</ErrorBoundary>
+```
+
+### Firebase Error Handling
+```typescript
+// Standardized error handling for Firebase operations
+try {
+  await firestoreService.createSnap(snapData);
+} catch (error) {
+  if (error.code === 'permission-denied') {
+    showError('Access denied');
+  } else if (error.code === 'network-error') {
+    showError('Connection failed');
+  }
+}
+```
+
+## Testing Patterns
+
+### Component Testing
+- Unit tests for reusable components
+- Integration tests for screen workflows
+- Mock Firebase services for testing
+- Snapshot testing for UI consistency
+
+### Service Testing
+- Mock Firebase SDK for service layer tests
+- Test error handling scenarios
+- Validate data transformation logic
+- Test real-time listener behavior 
