@@ -6,28 +6,47 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { validateEmail, validatePassword } from '../../utils/validation';
+import {
+  validateEmail,
+  validatePassword,
+  validateDisplayName,
+} from '../../utils/validation';
 import { AuthStackParamList } from '../../types';
 
-type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
+type RegisterScreenProps = NativeStackScreenProps<
+  AuthStackParamList,
+  'Register'
+>;
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+export const RegisterScreen: React.FC<RegisterScreenProps> = ({
+  navigation,
+}) => {
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [displayNameError, setDisplayNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const { login, isLoading, error, clearError } = useAuth();
+  const { register, isLoading, error, clearError } = useAuth();
 
-  // Clear errors when user starts typing
+  // Clear field errors when user starts typing
+  useEffect(() => {
+    if (displayNameError) setDisplayNameError('');
+  }, [displayName]);
+
   useEffect(() => {
     if (emailError) setEmailError('');
   }, [email]);
@@ -36,6 +55,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     if (passwordError) setPasswordError('');
   }, [password]);
 
+  useEffect(() => {
+    if (confirmPasswordError) setConfirmPasswordError('');
+  }, [confirmPassword]);
+
   // Clear auth errors when component mounts
   useEffect(() => {
     clearError();
@@ -43,6 +66,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
   const validateForm = (): boolean => {
     let isValid = true;
+
+    // Validate display name
+    const displayNameValidation = validateDisplayName(displayName);
+    if (!displayNameValidation.isValid) {
+      setDisplayNameError(
+        displayNameValidation.error || 'Invalid display name',
+      );
+      isValid = false;
+    }
 
     // Validate email
     const emailValidation = validateEmail(email);
@@ -58,46 +90,38 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       isValid = false;
     }
 
+    // Validate password confirmation
+    if (password !== confirmPassword) {
+      setConfirmPasswordError('Passwords do not match');
+      isValid = false;
+    }
+
+    if (!confirmPassword.trim()) {
+      setConfirmPasswordError('Please confirm your password');
+      isValid = false;
+    }
+
     return isValid;
   };
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     if (!validateForm()) {
       return;
     }
 
     try {
-      await login(email.trim().toLowerCase(), password);
+      await register(email.trim().toLowerCase(), password, displayName.trim());
     } catch {
       // Error is handled by the auth store
     }
   };
 
-  const handleForgotPassword = () => {
-    if (!email.trim()) {
-      Alert.alert(
-        'Email Required',
-        'Please enter your email address first, then tap "Forgot Password" again.',
-      );
-      return;
-    }
-
-    Alert.alert(
-      'Reset Password',
-      `Send password reset email to ${email.trim()}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Send',
-          onPress: () => {
-            // TODO: Implement password reset in next task
-            Alert.alert(
-              'Coming Soon',
-              'Password reset will be implemented soon.',
-            );
-          },
-        },
-      ],
+  const isFormValid = () => {
+    return (
+      displayName.trim().length >= 2 &&
+      email.trim().length > 0 &&
+      password.trim().length >= 6 &&
+      confirmPassword.trim().length > 0
     );
   };
 
@@ -114,15 +138,25 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       >
         <View className='flex-1 px-6 pt-20 pb-8'>
           {/* Header */}
-          <View className='items-center mb-12'>
+          <View className='items-center mb-8'>
             <Text className='text-snap-yellow text-4xl font-bold mb-2'>
               Snapchat
             </Text>
-            <Text className='text-white text-lg'>Welcome back!</Text>
+            <Text className='text-white text-lg'>Create your account</Text>
           </View>
 
           {/* Form */}
           <View className='flex-1 justify-center'>
+            <Input
+              label='Display Name'
+              placeholder='Enter your display name'
+              value={displayName}
+              onChangeText={setDisplayName}
+              autoCapitalize='words'
+              error={displayNameError}
+              maxLength={50}
+            />
+
             <Input
               label='Email'
               placeholder='Enter your email'
@@ -136,7 +170,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             <View className='relative'>
               <Input
                 label='Password'
-                placeholder='Enter your password'
+                placeholder='Enter your password (min 6 characters)'
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -152,6 +186,25 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
+            <View className='relative'>
+              <Input
+                label='Confirm Password'
+                placeholder='Confirm your password'
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showConfirmPassword}
+                error={confirmPasswordError}
+              />
+              <TouchableOpacity
+                className='absolute right-4 top-9'
+                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                <Text className='text-snap-yellow text-sm'>
+                  {showConfirmPassword ? 'Hide' : 'Show'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             {/* Auth Error */}
             {error && (
               <View className='bg-snap-red/20 border border-snap-red rounded-lg p-3 mb-4'>
@@ -161,39 +214,36 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               </View>
             )}
 
-            {/* Login Button */}
+            {/* Register Button */}
             <Button
-              title='Log In'
-              onPress={handleLogin}
+              title='Create Account'
+              onPress={handleRegister}
               loading={isLoading}
-              disabled={!email.trim() || !password.trim()}
+              disabled={!isFormValid()}
               size='large'
             />
 
-            {/* Forgot Password */}
-            <TouchableOpacity
-              className='mt-4'
-              onPress={handleForgotPassword}
-              disabled={isLoading}
-            >
-              <Text className='text-snap-yellow text-center text-base'>
-                Forgot Password?
+            {/* Terms and Privacy */}
+            <View className='mt-4 px-4'>
+              <Text className='text-gray-400 text-xs text-center leading-4'>
+                By creating an account, you agree to our Terms of Service and
+                Privacy Policy. This is a demo app for internal testing only.
               </Text>
-            </TouchableOpacity>
+            </View>
           </View>
 
           {/* Footer */}
           <View className='mt-8'>
             <View className='flex-row items-center justify-center'>
               <Text className='text-white text-base'>
-                Don't have an account?{' '}
+                Already have an account?{' '}
               </Text>
               <TouchableOpacity
                 disabled={isLoading}
-                onPress={() => navigation.navigate('Register')}
+                onPress={() => navigation.navigate('Login')}
               >
                 <Text className='text-snap-yellow text-base font-semibold'>
-                  Sign Up
+                  Sign In
                 </Text>
               </TouchableOpacity>
             </View>

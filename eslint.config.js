@@ -36,7 +36,7 @@ module.exports = [
       'no-undef': 'off', // TypeScript handles this
 
       // Code style
-      quotes: ['error', 'single'],
+      quotes: ['error', 'single', { avoidEscape: true }],
       semi: ['error', 'always'],
       'comma-dangle': ['error', 'always-multiline'],
 

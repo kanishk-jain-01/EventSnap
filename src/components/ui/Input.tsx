@@ -11,6 +11,7 @@ export const Input: React.FC<InputProps> = ({
   error,
   autoCapitalize = 'none',
   keyboardType = 'default',
+  maxLength,
 }) => {
   return (
     <View className='mb-4'>
@@ -28,6 +29,7 @@ export const Input: React.FC<InputProps> = ({
         secureTextEntry={secureTextEntry}
         autoCapitalize={autoCapitalize}
         keyboardType={keyboardType}
+        maxLength={maxLength}
         autoCorrect={false}
         autoComplete='off'
       />
