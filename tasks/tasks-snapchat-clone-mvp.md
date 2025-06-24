@@ -2,10 +2,10 @@
 
 ## Relevant Files
 
-- `package.json` - Project dependencies and scripts configuration (updated - added Firebase, Zustand, React Navigation, NativeWind, Camera, Image Manipulator dependencies)
+- `package.json` - Project dependencies and scripts configuration (updated - added Firebase, Zustand, React Navigation, NativeWind, Camera, Image Manipulator, Media Library dependencies)
 - `tailwind.config.js` - TailwindCSS configuration with Snapchat-inspired color palette (created - NativeWind setup)
 - `babel.config.js` - Babel configuration with NativeWind plugin (created - TailwindCSS integration)
-- `app.json` - Expo app configuration and metadata (created - Expo project setup)
+- `app.json` - Expo app configuration and metadata with camera permissions for iOS and Android (updated - camera permissions configuration)
 - `App.tsx` - Main app component with React Navigation integration, clean navigation structure, and ErrorBoundary integration (updated - React Navigation implementation and error handling)
 - `index.ts` - Project entry point (created - Expo project setup)
 - `tsconfig.json` - TypeScript configuration with NativeWind types (updated - TypeScript setup and NativeWind integration)
@@ -25,6 +25,7 @@
 - `src/store/storyStore.ts` - Zustand store for story management
 - `src/store/chatStore.ts` - Zustand store for chat functionality
 - `src/services/auth.service.ts` - Firebase authentication service layer with email/password methods, user registration, login, logout, and error handling (created - comprehensive auth service)
+- `src/services/camera.service.ts` - Camera permissions and access service layer with comprehensive permission handling for camera and media library access (created - camera permission management)
 - `src/services/firestore.service.ts` - Firestore database operations
 - `src/services/storage.service.ts` - Firebase Storage file operations
 - `src/services/realtime.service.ts` - Firebase Realtime Database chat operations
@@ -38,7 +39,7 @@
 - `src/screens/auth/RegisterScreen.tsx` - User registration interface with form validation, error handling, display name input, consistent styling, and React Navigation integration (updated - navigation integration)
 - `src/screens/auth/AuthLoadingScreen.tsx` - Authentication state loading screen with loading indicators and error handling (created - complete loading screen)
 - `src/screens/main/HomeScreen.tsx` - Main home screen with stories
-- `src/screens/main/CameraScreen.tsx` - Camera interface for snaps
+- `src/screens/main/CameraScreen.tsx` - Full camera interface with photo capture functionality, permission handling, camera controls, and professional UI (updated - complete camera screen implementation)
 - `src/screens/main/ChatListScreen.tsx` - List of chat conversations
 - `src/screens/main/ChatScreen.tsx` - Individual chat interface
 - `src/screens/main/ProfileScreen.tsx` - User profile management
@@ -100,8 +101,8 @@
   - [x] 3.8 Test navigation flow between all screens
 
 - [ ] 4.0 Camera Integration & Image Handling
-  - [ ] 4.1 Configure Expo Camera permissions and implement camera access
-  - [ ] 4.2 Create camera screen with photo capture functionality
+  - [x] 4.1 Configure Expo Camera permissions and implement camera access
+  - [x] 4.2 Create camera screen with photo capture functionality
   - [ ] 4.3 Implement front/back camera toggle and camera controls
   - [ ] 4.4 Add image picker for gallery selection as alternative to camera
   - [ ] 4.5 Implement image compression and optimization utilities
