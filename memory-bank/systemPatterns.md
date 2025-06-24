@@ -3,6 +3,7 @@
 ## Architecture Overview
 
 ### High-Level Architecture
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   React Native  │    │    Firebase     │    │   File Storage  │
@@ -18,12 +19,14 @@
 ### Data Flow Patterns
 
 #### Authentication Flow
+
 1. User inputs credentials → Firebase Auth
 2. Auth state change → Zustand store update
 3. Navigation redirect based on auth status
 4. Protected routes check auth state
 
 #### Snap Sending Flow
+
 1. Camera capture → Local image
 2. Image compression → Optimized file
 3. Firebase Storage upload → URL returned
@@ -31,6 +34,7 @@
 5. Real-time listener → Recipient notification
 
 #### Story Posting Flow
+
 1. Image selection → Local processing
 2. Storage upload → Public URL
 3. Firestore document → With expiration timestamp
@@ -39,6 +43,7 @@
 ## Component Architecture
 
 ### Screen-Level Components
+
 ```
 screens/
 ├── auth/
@@ -54,6 +59,7 @@ screens/
 ```
 
 ### Reusable Components
+
 ```
 components/
 ├── ui/
@@ -74,25 +80,26 @@ components/
 ## State Management Patterns
 
 ### Zustand Store Structure
+
 ```typescript
 interface AppState {
   // Authentication
   user: User | null;
   isAuthenticated: boolean;
   authLoading: boolean;
-  
+
   // Snaps
   receivedSnaps: Snap[];
   sentSnaps: Snap[];
-  
+
   // Stories
   stories: Story[];
   viewedStories: string[];
-  
+
   // Chat
   conversations: Conversation[];
   activeChat: string | null;
-  
+
   // UI State
   currentScreen: string;
   cameraPermission: boolean;
@@ -100,6 +107,7 @@ interface AppState {
 ```
 
 ### Hook Patterns
+
 - **useAuth**: Authentication state and methods
 - **useCamera**: Camera permissions and capture logic
 - **useFirestore**: Firestore CRUD operations
@@ -109,6 +117,7 @@ interface AppState {
 ## Firebase Integration Patterns
 
 ### Service Layer Architecture
+
 ```
 services/
 ├── auth.service.ts          # Authentication operations
@@ -119,6 +128,7 @@ services/
 ```
 
 ### Data Models and Relationships
+
 ```
 Users Collection
 ├── uid (document ID)
@@ -148,6 +158,7 @@ Realtime Database
 ## Security Patterns
 
 ### Firestore Security Rules
+
 ```javascript
 // Users can only read/write their own data
 match /users/{userId} {
@@ -156,13 +167,14 @@ match /users/{userId} {
 
 // Snaps readable by sender and recipient only
 match /snaps/{snapId} {
-  allow read: if request.auth != null && 
-    (request.auth.uid == resource.data.senderId || 
+  allow read: if request.auth != null &&
+    (request.auth.uid == resource.data.senderId ||
      request.auth.uid == resource.data.receiverId);
 }
 ```
 
 ### Storage Security Rules
+
 ```javascript
 // Users can upload to their own folders
 match /snaps/{userId}/{allPaths=**} {
@@ -173,18 +185,21 @@ match /snaps/{userId}/{allPaths=**} {
 ## Performance Optimization Patterns
 
 ### Image Handling
+
 - Compress images before upload (max 1MB)
 - Generate thumbnails for story previews
 - Lazy load images in chat and story feeds
 - Cache downloaded images locally
 
 ### Database Optimization
+
 - Use Firestore composite indexes for complex queries
 - Implement pagination for chat messages
 - Cache frequently accessed data in Zustand
 - Use real-time listeners only when necessary
 
 ### Code Splitting
+
 ```typescript
 // Lazy load screens for better performance
 const CameraScreen = lazy(() => import('./screens/main/CameraScreen'));
@@ -194,6 +209,7 @@ const ChatScreen = lazy(() => import('./screens/main/ChatScreen'));
 ## Error Handling Patterns
 
 ### Global Error Boundary
+
 ```typescript
 // Catch and handle React errors gracefully
 <ErrorBoundary fallback={<ErrorScreen />}>
@@ -202,6 +218,7 @@ const ChatScreen = lazy(() => import('./screens/main/ChatScreen'));
 ```
 
 ### Firebase Error Handling
+
 ```typescript
 // Standardized error handling for Firebase operations
 try {
@@ -218,13 +235,15 @@ try {
 ## Testing Patterns
 
 ### Component Testing
+
 - Unit tests for reusable components
 - Integration tests for screen workflows
 - Mock Firebase services for testing
 - Snapshot testing for UI consistency
 
 ### Service Testing
+
 - Mock Firebase SDK for service layer tests
 - Test error handling scenarios
 - Validate data transformation logic
-- Test real-time listener behavior 
+- Test real-time listener behavior

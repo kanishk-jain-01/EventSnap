@@ -60,7 +60,7 @@
   - [x] 1.1 Verify Node.js 20+ installation and configure development environment
   - [x] 1.2 Install Expo CLI globally and Firebase CLI tools
   - [x] 1.3 Create new Expo project with TypeScript template
-  - [ ] 1.4 Create Firebase project and configure all required services (Auth, Firestore, Realtime DB, Storage)
+  - [x] 1.4 Create Firebase project and configure all required services (Auth, Firestore, Realtime DB, Storage)
   - [ ] 1.5 Install and configure project dependencies (Firebase, Zustand, React Navigation, NativeWind)
   - [ ] 1.6 Set up basic project structure with src folders and initial file organization
   - [ ] 1.7 Configure Firebase SDK and create initial configuration file
@@ -155,4 +155,4 @@
   - [ ] 10.5 Test offline behavior and network connectivity issues
   - [ ] 10.6 Prepare app for internal testing distribution
   - [ ] 10.7 Document known issues and create user testing guide
-  - [ ] 10.8 Final performance testing and optimization 
+  - [ ] 10.8 Final performance testing and optimization

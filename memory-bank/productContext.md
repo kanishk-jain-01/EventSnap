@@ -1,11 +1,13 @@
 # Product Context: Snapchat Clone MVP
 
 ## Problem Statement
+
 Creating a mobile social media application that replicates core Snapchat functionality for internal testing and learning purposes. The challenge is to implement ephemeral messaging, real-time communication, and media sharing in a beginner-friendly way.
 
 ## User Experience Goals
 
 ### Core User Journey
+
 1. **Onboarding**: Simple email/password registration and login
 2. **Camera Access**: Immediate access to camera for photo capture
 3. **Snap Sending**: Easy selection of recipients and instant sending
@@ -14,6 +16,7 @@ Creating a mobile social media application that replicates core Snapchat functio
 6. **Content Viewing**: Intuitive story and snap viewing interfaces
 
 ### Design Principles
+
 - **Simplicity First**: Clean, uncluttered interface focusing on core actions
 - **Mobile-First**: Optimized for touch interactions and mobile gestures
 - **Dark Theme**: Following Snapchat's signature dark aesthetic
@@ -23,12 +26,14 @@ Creating a mobile social media application that replicates core Snapchat functio
 ## Feature Requirements
 
 ### Authentication System
+
 - Email/password registration with validation
 - Secure login/logout with persistent sessions
 - Profile creation with display name and optional avatar
 - Password reset functionality (future enhancement)
 
 ### Photo Messaging (Snaps)
+
 - Camera integration with front/back camera toggle
 - Photo gallery selection as alternative to camera
 - Recipient selection from user list
@@ -36,6 +41,7 @@ Creating a mobile social media application that replicates core Snapchat functio
 - View confirmation and automatic deletion after viewing
 
 ### Stories Feature
+
 - 24-hour ephemeral story posting
 - Story viewing from contacts
 - Automatic story expiration and cleanup
@@ -43,6 +49,7 @@ Creating a mobile social media application that replicates core Snapchat functio
 - Visual indicator for new/unseen stories
 
 ### Real-Time Chat
+
 - Text messaging between users
 - Real-time message synchronization
 - Conversation history preservation
@@ -50,6 +57,7 @@ Creating a mobile social media application that replicates core Snapchat functio
 - Message status indicators (sent, delivered)
 
 ### User Management
+
 - User discovery and friend connections
 - Contact list management
 - User profile viewing
@@ -58,6 +66,7 @@ Creating a mobile social media application that replicates core Snapchat functio
 ## Success Metrics
 
 ### Technical Success
+
 - App launches and runs without crashes
 - All core features function as expected
 - Real-time features work with minimal delay (<2 seconds)
@@ -65,6 +74,7 @@ Creating a mobile social media application that replicates core Snapchat functio
 - Authentication flows work reliably
 
 ### User Experience Success
+
 - Intuitive navigation without user confusion
 - Fast photo capture and sending (<5 seconds total)
 - Stories load and display properly
@@ -72,6 +82,7 @@ Creating a mobile social media application that replicates core Snapchat functio
 - Clean, responsive UI on both iOS and Android
 
 ## Non-Goals (Out of Scope)
+
 - Video support for snaps or stories
 - AR filters or camera effects
 - Geolocation features (Snap Map)
@@ -81,6 +92,7 @@ Creating a mobile social media application that replicates core Snapchat functio
 - Multiple media formats beyond photos
 
 ## Open Questions for Future Iterations
+
 1. Should chat support media sharing (photos in messages)?
 2. How to implement a friend/following system for content visibility?
 3. Should there be notification support for new snaps/messages?
@@ -90,11 +102,13 @@ Creating a mobile social media application that replicates core Snapchat functio
 ## User Personas
 
 ### Primary User: "Testing Team Member"
+
 - **Goal**: Validate app functionality and user experience
 - **Behavior**: Systematic testing of all features
 - **Needs**: Clear feedback on feature completion and reliability
 
 ### Secondary User: "Social Media User"
+
 - **Goal**: Experience Snapchat-like functionality
 - **Behavior**: Photo sharing, story viewing, casual chatting
-- **Needs**: Intuitive interface and reliable performance 
+- **Needs**: Intuitive interface and reliable performance
