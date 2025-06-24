@@ -151,6 +151,23 @@ export interface InputProps {
   maxLength?: number;
 }
 
+export interface LoadingSpinnerProps {
+  size?: 'small' | 'medium' | 'large';
+  color?: string;
+  text?: string;
+  overlay?: boolean;
+}
+
+export interface ModalProps {
+  visible: boolean;
+  onClose: () => void;
+  title?: string;
+  children: React.ReactNode;
+  showCloseButton?: boolean;
+  animationType?: 'none' | 'slide' | 'fade';
+  transparent?: boolean;
+}
+
 // Theme Types
 export interface Theme {
   colors: {
