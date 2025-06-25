@@ -119,7 +119,7 @@ export const RecipientSelectionScreen: React.FC<
             text: 'OK',
             onPress: () => {
               // Navigate back to camera or main screen
-              navigation.navigate('MainTabs', { screen: 'Camera' });
+              navigation.replace('MainTabs', { screen: 'Camera' });
             },
           },
         ],

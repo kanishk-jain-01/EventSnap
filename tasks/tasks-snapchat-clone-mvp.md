@@ -124,8 +124,8 @@
   - [x] 5.3 Create Firestore data model and collection for snaps
   - [x] 5.4 Build snap sending functionality with recipient selection
   - [x] 5.5 Implement snap viewing interface with automatic deletion
-  - [ ] 5.6 Create Zustand store for snap state management
-  - [ ] 5.7 Add snap metadata tracking (sender, recipient, timestamp, viewed status)
+  - [x] 5.6 Create Zustand store for snap state management
+  - [x] 5.7 Add snap metadata tracking (sender, recipient, timestamp, viewed status)
   - [ ] 5.8 Test complete snap sending and receiving workflow
 
 - [ ] 6.0 Stories Feature Implementation
@@ -145,7 +145,7 @@
   - [x] 7.4 Build chat list screen showing recent conversations
   - [x] 7.5 Create individual chat screen with message history and input
   - [x] 7.6 Add message status indicators (sent, delivered, read)
-  - [ ] 7.7 Implement Zustand store for chat state management
+  - [x] 7.7 Implement Zustand store for chat state management
   - [ ] 7.8 Test real-time messaging functionality across multiple devices
 
 - [ ] 8.0 User Management & Social Features
