@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+  FlatList,
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../../store/authStore';
 import { useUserStore } from '../../store/userStore';
@@ -19,18 +27,25 @@ export const ProfileScreen: React.FC = () => {
     fetchCurrentUser,
     updateProfile,
     uploadAvatar,
+    contacts,
+    contactsLoading,
+    fetchContacts,
+    subscribeToContacts,
   } = useUserStore();
-  const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<MainStackParamList>>();
 
   const [displayName, setDisplayName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  // Load profile on mount
+  // Load profile & contacts on mount
   useEffect(() => {
     if (authUser?.uid) {
       fetchCurrentUser(authUser.uid);
+      fetchContacts();
+      subscribeToContacts();
     }
   }, [authUser]);
 
@@ -42,9 +57,13 @@ export const ProfileScreen: React.FC = () => {
   }, [currentUser?.displayName]);
 
   const handlePickAvatar = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
-      Alert.alert('Permission required', 'Media library permission is required to pick an avatar.');
+      Alert.alert(
+        'Permission required',
+        'Media library permission is required to pick an avatar.',
+      );
       return;
     }
 
@@ -89,6 +108,27 @@ export const ProfileScreen: React.FC = () => {
     Alert.alert('Profile', 'Display name updated');
   };
 
+  const renderContactItem = ({ item }: { item: (typeof contacts)[0] }) => (
+    <TouchableOpacity
+      className='flex-row items-center py-2'
+      onPress={() => navigation.navigate('UserProfile', { userId: item.uid })}
+    >
+      {item.avatarUrl ? (
+        <Image
+          source={{ uri: item.avatarUrl }}
+          className='w-10 h-10 rounded-full border-2 border-snap-yellow'
+        />
+      ) : (
+        <View className='w-10 h-10 rounded-full bg-snap-gray items-center justify-center'>
+          <Text className='text-white font-semibold'>
+            {item.displayName.charAt(0).toUpperCase()}
+          </Text>
+        </View>
+      )}
+      <Text className='ml-3 text-white text-base'>{item.displayName}</Text>
+    </TouchableOpacity>
+  );
+
   if (isLoading && !currentUser) {
     return (
       <View className='flex-1 bg-snap-dark items-center justify-center'>
@@ -98,7 +138,10 @@ export const ProfileScreen: React.FC = () => {
   }
 
   return (
-    <ScrollView className='flex-1 bg-snap-dark' contentContainerStyle={{ padding: 20 }}>
+    <ScrollView
+      className='flex-1 bg-snap-dark'
+      contentContainerStyle={{ padding: 20 }}
+    >
       {/* Avatar */}
       <View className='items-center mb-8'>
         <TouchableOpacity onPress={handlePickAvatar} disabled={avatarUploading}>
@@ -146,9 +189,28 @@ export const ProfileScreen: React.FC = () => {
         />
       </View>
 
+      {/* Contacts List */}
+      <View className='mt-8'>
+        <Text className='text-white text-xl font-semibold mb-2'>
+          My Friends
+        </Text>
+        {contactsLoading ? (
+          <LoadingSpinner />
+        ) : contacts.length === 0 ? (
+          <Text className='text-gray-400'>You have no friends yet.</Text>
+        ) : (
+          <FlatList
+            data={contacts}
+            keyExtractor={item => item.uid}
+            renderItem={renderContactItem}
+            scrollEnabled={false}
+          />
+        )}
+      </View>
+
       {error && (
         <Text className='text-red-500 text-sm mt-4 text-center'>{error}</Text>
       )}
     </ScrollView>
   );
-}; 
+};

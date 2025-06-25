@@ -48,11 +48,16 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
       const storyId = `${user.uid}_${Date.now()}`;
 
       // Upload image
-      const uploadRes = await StorageService.uploadStory(blob, user.uid, storyId, {
-        onProgress: progress => {
-          set({ postingProgress: progress * 0.8 }); // first 80% of bar
+      const uploadRes = await StorageService.uploadStory(
+        blob,
+        user.uid,
+        storyId,
+        {
+          onProgress: progress => {
+            set({ postingProgress: progress * 0.8 }); // first 80% of bar
+          },
         },
-      });
+      );
 
       if (!uploadRes.success || !uploadRes.data) {
         throw new Error(uploadRes.error || 'Upload failed');
@@ -84,7 +89,8 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
       return true;
     } catch (error) {
       set({
-        postingError: error instanceof Error ? error.message : 'Failed to post story',
+        postingError:
+          error instanceof Error ? error.message : 'Failed to post story',
         isPosting: false,
         postingProgress: 0,
       });
@@ -99,14 +105,17 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
       const res = await FirestoreService.getActiveStories();
       if (res.success && res.data) {
         const { user } = useAuthStore.getState();
-        const myStories = user ? res.data.filter(s => s.userId === user.uid) : [];
+        const myStories = user
+          ? res.data.filter(s => s.userId === user.uid)
+          : [];
         set({ stories: res.data, myStories, isLoading: false });
       } else {
         throw new Error(res.error || 'Failed to load stories');
       }
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to load stories',
+        error:
+          error instanceof Error ? error.message : 'Failed to load stories',
         isLoading: false,
       });
     }
@@ -115,13 +124,18 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
   subscribeToStories: (): (() => void) => {
     set({ isLoading: true, error: null });
 
-    const unsubscribe = FirestoreService.subscribeToStories(stories => {
-      const { user } = useAuthStore.getState();
-      const myStories = user ? stories.filter(s => s.userId === user.uid) : [];
-      set({ stories, myStories, isLoading: false });
-    }, err => {
-      set({ error: err, isLoading: false });
-    });
+    const unsubscribe = FirestoreService.subscribeToStories(
+      stories => {
+        const { user } = useAuthStore.getState();
+        const myStories = user
+          ? stories.filter(s => s.userId === user.uid)
+          : [];
+        set({ stories, myStories, isLoading: false });
+      },
+      err => {
+        set({ error: err, isLoading: false });
+      },
+    );
 
     return unsubscribe;
   },
@@ -155,4 +169,4 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
     // Update Firestore
     await FirestoreService.markStoryViewed(storyId, user.uid);
   },
-})); 
+}));

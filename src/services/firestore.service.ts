@@ -77,6 +77,12 @@ export interface UserDocument {
   contacts?: string[]; // UIDs of friends/contacts
 }
 
+// Contact document interface for Firestore
+export interface ContactDocument {
+  createdAt: Timestamp;
+  status: 'accepted'; // MVP uses auto-accepted contacts
+}
+
 export class FirestoreService {
   /**
    * SNAP OPERATIONS
@@ -397,9 +403,9 @@ export class FirestoreService {
   /**
    * Get active stories (non-expired)
    */
-  static async getActiveStories(limitCount: number = 100): Promise<
-    ApiResponse<Story[]>
-  > {
+  static async getActiveStories(
+    limitCount: number = 100,
+  ): Promise<ApiResponse<Story[]>> {
     try {
       const q = query(
         collection(firestore, COLLECTIONS.STORIES),
@@ -733,6 +739,118 @@ export class FirestoreService {
         error: 'Failed to search users',
       };
     }
+  }
+
+  /**
+   * CONTACTS OPERATIONS
+   */
+
+  /**
+   * Add a contact (friend) – auto-accepted for MVP
+   */
+  static async addContact(
+    userId: string,
+    contactUserId: string,
+  ): Promise<ApiResponse<void>> {
+    try {
+      if (!userId || !contactUserId || userId === contactUserId) {
+        return { success: false, error: 'Invalid user IDs' };
+      }
+
+      const contactRef = doc(
+        firestore,
+        COLLECTIONS.USERS,
+        userId,
+        COLLECTIONS.CONTACTS,
+        contactUserId,
+      );
+
+      await setDoc(contactRef, {
+        createdAt: serverTimestamp(),
+        status: 'accepted',
+      } as ContactDocument);
+
+      return { success: true };
+    } catch (_error) {
+      return { success: false, error: 'Failed to add contact' };
+    }
+  }
+
+  /**
+   * Remove a contact
+   */
+  static async removeContact(
+    userId: string,
+    contactUserId: string,
+  ): Promise<ApiResponse<void>> {
+    try {
+      if (!userId || !contactUserId) {
+        return { success: false, error: 'Invalid user IDs' };
+      }
+
+      const contactRef = doc(
+        firestore,
+        COLLECTIONS.USERS,
+        userId,
+        COLLECTIONS.CONTACTS,
+        contactUserId,
+      );
+
+      await deleteDoc(contactRef);
+      return { success: true };
+    } catch (_error) {
+      return { success: false, error: 'Failed to remove contact' };
+    }
+  }
+
+  /**
+   * Get contacts list (user IDs)
+   */
+  static async getContacts(userId: string): Promise<ApiResponse<string[]>> {
+    try {
+      if (!userId) {
+        return { success: false, error: 'Invalid user ID' };
+      }
+
+      const contactsCol = collection(
+        firestore,
+        COLLECTIONS.USERS,
+        userId,
+        COLLECTIONS.CONTACTS,
+      );
+      const snapshot = await getDocs(contactsCol);
+      const ids: string[] = snapshot.docs.map(docSnap => docSnap.id);
+      return { success: true, data: ids };
+    } catch (_error) {
+      return { success: false, error: 'Failed to get contacts' };
+    }
+  }
+
+  /**
+   * Real-time subscription to contacts
+   */
+  static subscribeToContacts(
+    userId: string,
+    callback: (_contactIds: string[]) => void,
+    onError?: (_error: string) => void,
+  ): Unsubscribe {
+    const contactsCol = collection(
+      firestore,
+      COLLECTIONS.USERS,
+      userId,
+      COLLECTIONS.CONTACTS,
+    );
+
+    return onSnapshot(
+      contactsCol,
+      snapshot => {
+        const ids = snapshot.docs.map(docSnap => docSnap.id);
+        callback(ids);
+      },
+      error => {
+        if (onError) onError(error.message);
+      },
+    );
   }
 
   /**

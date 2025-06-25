@@ -77,7 +77,11 @@ export const CameraScreen: React.FC = () => {
   const cameraRef = useRef<CameraView>(null);
 
   // Story posting
-  const { postStory, isPosting: isPostingStory, postingProgress } = useStoryStore();
+  const {
+    postStory,
+    isPosting: isPostingStory,
+    postingProgress,
+  } = useStoryStore();
 
   // Check initial permissions and camera availability
   useEffect(() => {
@@ -736,7 +740,9 @@ export const CameraScreen: React.FC = () => {
                 disabled={isPostingStory}
               >
                 <Text className='text-white font-semibold text-center'>
-                  {isPostingStory ? `🚀 Posting ${Math.round(postingProgress)}%` : '📖 Post Story'}
+                  {isPostingStory
+                    ? `🚀 Posting ${Math.round(postingProgress)}%`
+                    : '📖 Post Story'}
                 </Text>
               </TouchableOpacity>
 

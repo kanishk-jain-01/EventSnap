@@ -18,6 +18,7 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { Button } from '../../components/ui/Button';
 import type { ChatConversation } from '../../services/realtime/models';
 import type { User } from '../../types';
+import { useUserStore } from '../../store/userStore';
 
 type ChatListNavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
@@ -41,11 +42,12 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   // Format timestamp
   const formatTimestamp = (timestamp: number | object | null) => {
     if (!timestamp) return '';
-    
-    const date = typeof timestamp === 'number' ? new Date(timestamp) : new Date();
+
+    const date =
+      typeof timestamp === 'number' ? new Date(timestamp) : new Date();
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    
+
     if (diffInHours < 1) {
       return 'now';
     } else if (diffInHours < 24) {
@@ -59,24 +61,27 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   // Get last message preview
   const getLastMessagePreview = () => {
     if (!conversation.lastMessage) return 'No messages yet';
-    
+
     const { content, type, senderId } = conversation.lastMessage;
     const isFromCurrentUser = senderId === currentUserId;
     const prefix = isFromCurrentUser ? 'You: ' : '';
-    
+
     if (type === 'image') {
       return `${prefix}📷 Photo`;
     }
-    
+
     return `${prefix}${content.length > 40 ? content.substring(0, 40) + '...' : content}`;
   };
 
   // Get last message status indicator (only for messages from current user)
   const getLastMessageStatus = () => {
-    if (!conversation.lastMessage || conversation.lastMessage.senderId !== currentUserId) {
+    if (
+      !conversation.lastMessage ||
+      conversation.lastMessage.senderId !== currentUserId
+    ) {
       return null;
     }
-    
+
     // Note: LastMessageInfo doesn't include status, so we'll show a generic indicator
     // In a real implementation, you'd include status in LastMessageInfo
     return '✓'; // Generic sent indicator for now
@@ -87,56 +92,54 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="flex-row items-center px-4 py-3 border-b border-gray-800"
+      className='flex-row items-center px-4 py-3 border-b border-gray-800'
       activeOpacity={0.7}
     >
       {/* Avatar */}
-      <View className="w-12 h-12 rounded-full bg-gray-600 items-center justify-center mr-3">
+      <View className='w-12 h-12 rounded-full bg-gray-600 items-center justify-center mr-3'>
         {otherUser?.avatarUrl ? (
-          <Text className="text-white text-lg font-semibold">
+          <Text className='text-white text-lg font-semibold'>
             {otherUser.displayName.charAt(0).toUpperCase()}
           </Text>
         ) : (
-          <Text className="text-white text-lg font-semibold">
+          <Text className='text-white text-lg font-semibold'>
             {otherUser?.displayName.charAt(0).toUpperCase() || '?'}
           </Text>
         )}
       </View>
 
       {/* Conversation Info */}
-      <View className="flex-1">
-        <View className="flex-row items-center justify-between mb-1">
-          <Text className="text-white text-base font-semibold" numberOfLines={1}>
+      <View className='flex-1'>
+        <View className='flex-row items-center justify-between mb-1'>
+          <Text
+            className='text-white text-base font-semibold'
+            numberOfLines={1}
+          >
             {otherUser?.displayName || 'Unknown User'}
           </Text>
-          <View className="flex-row items-center">
-            {isMuted && (
-              <Text className="text-gray-400 text-xs mr-2">🔇</Text>
-            )}
-            <Text className="text-gray-400 text-xs">
+          <View className='flex-row items-center'>
+            {isMuted && <Text className='text-gray-400 text-xs mr-2'>🔇</Text>}
+            <Text className='text-gray-400 text-xs'>
               {formatTimestamp(conversation.lastMessageAt)}
             </Text>
           </View>
         </View>
-        
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center flex-1 mr-2">
-            <Text 
-              className="text-gray-300 text-sm flex-1" 
-              numberOfLines={1}
-            >
+
+        <View className='flex-row items-center justify-between'>
+          <View className='flex-row items-center flex-1 mr-2'>
+            <Text className='text-gray-300 text-sm flex-1' numberOfLines={1}>
               {getLastMessagePreview()}
             </Text>
             {getLastMessageStatus() && (
-              <Text className="text-gray-400 text-xs ml-1">
+              <Text className='text-gray-400 text-xs ml-1'>
                 {getLastMessageStatus()}
               </Text>
             )}
           </View>
-          
+
           {unreadCount > 0 && (
-            <View className="bg-snap-yellow rounded-full min-w-[20px] h-5 items-center justify-center px-1">
-              <Text className="text-black text-xs font-bold">
+            <View className='bg-snap-yellow rounded-full min-w-[20px] h-5 items-center justify-center px-1'>
+              <Text className='text-black text-xs font-bold'>
                 {unreadCount > 99 ? '99+' : unreadCount}
               </Text>
             </View>
@@ -159,6 +162,8 @@ export const ChatListScreen: React.FC = () => {
     clearError,
   } = useChatStore();
 
+  const { subscribeToContacts } = useUserStore();
+
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -175,18 +180,28 @@ export const ChatListScreen: React.FC = () => {
     if (!user?.uid) {
       return;
     }
-    
+
     setIsLoadingUsers(true);
     try {
-      const response = await FirestoreService.getAllUsers(user.uid);
-      if (response.success && response.data) {
-        setUsers(response.data);
+      const contactsRes = await FirestoreService.getContacts(user.uid);
+      if (!contactsRes.success || !contactsRes.data) {
+        setUsers([]);
+      } else if (contactsRes.data.length === 0) {
+        setUsers([]);
       } else {
-        // Silent fail
+        const promises = contactsRes.data.map(id =>
+          FirestoreService.getUser(id),
+        );
+        const results = await Promise.all(promises);
+        const fetchedUsers: User[] = [];
+        results.forEach(r => {
+          if (r.success && r.data) fetchedUsers.push(r.data);
+        });
+        setUsers(fetchedUsers);
       }
     } catch (_error) {
       // eslint-disable-next-line no-console
-      console.error('ChatListScreen: Error loading users:', _error);
+      console.error('ChatListScreen: Error loading contacts:', _error);
     } finally {
       setIsLoadingUsers(false);
     }
@@ -194,39 +209,40 @@ export const ChatListScreen: React.FC = () => {
 
   useEffect(() => {
     loadUsers();
-  }, [loadUsers]);
+    subscribeToContacts();
+  }, [loadUsers, subscribeToContacts]);
 
   // Handle refresh
   const onRefresh = useCallback(async () => {
     if (!user?.uid) return;
-    
+
     setRefreshing(true);
     try {
-      await Promise.all([
-        loadConversations(user.uid),
-        loadUsers(),
-      ]);
+      await Promise.all([loadConversations(user.uid), loadUsers()]);
     } finally {
       setRefreshing(false);
     }
   }, [user?.uid, loadConversations, loadUsers]);
 
   // Navigate to individual chat
-  const handleConversationPress = useCallback((conversation: ChatConversation) => {
-    if (!user?.uid) return;
-    
-    // Find the other user in the conversation
-    const otherUserId = conversation.participants.find(id => id !== user.uid);
-    if (!otherUserId) return;
-    
-    const otherUser = users.find(u => u.uid === otherUserId);
-    
-    navigation.navigate('ChatScreen', {
-      chatId: conversation.id,
-      recipientId: otherUserId,
-      recipientName: otherUser?.displayName || 'Unknown User',
-    });
-  }, [user?.uid, users, navigation]);
+  const handleConversationPress = useCallback(
+    (conversation: ChatConversation) => {
+      if (!user?.uid) return;
+
+      // Find the other user in the conversation
+      const otherUserId = conversation.participants.find(id => id !== user.uid);
+      if (!otherUserId) return;
+
+      const otherUser = users.find(u => u.uid === otherUserId);
+
+      navigation.navigate('ChatScreen', {
+        chatId: conversation.id,
+        recipientId: otherUserId,
+        recipientName: otherUser?.displayName || 'Unknown User',
+      });
+    },
+    [user?.uid, users, navigation],
+  );
 
   // Start new conversation
   const handleNewConversation = useCallback(() => {
@@ -252,9 +268,9 @@ export const ChatListScreen: React.FC = () => {
         }
       },
     }));
-    
+
     userButtons.push({ text: 'Cancel', style: 'cancel' } as any);
-    
+
     Alert.alert(
       'New Chat',
       'Select a user to start chatting with:',
@@ -263,21 +279,22 @@ export const ChatListScreen: React.FC = () => {
   }, [user?.uid, users, createConversation, navigation]);
 
   // Get other user for conversation
-  const getOtherUser = useCallback((conversation: ChatConversation): User | null => {
-    if (!user?.uid) return null;
-    
-    const otherUserId = conversation.participants.find(id => id !== user.uid);
-    if (!otherUserId) return null;
-    
-    return users.find(u => u.uid === otherUserId) || null;
-  }, [user?.uid, users]);
+  const getOtherUser = useCallback(
+    (conversation: ChatConversation): User | null => {
+      if (!user?.uid) return null;
+
+      const otherUserId = conversation.participants.find(id => id !== user.uid);
+      if (!otherUserId) return null;
+
+      return users.find(u => u.uid === otherUserId) || null;
+    },
+    [user?.uid, users],
+  );
 
   // Handle error display
   useEffect(() => {
     if (error) {
-      Alert.alert('Error', error, [
-        { text: 'OK', onPress: clearError },
-      ]);
+      Alert.alert('Error', error, [{ text: 'OK', onPress: clearError }]);
     }
   }, [error, clearError]);
 
@@ -288,47 +305,49 @@ export const ChatListScreen: React.FC = () => {
 
   if (isLoading && conversations.length === 0) {
     return (
-      <View className="flex-1 bg-snap-dark items-center justify-center">
-        <LoadingSpinner size="large" color="#FFFC00" />
-        <Text className="text-white text-lg mt-4">Loading conversations...</Text>
+      <View className='flex-1 bg-snap-dark items-center justify-center'>
+        <LoadingSpinner size='large' color='#FFFC00' />
+        <Text className='text-white text-lg mt-4'>
+          Loading conversations...
+        </Text>
       </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-snap-dark">
+    <SafeAreaView className='flex-1 bg-snap-dark'>
       {/* Header */}
-      <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-800">
-        <Text className="text-white text-xl font-bold">Chats</Text>
+      <View className='flex-row items-center justify-between px-4 py-3 border-b border-gray-800'>
+        <Text className='text-white text-xl font-bold'>Chats</Text>
         <Button
-          title="New"
+          title='New'
           onPress={handleNewConversation}
-          variant="outline"
-          size="small"
+          variant='outline'
+          size='small'
           disabled={isLoadingUsers || users.length === 0}
         />
       </View>
 
       {/* Conversations List */}
       {activeConversations.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-gray-400 text-lg text-center mb-4">
+        <View className='flex-1 items-center justify-center px-8'>
+          <Text className='text-gray-400 text-lg text-center mb-4'>
             No conversations yet
           </Text>
-          <Text className="text-gray-500 text-sm text-center mb-6">
+          <Text className='text-gray-500 text-sm text-center mb-6'>
             Start a new conversation to begin chatting with friends
           </Text>
           <Button
-            title="Start New Chat"
+            title='Start New Chat'
             onPress={handleNewConversation}
-            variant="primary"
+            variant='primary'
             disabled={isLoadingUsers || users.length === 0}
           />
         </View>
       ) : (
         <FlatList
           data={activeConversations}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           renderItem={({ item }) => (
             <ConversationItem
               conversation={item}
@@ -341,7 +360,7 @@ export const ChatListScreen: React.FC = () => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#FFFC00"
+              tintColor='#FFFC00'
               colors={['#FFFC00']}
             />
           }
@@ -350,4 +369,4 @@ export const ChatListScreen: React.FC = () => {
       )}
     </SafeAreaView>
   );
-}; 
+};

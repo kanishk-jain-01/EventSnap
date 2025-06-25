@@ -15,6 +15,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSnapStore } from '../../store/snapStore';
 import { useAuthStore } from '../../store/authStore';
 import { useStoryStore } from '../../store/storyStore';
+import { useUserStore } from '../../store/userStore';
 import { Story } from '../../types';
 import { StoryRing } from '../../components/social/StoryRing';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
@@ -139,11 +140,9 @@ export const HomeScreen: React.FC = () => {
     clearError,
   } = useSnapStore();
 
-  const {
-    stories,
-    loadStories,
-    subscribeToStories,
-  } = useStoryStore();
+  const { stories, loadStories, subscribeToStories } = useStoryStore();
+
+  const { contacts, fetchContacts, subscribeToContacts } = useUserStore();
 
   const [refreshing, setRefreshing] = useState(false);
   const [senders, setSenders] = useState<Map<string, User>>(new Map());
@@ -171,12 +170,14 @@ export const HomeScreen: React.FC = () => {
     loadSenderInfo();
   }, [receivedSnaps]);
 
-  // Subscribe to stories on focus
+  // Subscribe to stories & contacts on focus
   useFocusEffect(
     useCallback(() => {
       if (user) {
         // initial load
         loadStories();
+        fetchContacts();
+        subscribeToContacts();
         const unsub = subscribeToStories();
         return () => unsub();
       }
@@ -187,6 +188,14 @@ export const HomeScreen: React.FC = () => {
   useEffect(() => {
     loadStoryOwnerInfo();
   }, [stories]);
+
+  // Allowed story user IDs (contacts + self)
+  const allowedStoryUserIds = React.useMemo(() => {
+    if (!user) return [] as string[];
+    const ids = contacts.map(c => c.uid);
+    ids.push(user.uid);
+    return ids;
+  }, [contacts, user]);
 
   const loadSenderInfo = async () => {
     if (receivedSnaps.length === 0) return;
@@ -332,16 +341,20 @@ export const HomeScreen: React.FC = () => {
     if (!user) return groups;
 
     const storiesByUser: Record<string, Story[]> = {} as any;
-    stories.forEach(story => {
-      if (!storiesByUser[story.userId]) storiesByUser[story.userId] = [];
-      storiesByUser[story.userId].push(story);
-    });
+    stories
+      .filter(story => allowedStoryUserIds.includes(story.userId))
+      .forEach(story => {
+        if (!storiesByUser[story.userId]) storiesByUser[story.userId] = [];
+        storiesByUser[story.userId].push(story);
+      });
 
     Object.keys(storiesByUser).forEach(uid => {
       const userObj = storyOwners.get(uid);
       if (!userObj) return; // wait until loaded
 
-      const hasUnviewed = !storiesByUser[uid].every(st => st.viewedBy.includes(user.uid));
+      const hasUnviewed = !storiesByUser[uid].every(st =>
+        st.viewedBy.includes(user.uid),
+      );
       const isMe = uid === user.uid;
       groups.push({ user: userObj, hasUnviewed, isMe });
     });
@@ -359,12 +372,12 @@ export const HomeScreen: React.FC = () => {
     });
 
     return groups;
-  }, [stories, storyOwners, user]);
+  }, [stories, storyOwners, user, allowedStoryUserIds]);
 
   // Always show current user ring even if no stories
   const finalStoryRingData = React.useMemo(() => {
     if (!user) return storyRingData;
-    
+
     // If no rings yet but user exists, show current user ring
     if (storyRingData.length === 0) {
       return [{ user: user as User, hasUnviewed: false, isMe: true }];
@@ -386,13 +399,21 @@ export const HomeScreen: React.FC = () => {
             onPress={() => {
               const userStories = stories
                 .filter(s => s.userId === item.user.uid)
-                .sort((a, b) =>
-                  (a.timestamp instanceof Date ? a.timestamp.getTime() : new Date(a.timestamp).getTime()) -
-                  (b.timestamp instanceof Date ? b.timestamp.getTime() : new Date(b.timestamp).getTime()),
+                .sort(
+                  (a, b) =>
+                    (a.timestamp instanceof Date
+                      ? a.timestamp.getTime()
+                      : new Date(a.timestamp).getTime()) -
+                    (b.timestamp instanceof Date
+                      ? b.timestamp.getTime()
+                      : new Date(b.timestamp).getTime()),
                 );
 
               if (userStories.length > 0) {
-                navigation.navigate('StoryViewer', { stories: userStories, initialIndex: 0 });
+                navigation.navigate('StoryViewer', {
+                  stories: userStories,
+                  initialIndex: 0,
+                });
               } else if (item.isMe) {
                 navigation.navigate('MainTabs', { screen: 'Camera' });
               }
@@ -465,7 +486,11 @@ export const HomeScreen: React.FC = () => {
             keyExtractor={item => item.id}
             contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
             ListHeaderComponent={renderStoriesHeader}
-            ListEmptyComponent={receivedSnaps.length === 0 && !isLoading ? renderEmptyState : undefined}
+            ListEmptyComponent={
+              receivedSnaps.length === 0 && !isLoading
+                ? renderEmptyState
+                : undefined
+            }
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}

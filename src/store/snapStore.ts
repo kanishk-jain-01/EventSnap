@@ -53,19 +53,33 @@ export const useSnapStore = create<SnapStoreState>((set, get) => ({
     set({ isLoadingRecipients: true, recipientError: null });
 
     try {
-      const response = await FirestoreService.getAllUsers(currentUserId);
+      // Step 1: get contact IDs
+      const contactsRes = await FirestoreService.getContacts(currentUserId);
 
-      if (response.success && response.data) {
+      if (!contactsRes.success || !contactsRes.data) {
         set({
-          availableRecipients: response.data,
+          recipientError: contactsRes.error || 'Failed to load contacts',
           isLoadingRecipients: false,
         });
-      } else {
-        set({
-          recipientError: response.error || 'Failed to load recipients',
-          isLoadingRecipients: false,
-        });
+        return;
       }
+
+      const contactIds = contactsRes.data;
+
+      if (contactIds.length === 0) {
+        set({ availableRecipients: [], isLoadingRecipients: false });
+        return;
+      }
+
+      // Step 2: fetch user docs for each contact
+      const userPromises = contactIds.map(id => FirestoreService.getUser(id));
+      const results = await Promise.all(userPromises);
+      const users: User[] = [];
+      results.forEach(res => {
+        if (res.success && res.data) users.push(res.data);
+      });
+
+      set({ availableRecipients: users, isLoadingRecipients: false });
     } catch (_error) {
       set({
         recipientError: 'Failed to load recipients',

@@ -8,6 +8,14 @@ service cloud.firestore {
       allow read: if request.auth != null; // Allow reading other users for friend discovery
     }
     
+    // Users collection - contacts sub-collection
+    match /users/{userId}/contacts/{contactId} {
+      // The owner of the user document can manage their contacts list
+      // Read: Only the owner can read their contacts list
+      // Write/Delete: Only the owner can create or remove contacts
+      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
     // Snaps collection - readable by sender and recipient only
     match /snaps/{snapId} {
       allow read: if request.auth != null && 

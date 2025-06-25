@@ -37,7 +37,7 @@ export class StoryCleanupService {
     for (const story of stories) {
       if (!story.id || !story.imagePath) {
         // Skip if essential data is missing
-         
+
         continue;
       }
 
@@ -45,7 +45,7 @@ export class StoryCleanupService {
       const storageDelete = await StorageService.deleteFile(story.imagePath);
       if (!storageDelete.success) {
         // Skip Firestore deletion if storage deletion fails to keep data consistent
-         
+
         continue;
       }
 
@@ -61,4 +61,4 @@ export class StoryCleanupService {
       data: deleteCount,
     };
   }
-} 
+}

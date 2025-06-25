@@ -18,8 +18,8 @@
 3. **Task 8.3**: ✅ Avatar upload flow & profile update action
 4. **Task 8.4**: ✅ Built `ProfileScreen` with editing UI
 5. **Task 8.5**: ✅ Implemented `UserSearchScreen` & `UserProfileScreen`
-6. **Task 8.6**: ⏳ Basic Contacts/Friends management (in progress)
-7. **Task 8.7**: ⏳ Integrate contacts with Snaps, Stories & Chat
+6. **Task 8.6**: ✅ Basic Contacts/Friends management (completed)
+7. **Task 8.7**: ✅ Integrate contacts with Snaps, Stories & Chat
 8. **Task 8.8**: ⏳ End-to-end QA & polish
 
 ## Today's Major Achievements
@@ -29,6 +29,7 @@
 #### ✅ **Task 6.1: Firestore Data Model for Stories - COMPLETED**
 
 **Professional Stories Database System**:
+
 - **Enhanced FirestoreService** (`src/services/firestore.service.ts`): ✅ Complete story operations added
   - **Story Creation**: ✅ `createStory` function with proper document structure and metadata
   - **Active Stories Retrieval**: ✅ `getActiveStories` with 24-hour expiration filtering
@@ -41,6 +42,7 @@
 #### ✅ **Task 6.2: Story Posting Functionality - COMPLETED**
 
 **Professional Story Publishing System**:
+
 - **Story Store** (`src/store/storyStore.ts`): ✅ Complete Zustand store implementation
   - **Story Posting**: ✅ `postStory` function with image upload and Firestore integration
   - **State Management**: ✅ Loading states, error handling, and success feedback
@@ -55,6 +57,7 @@
 #### ✅ **Task 6.3: Story Feed Interface - COMPLETED**
 
 **Professional Story Display System**:
+
 - **Story Ring Component** (`src/components/social/StoryRing.tsx`): ✅ Circular avatar with story indicators
   - **Visual Status Indicators**: ✅ Color-coded rings (yellow=unviewed, gray=viewed, blue=current user)
   - **User Avatar Display**: ✅ Profile picture with proper fallbacks
@@ -70,17 +73,20 @@
 ### 🔧 **Critical Debugging & Fixes Completed**
 
 #### **Stories Display Issues Resolved**:
+
 - **Empty State Bug**: ✅ Fixed issue where stories wouldn't display when no snaps existed
 - **Layout Integration**: ✅ Ensured FlatList always renders to show stories header
 - **Conditional Rendering**: ✅ Moved empty state to ListEmptyComponent instead of conditional FlatList
 - **Real-time Updates**: ✅ Confirmed story subscriptions and data flow working correctly
 
 #### **Technical Fixes**:
+
 - **Linting Compliance**: ✅ Fixed empty catch block with proper error handling comment
 - **Navigation Types**: ✅ Corrected navigation call in CameraScreen for proper TypeScript compliance
 - **Component Integration**: ✅ Seamless integration of story components with existing UI
 
 #### **Debugging Process**:
+
 - **Visual Debugging**: ✅ Added temporary visual indicators to identify rendering issues
 - **Console Logging**: ✅ Comprehensive logging to track data flow and component states
 - **Root Cause Analysis**: ✅ Identified core issue with conditional FlatList rendering
@@ -91,12 +97,19 @@
 ### ✅ Phase 7: Real-time Chat System - **COMPLETE** (8/8 tasks completed)
 
 #### ✅ **Task 7.1**: ✅ Configure Firebase Realtime Database for chat functionality
+
 #### ✅ **Task 7.2**: ✅ Create chat data models and database structure
+
 #### ✅ **Task 7.3**: ✅ Implement real-time message sending and receiving service
+
 #### ✅ **Task 7.4**: ✅ Build chat list screen showing recent conversations
+
 #### ✅ **Task 7.5**: ✅ Create individual chat screen with message history and input
+
 #### ✅ **Task 7.6**: ✅ Implement typing indicators and message status
+
 #### ✅ **Task 7.7**: ✅ Implement Zustand store for chat state management
+
 #### ✅ **Task 7.8**: ✅ Multi-user chat QA; permission-denied bug resolved
 
 ### ✅ Phase 5: Firebase Storage & Snap System - **COMPLETE** (8/8 tasks completed)
@@ -104,6 +117,7 @@
 **Major Achievement**: Complete snap sending and viewing system with professional-grade automatic deletion implemented
 
 ### ➡️ **Next Focus**
+
 - Create cleanup trigger (Cloud Function or client-side) – pending decision
 - Resume deferred Task 4.8 (cross-platform camera QA)
 - Begin Phase 8 (User Management & Social Features)
@@ -438,4 +452,18 @@ With Phase 5 fully complete, the immediate focus shifts to Phase 6 – Stories i
    - Eliminated JS/native version mismatch & `makeMutable` undefined error during snap sending.
 
 ### 🔒 **Security Rule Update (2025-06-25)**
+
 FireStore rule for `/stories/{storyId}` updated: any authenticated user can append their UID to `viewedBy`, while only the owner may create/delete; prevents permission-denied during view tracking.
+
+### 👫 **CONTACTS & SOCIAL INTEGRATION (2025-06-25)**
+- Implemented full friends system:
+  - Added `addContact`, `removeContact`, `getContacts`, `subscribeToContacts` to **FirestoreService**
+  - Extended **userStore** with real-time contacts state & actions
+  - Added **Add / Remove Friend** button on `UserProfileScreen`
+  - Profile screen now lists "My Friends" with navigation
+- Social features now respect friends list:
+  - Snap recipient picker shows only contacts
+  - Story feed filters to friends + self
+  - New chat creation limited to contacts
+- Firestore security rule `/users/{uid}/contacts/{contactId}` added
+- Lint passes with no errors

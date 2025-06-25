@@ -26,13 +26,17 @@ export const StoryRing: React.FC<StoryRingProps> = ({
   const ringColor = isCurrentUser
     ? '#3B82F6' /* blue-500 */
     : hasUnviewed
-    ? '#FFFC00' /* Snapchat yellow */
-    : '#6B7280';
+      ? '#FFFC00' /* Snapchat yellow */
+      : '#6B7280';
 
   const innerSize = size - 6;
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.8} className='items-center mx-2'>
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.8}
+      className='items-center mx-2'
+    >
       <View
         style={{
           width: size,
@@ -65,7 +69,9 @@ export const StoryRing: React.FC<StoryRingProps> = ({
               justifyContent: 'center',
             }}
           >
-            <Text style={{ color: '#FFFC00', fontWeight: 'bold', fontSize: 18 }}>
+            <Text
+              style={{ color: '#FFFC00', fontWeight: 'bold', fontSize: 18 }}
+            >
               {user.displayName.charAt(0).toUpperCase()}
             </Text>
           </View>
@@ -79,4 +85,4 @@ export const StoryRing: React.FC<StoryRingProps> = ({
       </Text>
     </TouchableOpacity>
   );
-}; 
+};

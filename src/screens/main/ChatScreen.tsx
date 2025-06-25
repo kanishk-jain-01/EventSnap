@@ -20,7 +20,10 @@ import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ChatScreenRouteProp = RouteProp<MainStackParamList, 'ChatScreen'>;
-type ChatScreenNavigationProp = NativeStackNavigationProp<MainStackParamList, 'ChatScreen'>;
+type ChatScreenNavigationProp = NativeStackNavigationProp<
+  MainStackParamList,
+  'ChatScreen'
+>;
 
 interface MessageItemProps {
   message: ChatMessage;
@@ -35,17 +38,22 @@ const MessageItem: React.FC<MessageItemProps> = ({
 }) => {
   // Format timestamp
   const formatTimestamp = (timestamp: number | object) => {
-    const date = typeof timestamp === 'number' ? new Date(timestamp) : new Date();
+    const date =
+      typeof timestamp === 'number' ? new Date(timestamp) : new Date();
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   // Get status indicator with enhanced visual distinction
   const getStatusIndicator = () => {
     if (!isFromCurrentUser) return null;
-    
+
     switch (message.status) {
       case 'sending':
-        return { icon: '⏳', color: 'text-gray-400', description: 'Sending...' };
+        return {
+          icon: '⏳',
+          color: 'text-gray-400',
+          description: 'Sending...',
+        };
       case 'sent':
         return { icon: '✓', color: 'text-gray-400', description: 'Sent' };
       case 'delivered':
@@ -53,7 +61,11 @@ const MessageItem: React.FC<MessageItemProps> = ({
       case 'read':
         return { icon: '✓✓', color: 'text-snap-yellow', description: 'Read' };
       case 'failed':
-        return { icon: '❌', color: 'text-red-400', description: 'Failed to send' };
+        return {
+          icon: '❌',
+          color: 'text-red-400',
+          description: 'Failed to send',
+        };
       default:
         return null;
     }
@@ -62,21 +74,20 @@ const MessageItem: React.FC<MessageItemProps> = ({
   // Format read time for read messages
   const getReadTime = () => {
     if (message.status === 'read' && message.readAt) {
-      const readTime = typeof message.readAt === 'number' 
-        ? message.readAt 
-        : Date.now();
+      const readTime =
+        typeof message.readAt === 'number' ? message.readAt : Date.now();
       return formatTimestamp(readTime);
     }
     return null;
   };
 
   return (
-    <View className={`mb-2 px-4 ${isFromCurrentUser ? 'items-end' : 'items-start'}`}>
+    <View
+      className={`mb-2 px-4 ${isFromCurrentUser ? 'items-end' : 'items-start'}`}
+    >
       <View
         className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-          isFromCurrentUser
-            ? 'bg-snap-yellow'
-            : 'bg-gray-700'
+          isFromCurrentUser ? 'bg-snap-yellow' : 'bg-gray-700'
         }`}
       >
         {message.type === 'text' && (
@@ -88,7 +99,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
             {message.content}
           </Text>
         )}
-        
+
         {message.type === 'image' && (
           <View>
             <Text
@@ -107,18 +118,18 @@ const MessageItem: React.FC<MessageItemProps> = ({
             </Text>
           </View>
         )}
-        
+
         {message.type === 'system' && (
-          <Text className="text-gray-400 text-sm italic">
+          <Text className='text-gray-400 text-sm italic'>
             {message.content}
           </Text>
         )}
       </View>
-      
+
       {/* Timestamp and status */}
-      <View className="flex-row items-center mt-1">
+      <View className='flex-row items-center mt-1'>
         {showTimestamp && (
-          <Text className="text-gray-400 text-xs mr-1">
+          <Text className='text-gray-400 text-xs mr-1'>
             {formatTimestamp(message.timestamp)}
           </Text>
         )}
@@ -130,8 +141,8 @@ const MessageItem: React.FC<MessageItemProps> = ({
                 Alert.alert(
                   'Message Status',
                   `${statusInfo.description}${
-                    message.status === 'read' && getReadTime() 
-                      ? `\nRead at ${getReadTime()}` 
+                    message.status === 'read' && getReadTime()
+                      ? `\nRead at ${getReadTime()}`
                       : ''
                   }`,
                   [{ text: 'OK' }],
@@ -140,7 +151,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
             }}
             activeOpacity={0.7}
           >
-            <Text className={`text-xs ${getStatusIndicator()?.color || 'text-gray-400'}`}>
+            <Text
+              className={`text-xs ${getStatusIndicator()?.color || 'text-gray-400'}`}
+            >
               {getStatusIndicator()?.icon}
             </Text>
           </TouchableOpacity>
@@ -150,14 +163,18 @@ const MessageItem: React.FC<MessageItemProps> = ({
   );
 };
 
-const TypingIndicator: React.FC<{ typingUsers: string[] }> = ({ typingUsers }) => {
+const TypingIndicator: React.FC<{ typingUsers: string[] }> = ({
+  typingUsers,
+}) => {
   if (typingUsers.length === 0) return null;
-  
+
   return (
-    <View className="px-4 py-2">
-      <View className="bg-gray-700 rounded-2xl px-4 py-2 max-w-[60%]">
-        <Text className="text-gray-300 text-sm">
-          {typingUsers.length === 1 ? 'Typing...' : `${typingUsers.length} people typing...`}
+    <View className='px-4 py-2'>
+      <View className='bg-gray-700 rounded-2xl px-4 py-2 max-w-[60%]'>
+        <Text className='text-gray-300 text-sm'>
+          {typingUsers.length === 1
+            ? 'Typing...'
+            : `${typingUsers.length} people typing...`}
         </Text>
       </View>
     </View>
@@ -168,35 +185,35 @@ export const ChatScreen: React.FC = () => {
   const route = useRoute<ChatScreenRouteProp>();
   const navigation = useNavigation<ChatScreenNavigationProp>();
   const { chatId, recipientName, recipientId } = route.params;
-  
+
   const { user } = useAuthStore();
   const chatStore = useChatStore();
-  
+
   const messages = chatStore.messages[chatId] || [];
   const typingUsers = chatStore.typingUsers[chatId] || [];
   const isLoadingMessages = chatStore.isLoadingMessages;
-  
+
   const [messageText, setMessageText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  
+
   const flatListRef = useRef<FlatList>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const markedAsReadRef = useRef<Set<string>>(new Set());
   const loadedChatsRef = useRef<Set<string>>(new Set());
-  
+
   const headerHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
-  
+
   // Set active conversation on mount
   useEffect(() => {
     chatStore.setActiveConversation(chatId);
-    
+
     return () => {
       chatStore.setActiveConversation(null);
     };
   }, [chatId]);
-  
+
   // Load messages on mount
   useEffect(() => {
     if (user?.uid && !loadedChatsRef.current.has(chatId)) {
@@ -204,82 +221,86 @@ export const ChatScreen: React.FC = () => {
       chatStore.loadMessages(chatId);
     }
   }, [chatId, user?.uid]);
-  
+
   // Set navigation title
   useEffect(() => {
     navigation.setOptions({
       title: recipientName,
     });
   }, [navigation, recipientName]);
-  
+
   // Mark messages as read when screen is focused
   useEffect(() => {
     if (user?.uid && messages.length > 0) {
       const unreadMessages = messages.filter(
-        msg => msg.senderId !== user.uid && 
-               msg.status !== 'read' && 
-               !markedAsReadRef.current.has(msg.id),
+        msg =>
+          msg.senderId !== user.uid &&
+          msg.status !== 'read' &&
+          !markedAsReadRef.current.has(msg.id),
       );
-      
+
       if (unreadMessages.length > 0) {
         const messageIds = unreadMessages.map(msg => msg.id);
-        
+
         // Mark these messages as "being processed" to prevent duplicate calls
         messageIds.forEach(id => markedAsReadRef.current.add(id));
-        
+
         chatStore.markMessagesAsRead(chatId, messageIds, user.uid);
       }
     }
   }, [messages, user?.uid, chatId]);
-  
+
   // Handle typing indicator
-  const handleTyping = useCallback((text: string) => {
-    setMessageText(text);
-    
-    if (!user?.uid) return;
-    
-    const isCurrentlyTyping = text.length > 0;
-    
-    if (isCurrentlyTyping !== isTyping) {
-      setIsTyping(isCurrentlyTyping);
-      chatStore.setTyping(chatId, user.uid, isCurrentlyTyping);
-    }
-    
-    // Clear existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    
-    // Set new timeout to stop typing indicator
-    if (isCurrentlyTyping) {
-      typingTimeoutRef.current = setTimeout(() => {
-        setIsTyping(false);
-        chatStore.setTyping(chatId, user.uid, false);
-      }, 3000);
-    }
-  }, [user?.uid, chatId, isTyping, chatStore]);
-  
+  const handleTyping = useCallback(
+    (text: string) => {
+      setMessageText(text);
+
+      if (!user?.uid) return;
+
+      const isCurrentlyTyping = text.length > 0;
+
+      if (isCurrentlyTyping !== isTyping) {
+        setIsTyping(isCurrentlyTyping);
+        chatStore.setTyping(chatId, user.uid, isCurrentlyTyping);
+      }
+
+      // Clear existing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Set new timeout to stop typing indicator
+      if (isCurrentlyTyping) {
+        typingTimeoutRef.current = setTimeout(() => {
+          setIsTyping(false);
+          chatStore.setTyping(chatId, user.uid, false);
+        }, 3000);
+      }
+    },
+    [user?.uid, chatId, isTyping, chatStore],
+  );
+
   // Send message
   const handleSendMessage = useCallback(async () => {
     if (!messageText.trim() || !user?.uid || isSending) return;
-    
+
     const content = messageText.trim();
     setMessageText('');
     setIsSending(true);
-    
+
     // Stop typing indicator
     if (isTyping) {
       setIsTyping(false);
       chatStore.setTyping(chatId, user.uid, false);
     }
-    
-         try {
-       await chatStore.sendMessage(chatId, user.uid, {
-         recipientId,
-         content,
-         type: 'text',
-       });
-      
+
+    try {
+      await chatStore.sendMessage(chatId, user.uid, {
+        recipientId,
+        content,
+        type: 'text',
+      });
+
       // Scroll to bottom after sending
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
@@ -290,8 +311,16 @@ export const ChatScreen: React.FC = () => {
     } finally {
       setIsSending(false);
     }
-  }, [messageText, user?.uid, isSending, isTyping, chatId, recipientId, chatStore]);
-  
+  }, [
+    messageText,
+    user?.uid,
+    isSending,
+    isTyping,
+    chatId,
+    recipientId,
+    chatStore,
+  ]);
+
   // Handle error display
   useEffect(() => {
     if (chatStore.error) {
@@ -300,7 +329,7 @@ export const ChatScreen: React.FC = () => {
       ]);
     }
   }, [chatStore.error, chatStore.clearError]);
-  
+
   // Cleanup typing timeout and refs
   useEffect(() => {
     return () => {
@@ -312,43 +341,52 @@ export const ChatScreen: React.FC = () => {
       markedAsReadRef.current.clear();
     };
   }, [chatId]);
-  
+
   // Determine if we should show timestamp for message
-  const shouldShowTimestamp = useCallback((message: ChatMessage, index: number) => {
-    if (index === 0) return true;
-    
-    const prevMessage = messages[index - 1];
-    if (!prevMessage) return true;
-    
-    const currentTime = typeof message.timestamp === 'number' ? message.timestamp : Date.now();
-    const prevTime = typeof prevMessage.timestamp === 'number' ? prevMessage.timestamp : Date.now();
-    
-    // Show timestamp if more than 5 minutes apart
-    return (currentTime - prevTime) > 5 * 60 * 1000;
-  }, [messages]);
-  
+  const shouldShowTimestamp = useCallback(
+    (message: ChatMessage, index: number) => {
+      if (index === 0) return true;
+
+      const prevMessage = messages[index - 1];
+      if (!prevMessage) return true;
+
+      const currentTime =
+        typeof message.timestamp === 'number' ? message.timestamp : Date.now();
+      const prevTime =
+        typeof prevMessage.timestamp === 'number'
+          ? prevMessage.timestamp
+          : Date.now();
+
+      // Show timestamp if more than 5 minutes apart
+      return currentTime - prevTime > 5 * 60 * 1000;
+    },
+    [messages],
+  );
+
   const isLoading = isLoadingMessages[chatId];
-  
+
   if (isLoading && messages.length === 0) {
     return (
-      <View className="flex-1 bg-snap-dark items-center justify-center">
-        <LoadingSpinner size="large" color="#FFFC00" />
-        <Text className="text-white text-lg mt-4">Loading messages...</Text>
+      <View className='flex-1 bg-snap-dark items-center justify-center'>
+        <LoadingSpinner size='large' color='#FFFC00' />
+        <Text className='text-white text-lg mt-4'>Loading messages...</Text>
       </View>
     );
   }
-  
+
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-snap-dark"
+      className='flex-1 bg-snap-dark'
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight + insets.bottom : 0}
+      keyboardVerticalOffset={
+        Platform.OS === 'ios' ? headerHeight + insets.bottom : 0
+      }
     >
       {/* Messages List */}
       <FlatList
         ref={flatListRef}
         data={messages}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={({ item, index }) => (
           <MessageItem
             message={item}
@@ -365,37 +403,35 @@ export const ChatScreen: React.FC = () => {
           }
         }}
         ListEmptyComponent={
-          <View className="flex-1 items-center justify-center px-8 py-16">
-            <Text className="text-gray-400 text-lg text-center mb-2">
+          <View className='flex-1 items-center justify-center px-8 py-16'>
+            <Text className='text-gray-400 text-lg text-center mb-2'>
               No messages yet
             </Text>
-            <Text className="text-gray-500 text-sm text-center">
+            <Text className='text-gray-500 text-sm text-center'>
               Start the conversation with {recipientName}
             </Text>
           </View>
         }
-        ListFooterComponent={
-          <TypingIndicator typingUsers={typingUsers} />
-        }
+        ListFooterComponent={<TypingIndicator typingUsers={typingUsers} />}
       />
-      
+
       {/* Message Input */}
-      <View className="border-t border-gray-800 px-4 py-3">
-        <View className="flex-row items-end space-x-3">
-          <View className="flex-1 bg-gray-700 rounded-2xl px-4 py-2 min-h-[40px] justify-center">
+      <View className='border-t border-gray-800 px-4 py-3'>
+        <View className='flex-row items-end space-x-3'>
+          <View className='flex-1 bg-gray-700 rounded-2xl px-4 py-2 min-h-[40px] justify-center'>
             <TextInput
               value={messageText}
               onChangeText={handleTyping}
-              placeholder="Type a message..."
-              placeholderTextColor="#9CA3AF"
-              className="text-white text-base"
+              placeholder='Type a message...'
+              placeholderTextColor='#9CA3AF'
+              className='text-white text-base'
               multiline
               maxLength={1000}
               onSubmitEditing={handleSendMessage}
               blurOnSubmit={false}
             />
           </View>
-          
+
           <TouchableOpacity
             onPress={handleSendMessage}
             disabled={!messageText.trim() || isSending}
@@ -406,11 +442,13 @@ export const ChatScreen: React.FC = () => {
             }`}
           >
             {isSending ? (
-              <LoadingSpinner size="small" color="#000000" />
+              <LoadingSpinner size='small' color='#000000' />
             ) : (
-              <Text className={`text-lg font-bold ${
-                messageText.trim() ? 'text-black' : 'text-gray-400'
-              }`}>
+              <Text
+                className={`text-lg font-bold ${
+                  messageText.trim() ? 'text-black' : 'text-gray-400'
+                }`}
+              >
                 ➤
               </Text>
             )}
@@ -419,4 +457,4 @@ export const ChatScreen: React.FC = () => {
       </View>
     </KeyboardAvoidingView>
   );
-}; 
+};

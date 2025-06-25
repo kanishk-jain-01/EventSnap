@@ -1,7 +1,8 @@
 # Progress: Snapchat Clone MVP
 
 ## Current Status: **Phase 6 Stories Feature – COMPLETE (8/8 tasks completed)**
-## Current Status: **Phase 8 User Management & Social Features – IN PROGRESS (5/8 tasks completed)**
+
+## Current Status: **Phase 8 User Management & Social Features – IN PROGRESS (7/8 tasks completed)**
 
 ### Completed ✅
 
@@ -317,18 +318,21 @@ All core stories functionality is implemented, cleaned up, and fully tested. Nex
 ### 🔧 **Critical Debugging & Fixes Completed Today**
 
 #### **Database Permission Issues Resolved**:
+
 - **Perpetual Loading Fix**: ✅ Fixed `subscribeToConversations` method to use `userChats/{userId}` index instead of attempting to read all chats
 - **Conversation Creation**: ✅ Resolved "Permission denied" errors during conversation creation with proper database rule updates
 - **Security Rules Enhancement**: ✅ Updated Firebase Realtime Database rules to handle non-existent chat reads and proper write permissions
 - **UserChats Index**: ✅ Enhanced `createOrGetConversation` to properly maintain user chat indices for both participants
 
 #### **Technical Fixes**:
+
 - **ChatStore Interface**: ✅ Fixed critical sendMessage signature mismatch between store interface and messaging service implementation
 - **Navigation Types**: ✅ Fixed import errors from @react-navigation/stack to @react-navigation/native-stack
 - **TypeScript Issues**: ✅ Resolved Alert.alert button type issues with proper TypeScript casting
 - **ESLint Compliance**: ✅ Fixed all linting errors including trailing comma issues and unused imports
 
 #### **Outstanding Technical Issue**:
+
 - **React Infinite Loop**: ⚠️ ChatScreen experiencing "Maximum update depth exceeded" error in React
   - **Root Cause**: Suspected issue with Zustand store hooks causing infinite re-renders
   - **Attempted Fix**: Refactored from multiple hooks (useChatMessages, useTypingUsers) to single useChatStore() call
@@ -549,6 +553,18 @@ _None accumulated - professional code quality standards maintained throughout_
 **Dependencies**: All foundation requirements met ✅
 
 ### ✅ **Phase 7 Updates (2025-06-25)**
+
 - Fixed UI hit-area issue for "New" chat button (SafeAreaView). ✅
 - Removed verbose debugging logs across chat modules. ✅
 - Implemented automatic `userChats`
+
+- [x] 8.6 Implement basic **Contacts/Friends** management (add / remove, auto-accepted)
+  - [x] 8.6.1 Extend `FirestoreService` to support contacts add/remove/subscribe operations
+  - [x] 8.6.2 Integrate contacts actions & state in `userStore`
+  - [x] 8.6.3 Update `firestore.rules` for contacts sub-collection security
+  - [x] 8.6.4 Add **Add / Remove Friend** button to `UserProfileScreen`
+  - [x] 8.6.5 Display contacts list on `ProfileScreen`
+- [x] 8.7 Integrate contacts with Snaps, Stories & Chat recipient pickers
+  - [x] 8.7.1 Restrict snap recipient selection to contacts list
+  - [x] 8.7.2 Filter story feed to show only contacts' stories (plus own)
+  - [x] 8.7.3 Update chat creation flow to start chats with contacts only

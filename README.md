@@ -51,6 +51,7 @@ A full-featured Snapchat clone mobile application built with React Native and Fi
 ## 🛠 Tech Stack
 
 ### Frontend
+
 - **React Native** with Expo SDK ~53.0
 - **TypeScript** for type safety
 - **TailwindCSS** with NativeWind for styling
@@ -58,6 +59,7 @@ A full-featured Snapchat clone mobile application built with React Native and Fi
 - **React Navigation** for navigation
 
 ### Backend (Firebase)
+
 - **Firebase Authentication** (Email/Password)
 - **Firestore** for structured data (users, stories, snap metadata)
 - **Realtime Database** for real-time chat messages
@@ -65,6 +67,7 @@ A full-featured Snapchat clone mobile application built with React Native and Fi
 - **Security Rules** for data protection
 
 ### Key Dependencies
+
 - `expo-camera` - Camera functionality
 - `expo-image-picker` - Gallery selection
 - `expo-image-manipulator` - Image processing
@@ -84,12 +87,14 @@ A full-featured Snapchat clone mobile application built with React Native and Fi
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd snapchat-clone
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
@@ -104,6 +109,7 @@ A full-featured Snapchat clone mobile application built with React Native and Fi
 
 4. **Configure Firebase**
    Create `firebase.config.js` in the root directory:
+
    ```javascript
    import { initializeApp } from 'firebase/app';
    import { getAuth } from 'firebase/auth';
@@ -112,13 +118,13 @@ A full-featured Snapchat clone mobile application built with React Native and Fi
    import { getStorage } from 'firebase/storage';
 
    const firebaseConfig = {
-     apiKey: "your-api-key",
-     authDomain: "your-project.firebaseapp.com",
-     databaseURL: "https://your-project-rtdb.firebaseio.com",
-     projectId: "your-project-id",
-     storageBucket: "your-project.firebasestorage.app",
-     messagingSenderId: "your-sender-id",
-     appId: "your-app-id"
+     apiKey: 'your-api-key',
+     authDomain: 'your-project.firebaseapp.com',
+     databaseURL: 'https://your-project-rtdb.firebaseio.com',
+     projectId: 'your-project-id',
+     storageBucket: 'your-project.firebasestorage.app',
+     messagingSenderId: 'your-sender-id',
+     appId: 'your-app-id',
    };
 
    const app = initializeApp(firebaseConfig);
@@ -130,11 +136,13 @@ A full-featured Snapchat clone mobile application built with React Native and Fi
    ```
 
 5. **Deploy Firebase Security Rules**
+
    ```bash
    firebase deploy --only firestore:rules,database:rules,storage:rules
    ```
 
 6. **Start the development server**
+
    ```bash
    npm start
    ```
@@ -203,6 +211,7 @@ npm run check-all  # Run all checks (types, lint, format)
 ## 📋 Current Development Status
 
 **Phase 7: Real-time Chat System** (3/8 tasks completed)
+
 - ✅ Authentication System (100% complete)
 - ✅ Core Navigation & UI Framework (100% complete)
 - ✅ Advanced Camera Integration (87% complete)
@@ -245,4 +254,4 @@ For questions or issues, refer to the memory bank documentation or create an iss
 
 ---
 
-**Built with ❤️ using React Native, Expo, and Firebase** 
+**Built with ❤️ using React Native, Expo, and Firebase**

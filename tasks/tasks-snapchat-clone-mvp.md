@@ -21,12 +21,12 @@
 - `src/services/firebase/config.ts` - Firebase SDK configuration with AsyncStorage persistence and React Native Auth setup (updated - Firebase integration with persistence)
 - `src/navigation/types.ts` - React Navigation type definitions for type-safe navigation (created - navigation types)
 - `src/store/authStore.ts` - Zustand store for authentication state management with login, register, logout actions and Firebase auth state listener (created - comprehensive auth state management)
-- `src/store/snapStore.ts` - Zustand store for snap-related state with comprehensive snap sending functionality, recipient selection, and state management (created - Task 5.4.1 complete)
+- `src/store/snapStore.ts` - Zustand snap store now uses contacts list for recipient selection (updated - Task 8.7.1)
 - `src/store/storyStore.ts` - Zustand store for story state management (updated - Task 6.7: added markStoryViewed action)
 - `src/store/chatStore.ts` - Zustand store for chat functionality with comprehensive state management, real-time subscriptions, enhanced sendMessage with senderId parameter, and convenience hooks (updated - Task 7.5 complete)
 - `src/services/auth.service.ts` - Firebase authentication service layer with email/password methods, user registration, login, logout, and error handling (created - comprehensive auth service)
 - `src/services/camera.service.ts` - Enhanced camera service with automatic image optimization, comprehensive permission handling, image picker functionality, gallery selection, context-aware compression, and optimization feedback (updated - Task 4.5 complete with integrated image optimization)
-- `src/services/firestore.service.ts` - Firestore database operations, now includes user search & contacts schema (updated - Task 8.1)
+- `src/services/firestore.service.ts` - Firestore database operations, now includes contacts add/remove/subscribe methods (updated - Task 8.6.1)
 - `src/services/storage.service.ts` - Firebase Storage file operations with comprehensive upload service, progress tracking, context-aware uploads, and error handling (created - Task 5.2 complete)
 - `src/services/realtime/index.ts` - Comprehensive Firebase Realtime Database service for chat functionality with message sending, conversations, user presence, and real-time subscriptions (created - Task 7.1 complete)
 - `src/services/realtime/models.ts` - Complete chat data models, interfaces, constants, and validation schemas for Firebase Realtime Database structure (created - Task 7.2 complete)
@@ -41,14 +41,14 @@
 - `src/screens/auth/LoginScreen.tsx` - User login interface with email/password validation, error handling, forgot password, and React Navigation integration (updated - navigation integration)
 - `src/screens/auth/RegisterScreen.tsx` - User registration interface with form validation, error handling, display name input, consistent styling, and React Navigation integration (updated - navigation integration)
 - `src/screens/auth/AuthLoadingScreen.tsx` - Authentication state loading screen with loading indicators and error handling (created - complete loading screen)
-- `src/screens/main/HomeScreen.tsx` - Main home screen with stories
+- `src/screens/main/HomeScreen.tsx` - Home screen now filters stories by contacts (updated - Task 8.7.2)
 - `src/screens/main/CameraScreen.tsx` - Professional camera interface with enhanced controls, automatic image optimization, compression feedback, context selection, optimization toggles, gallery integration, comprehensive image handling, integrated image editing interface, and snap sending navigation (updated - Task 5.4 complete with snap sending functionality)
 - `src/screens/main/RecipientSelectionScreen.tsx` - Recipient selection interface for snap sending with user search, multi-selection, progress tracking, and professional UI (created - Task 5.4 complete)
 - `src/screens/main/SnapViewerScreen.tsx` - Full-screen snap viewing interface with automatic deletion, progress bar, swipe gestures, and professional UI (created - Task 5.5 complete)
 - `src/screens/main/HomeScreen.tsx` - Home screen displaying received snaps with real-time updates, sender information, expiration tracking, and navigation to snap viewer (created - Task 5.5 complete)
-- `src/screens/main/ChatListScreen.tsx` - List of chat conversations with real-time updates, user search, conversation creation, professional Snapchat-style UI, pull-to-refresh, unread count indicators, and navigation to individual chats (created - Task 7.4 complete)
+- `src/screens/main/ChatListScreen.tsx` - Chat list screen now limits new chat creation to contacts (updated - Task 8.7.3)
 - `src/screens/main/ChatScreen.tsx` - Individual chat interface with message history, real-time messaging, typing indicators, message status tracking, professional chat UI with message bubbles, auto-scroll, keyboard handling, and comprehensive error handling (updated - Task 7.5 complete)
-- `src/screens/main/ProfileScreen.tsx` - Profile screen allowing avatar upload and display name editing (created - Task 8.4)
+- `src/screens/main/ProfileScreen.tsx` - Profile screen now lists friends and avatar editing (updated - Task 8.6.5)
 - `src/components/ui/Button.tsx` - Reusable button component with variants, sizes, and loading states (created - comprehensive button component)
 - `src/components/ui/Input.tsx` - Reusable input component with validation and error handling (created - comprehensive input component)
 - `src/components/ui/LoadingSpinner.tsx` - Loading state component with different sizes, colors, optional text, and overlay support (created - comprehensive loading spinner component)
@@ -63,14 +63,14 @@
 - `src/utils/imageUtils.ts` - Image processing utility functions
 - `src/utils/validation.ts` - Form validation utility functions
 - `tailwind.config.js` - TailwindCSS configuration for NativeWind
-- `firestore.rules` - Firestore security rules
+- `firestore.rules` - Firestore security rules (updated - Task 8.6.3)
 - `firestore.indexes.json` - Firestore database indexes for efficient snap and story queries (updated - Task 5.3 complete)
 - `storage.rules` - Firebase Storage security rules with comprehensive snap system security, file size limits, and proper access controls (updated - Task 5.1 complete)
 - `src/services/cleanup/storyCleanup.service.ts` - Service responsible for deleting expired story images and documents (created - Task 6.5 complete)
 - `src/screens/main/StoryViewerScreen.tsx` - Story viewer screen (updated - uses store action for view tracking)
-- `src/store/userStore.ts` - Zustand store for user profiles, contacts, and search cache (created - Task 8.2)
+- `src/store/userStore.ts` - Zustand store for user profiles, now includes contacts real-time integration (updated - Task 8.6.2)
 - `src/screens/main/UserSearchScreen.tsx` - Screen for searching users and navigating to profiles (created - Task 8.5)
-- `src/screens/main/UserProfileScreen.tsx` - View-only profile for other users (created - Task 8.5)
+- `src/screens/main/UserProfileScreen.tsx` - User profile screen with Add/Remove Friend button (updated - Task 8.6.4)
 - `src/navigation/MainNavigator.tsx` - Updated with UserSearch and UserProfile routes (updated - Task 8.5)
 
 ### Notes
@@ -161,7 +161,15 @@
   - [x] 8.4 Build **ProfileScreen** (view / edit own profile)
   - [x] 8.5 Build **UserSearchScreen** (search & view other profiles)
   - [ ] 8.6 Implement basic **Contacts/Friends** management (add / remove, auto-accepted)
-  - [ ] 8.7 Integrate contacts with Snaps, Stories & Chat recipient pickers
+    - [x] 8.6.1 Extend `FirestoreService` to support contacts add/remove/subscribe operations
+    - [x] 8.6.2 Integrate contacts actions & state in `userStore`
+    - [x] 8.6.3 Update `firestore.rules` for contacts sub-collection security
+    - [x] 8.6.4 Add **Add / Remove Friend** button to `UserProfileScreen`
+    - [x] 8.6.5 Display contacts list on `ProfileScreen`
+  - [x] 8.7 Integrate contacts with Snaps, Stories & Chat recipient pickers
+    - [x] 8.7.1 Restrict snap recipient selection to contacts list
+    - [x] 8.7.2 Filter story feed to show only contacts' stories (plus own)
+    - [x] 8.7.3 Update chat creation flow to start chats with contacts only
   - [ ] 8.8 End-to-end QA & polish for all user-management features
 
 - [ ] 9.0 Security & Performance Optimization

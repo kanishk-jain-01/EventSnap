@@ -37,7 +37,7 @@ export class SnapCleanupService {
     for (const snap of snaps) {
       if (!snap.id || !snap.imagePath) {
         // Skip if essential data is missing
-         
+
         continue;
       }
 
@@ -45,7 +45,7 @@ export class SnapCleanupService {
       const storageDelete = await StorageService.deleteFile(snap.imagePath);
       if (!storageDelete.success) {
         // Skip Firestore deletion if storage deletion fails to keep data consistent
-         
+
         continue;
       }
 
@@ -61,4 +61,4 @@ export class SnapCleanupService {
       data: deleteCount,
     };
   }
-} 
+}

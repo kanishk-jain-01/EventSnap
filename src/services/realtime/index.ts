@@ -71,7 +71,7 @@ class RealtimeService {
     try {
       // Create consistent chat ID regardless of user order
       const chatId = [userId1, userId2].sort().join('_');
-      
+
       const chatRef = ref(realtimeDb, `chats/${chatId}`);
 
       // Check if conversation exists
@@ -101,7 +101,7 @@ class RealtimeService {
         };
 
         await set(chatRef, conversation);
-        
+
         // Create userChats entry for both participants
         await Promise.all([
           this.ensureUserChatEntry(userId1, chatId),
@@ -167,7 +167,10 @@ class RealtimeService {
   /**
    * Ensure user has userChats entry for a conversation they're part of
    */
-  private async ensureUserChatEntry(userId: string, chatId: string): Promise<void> {
+  private async ensureUserChatEntry(
+    userId: string,
+    chatId: string,
+  ): Promise<void> {
     try {
       const userChatRef = ref(realtimeDb, `userChats/${userId}/${chatId}`);
       // Directly write a default structure. If the entry already exists, this
@@ -198,70 +201,86 @@ class RealtimeService {
   ): () => void {
     // First, try to get user's chat list from userChats index
     const userChatsRef = ref(realtimeDb, `userChats/${userId}`);
-    
-    const unsubscribe = onValue(userChatsRef, async snapshot => {
-      const conversations: ChatConversation[] = [];
-      // Finished conversation aggregation
 
-      try {
-        if (snapshot.exists()) {
-          // Get all chat IDs for this user
-          const chatIds = Object.keys(snapshot.val());
-          
-          // Fetch each conversation individually (allowed by security rules)
-          const conversationPromises = chatIds.map(async (chatId) => {
-            try {
-              const chatRef = ref(realtimeDb, `chats/${chatId}`);
-              const chatSnapshot = await get(chatRef);
-              
-              if (chatSnapshot.exists()) {
-                const conversation = chatSnapshot.val() as Omit<ChatConversation, 'id'>;
-                
-                // Verify user is actually a participant (security check)
-                if (conversation.participants && conversation.participants.includes(userId)) {
-                  return {
-                    id: chatId,
-                    ...conversation,
-                  } as ChatConversation;
+    const unsubscribe = onValue(
+      userChatsRef,
+      async snapshot => {
+        const conversations: ChatConversation[] = [];
+        // Finished conversation aggregation
+
+        try {
+          if (snapshot.exists()) {
+            // Get all chat IDs for this user
+            const chatIds = Object.keys(snapshot.val());
+
+            // Fetch each conversation individually (allowed by security rules)
+            const conversationPromises = chatIds.map(async chatId => {
+              try {
+                const chatRef = ref(realtimeDb, `chats/${chatId}`);
+                const chatSnapshot = await get(chatRef);
+
+                if (chatSnapshot.exists()) {
+                  const conversation = chatSnapshot.val() as Omit<
+                    ChatConversation,
+                    'id'
+                  >;
+
+                  // Verify user is actually a participant (security check)
+                  if (
+                    conversation.participants &&
+                    conversation.participants.includes(userId)
+                  ) {
+                    return {
+                      id: chatId,
+                      ...conversation,
+                    } as ChatConversation;
+                  }
                 }
+              } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error(`Error fetching conversation ${chatId}:`, error);
               }
-            } catch (error) {
-              // eslint-disable-next-line no-console
-              console.error(`Error fetching conversation ${chatId}:`, error);
-            }
-            return null;
+              return null;
+            });
+
+            const results = await Promise.all(conversationPromises);
+            conversations.push(
+              ...results.filter(
+                (conv): conv is ChatConversation => conv !== null,
+              ),
+            );
+          } else {
+            // Fallback scan when no userChats found
+            // If no userChats entries, fallback to direct chat scan (developer mode only)
+            // This is an edge case that mainly occurs during development/testing.
+          }
+
+          // Sort by last message timestamp (newest first)
+          conversations.sort((a, b) => {
+            const aTime =
+              typeof a.lastMessageAt === 'number' ? a.lastMessageAt : 0;
+            const bTime =
+              typeof b.lastMessageAt === 'number' ? b.lastMessageAt : 0;
+            return bTime - aTime;
           });
 
-          const results = await Promise.all(conversationPromises);
-          conversations.push(...results.filter((conv): conv is ChatConversation => conv !== null));
-        } else {
-          // Fallback scan when no userChats found
-          // If no userChats entries, fallback to direct chat scan (developer mode only)
-          // This is an edge case that mainly occurs during development/testing.
+          // Finished conversation aggregation
+          callback(conversations);
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('Error in subscribeToConversations:', error);
+          // Still call callback with empty array to stop loading state
+          callback([]);
         }
-
-        // Sort by last message timestamp (newest first)
-        conversations.sort((a, b) => {
-          const aTime = typeof a.lastMessageAt === 'number' ? a.lastMessageAt : 0;
-          const bTime = typeof b.lastMessageAt === 'number' ? b.lastMessageAt : 0;
-          return bTime - aTime;
-        });
-
-        // Finished conversation aggregation
-        callback(conversations);
-      } catch (error) {
+      },
+      error => {
+        // Handle Firebase errors
         // eslint-disable-next-line no-console
-        console.error('Error in subscribeToConversations:', error);
-        // Still call callback with empty array to stop loading state
+        console.error('Firebase error in subscribeToConversations:', error);
+        // Call callback with empty array to stop loading state
         callback([]);
-      }
-    }, (error) => {
-      // Handle Firebase errors
-      // eslint-disable-next-line no-console
-      console.error('Firebase error in subscribeToConversations:', error);
-      // Call callback with empty array to stop loading state
-      callback([]);
-    });
+      },
+    );
 
     // Store listener for cleanup
     const listenerId = `conversations_${userId}`;

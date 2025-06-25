@@ -60,7 +60,10 @@ export const StoryViewerScreen: React.FC = () => {
     }).start();
 
     // Set timer to advance story
-    timerRef.current = setTimeout(handleNextStory, UI_CONSTANTS.STORY_VIEWER_DURATION);
+    timerRef.current = setTimeout(
+      handleNextStory,
+      UI_CONSTANTS.STORY_VIEWER_DURATION,
+    );
   };
 
   /**
@@ -157,12 +160,24 @@ export const StoryViewerScreen: React.FC = () => {
 
         {/* Tap zones */}
         <TouchableOpacity
-          style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: SCREEN_WIDTH * 0.4 }}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: SCREEN_WIDTH * 0.4,
+          }}
           activeOpacity={1}
           onPress={handleTapLeft}
         />
         <TouchableOpacity
-          style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: SCREEN_WIDTH * 0.6 }}
+          style={{
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: SCREEN_WIDTH * 0.6,
+          }}
           activeOpacity={1}
           onPress={handleTapRight}
         />
@@ -172,4 +187,4 @@ export const StoryViewerScreen: React.FC = () => {
       </View>
     </PanGestureHandler>
   );
-}; 
+};

@@ -1,5 +1,13 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useUserStore } from '../../store/userStore';
 import type { User } from '../../types';
@@ -7,7 +15,8 @@ import { MainStackParamList } from '../../navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 export const UserSearchScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const { searchUsers, allUsers, isLoading } = useUserStore();
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
@@ -55,17 +64,23 @@ export const UserSearchScreen: React.FC = () => {
 
       {/* Results */}
       {searching || isLoading ? (
-        <ActivityIndicator size='large' color='#FFFC00' style={{ marginTop: 20 }} />
+        <ActivityIndicator
+          size='large'
+          color='#FFFC00'
+          style={{ marginTop: 20 }}
+        />
       ) : (
         <FlatList
           data={allUsers}
           keyExtractor={item => item.uid}
           renderItem={renderItem}
           ListEmptyComponent={() => (
-            <Text className='text-gray-400 text-center mt-10'>No users found.</Text>
+            <Text className='text-gray-400 text-center mt-10'>
+              No users found.
+            </Text>
           )}
         />
       )}
     </View>
   );
-}; 
+};

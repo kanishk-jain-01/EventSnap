@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, Image, ActivityIndicator, ScrollView } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { MainStackParamList } from '../../navigation/types';
 import { FirestoreService } from '../../services/firestore.service';
 import type { User } from '../../types';
+import { useUserStore } from '../../store/userStore';
+import { Button } from '../../components/ui/Button';
 
 export const UserProfileScreen: React.FC = () => {
   const route = useRoute<RouteProp<MainStackParamList, 'UserProfile'>>();
@@ -11,6 +13,25 @@ export const UserProfileScreen: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Contacts state from userStore
+  const {
+    currentUser,
+    contacts,
+    fetchContacts,
+    subscribeToContacts,
+    addContact,
+    removeContact,
+  } = useUserStore(state => ({
+    currentUser: state.currentUser,
+    contacts: state.contacts,
+    fetchContacts: state.fetchContacts,
+    subscribeToContacts: state.subscribeToContacts,
+    addContact: state.addContact,
+    removeContact: state.removeContact,
+  }));
+
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
@@ -23,7 +44,25 @@ export const UserProfileScreen: React.FC = () => {
       setLoading(false);
     };
     fetch();
+
+    // Ensure contacts list is up to date & subscribe in real-time
+    fetchContacts();
+    subscribeToContacts();
   }, [userId]);
+
+  const isSelf = currentUser?.uid === userId;
+  const isFriend = contacts.some(c => c.uid === userId);
+
+  const handleToggleFriend = useCallback(async () => {
+    if (!currentUser || isSelf) return;
+    setActionLoading(true);
+    if (isFriend) {
+      await removeContact(userId);
+    } else {
+      await addContact(userId);
+    }
+    setActionLoading(false);
+  }, [isFriend, currentUser, userId]);
 
   if (loading) {
     return (
@@ -42,9 +81,15 @@ export const UserProfileScreen: React.FC = () => {
   }
 
   return (
-    <ScrollView className='flex-1 bg-snap-dark' contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
+    <ScrollView
+      className='flex-1 bg-snap-dark'
+      contentContainerStyle={{ alignItems: 'center', padding: 20 }}
+    >
       {user.avatarUrl ? (
-        <Image source={{ uri: user.avatarUrl }} className='w-32 h-32 rounded-full border-4 border-snap-yellow' />
+        <Image
+          source={{ uri: user.avatarUrl }}
+          className='w-32 h-32 rounded-full border-4 border-snap-yellow'
+        />
       ) : (
         <View className='w-32 h-32 rounded-full bg-snap-gray items-center justify-center'>
           <Text className='text-white text-4xl font-bold'>
@@ -52,9 +97,21 @@ export const UserProfileScreen: React.FC = () => {
           </Text>
         </View>
       )}
-      <Text className='text-white text-2xl font-semibold mt-4'>{user.displayName}</Text>
+      <Text className='text-white text-2xl font-semibold mt-4'>
+        {user.displayName}
+      </Text>
       <Text className='text-gray-400 mt-1'>{user.email}</Text>
-      {/* Additional user info / friend button will come in future tasks */}
+      {/* Add / Remove Friend Button */}
+      {!isSelf && (
+        <View className='mt-6 w-full'>
+          <Button
+            title={isFriend ? 'Remove Friend' : 'Add Friend'}
+            onPress={handleToggleFriend}
+            variant={isFriend ? 'secondary' : 'primary'}
+            loading={actionLoading}
+          />
+        </View>
+      )}
     </ScrollView>
   );
-}; 
+};

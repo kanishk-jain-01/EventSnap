@@ -220,7 +220,11 @@ export const useChatStore = create<ChatStore>()(
 
     // ===== MESSAGE ACTIONS =====
 
-    sendMessage: async (chatId: string, senderId: string, payload: CreateMessagePayload) => {
+    sendMessage: async (
+      chatId: string,
+      senderId: string,
+      payload: CreateMessagePayload,
+    ) => {
       set({ error: null });
 
       try {
@@ -549,7 +553,7 @@ export const useActiveConversation = () => {
  * Hook to get messages for a specific chat
  */
 export const useChatMessages = (chatId: string) => {
-  return useChatStore((state) => {
+  return useChatStore(state => {
     const messages = state.messages[chatId];
     return messages || [];
   });
@@ -559,7 +563,7 @@ export const useChatMessages = (chatId: string) => {
  * Hook to get typing users for a specific chat
  */
 export const useTypingUsers = (chatId: string) => {
-  return useChatStore((state) => {
+  return useChatStore(state => {
     const typingUsers = state.typingUsers[chatId];
     return typingUsers || [];
   });
