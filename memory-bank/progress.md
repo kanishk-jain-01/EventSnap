@@ -1,6 +1,6 @@
 # Progress: Snapchat Clone MVP
 
-## Current Status: **Phase 6 Stories Feature – IN PROGRESS (3/8 tasks completed)**
+## Current Status: **Phase 6 Stories Feature – IN PROGRESS (4/8 tasks completed)**
 
 ### Completed ✅
 
@@ -210,7 +210,7 @@
   - ✅ End-to-end snap workflow tested and validated
   - ✅ Automatic cleanup service implemented
 
-### ✅ **Phase 6: Stories Feature Implementation (IN PROGRESS - 3/8 tasks completed)**
+### ✅ **Phase 6: Stories Feature Implementation (IN PROGRESS - 4/8 tasks completed)**
 
 **Major Achievement Today**: Stories posting and feed display successfully implemented
 
@@ -252,12 +252,17 @@
   - ✅ **Smart Layout**: Stories header integrated with existing snaps list
   - ✅ **Error Handling**: Graceful handling of loading states and errors
 
+#### ✅ **Task 6.4**: Create full-screen story viewer with swipe navigation - COMPLETED
+
+- Implemented `StoryViewerScreen` with auto-advance timer, tap navigation, swipe-down to close
+- Integrated into `MainNavigator` and `HomeScreen` story rings
+- Firestore view tracking and query/index fix added
+
 #### ⏳ **Remaining Tasks in Phase 6:**
 
-- [ ] **Task 6.4**: Create full-screen story viewer with swipe navigation
 - [ ] **Task 6.5**: Implement automatic story expiration and cleanup service
-- [ ] **Task 6.6**: Add story view tracking and seen indicators
-- [ ] **Task 6.7**: Create Zustand store for story state management (partially complete)
+- [ ] **Task 6.6**: Add story view tracking and seen indicators (partially implemented)
+- [ ] **Task 6.7**: Create Zustand store for story state management (additional refinements)
 - [ ] **Task 6.8**: Test story posting, viewing, and expiration functionality
 
 ### ✅ **Phase 7: Real-time Chat System (COMPLETED - 8/8 tasks completed)**

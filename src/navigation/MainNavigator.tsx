@@ -4,6 +4,7 @@ import { MainTabNavigator } from './MainTabNavigator';
 import { RecipientSelectionScreen } from '../screens/main/RecipientSelectionScreen';
 import { SnapViewerScreen } from '../screens/main/SnapViewerScreen';
 import { ChatScreen } from '../screens/main/ChatScreen';
+import { StoryViewerScreen } from '../screens/main/StoryViewerScreen';
 import { MainStackParamList } from '../navigation/types';
 
 const MainStack = createNativeStackNavigator<MainStackParamList>();
@@ -61,6 +62,17 @@ export const MainNavigator: React.FC = () => {
             color: '#FFFFFF',
           },
           headerTintColor: '#FFFC00',
+        }}
+      />
+
+      {/* Story Viewer */}
+      <MainStack.Screen
+        name='StoryViewer'
+        component={StoryViewerScreen}
+        options={{
+          presentation: 'fullScreenModal',
+          gestureEnabled: false,
+          headerShown: false,
         }}
       />
 

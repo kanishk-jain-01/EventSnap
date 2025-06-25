@@ -384,8 +384,18 @@ export const HomeScreen: React.FC = () => {
             hasUnviewed={item.hasUnviewed}
             isCurrentUser={item.isMe}
             onPress={() => {
-              // TODO: navigate to viewer in task 6.4
-              Alert.alert('Story', 'Story viewer coming soon!');
+              const userStories = stories
+                .filter(s => s.userId === item.user.uid)
+                .sort((a, b) =>
+                  (a.timestamp instanceof Date ? a.timestamp.getTime() : new Date(a.timestamp).getTime()) -
+                  (b.timestamp instanceof Date ? b.timestamp.getTime() : new Date(b.timestamp).getTime()),
+                );
+
+              if (userStories.length > 0) {
+                navigation.navigate('StoryViewer', { stories: userStories, initialIndex: 0 });
+              } else if (item.isMe) {
+                navigation.navigate('MainTabs', { screen: 'Camera' });
+              }
             }}
           />
         )}

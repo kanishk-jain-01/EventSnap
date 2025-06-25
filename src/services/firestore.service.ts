@@ -402,6 +402,7 @@ export class FirestoreService {
       const q = query(
         collection(firestore, COLLECTIONS.STORIES),
         where('expiresAt', '>', new Date()),
+        orderBy('expiresAt', 'asc'),
         orderBy('timestamp', 'desc'),
         limit(limitCount),
       );
@@ -436,6 +437,7 @@ export class FirestoreService {
     const q = query(
       collection(firestore, COLLECTIONS.STORIES),
       where('expiresAt', '>', new Date()),
+      orderBy('expiresAt', 'asc'),
       orderBy('timestamp', 'desc'),
     );
 

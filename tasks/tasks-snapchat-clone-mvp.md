@@ -132,7 +132,7 @@
   - [x] 6.1 Create Firestore data model and collection for stories with 24-hour expiration
   - [x] 6.2 Implement story posting functionality from camera or gallery
   - [x] 6.3 Build story feed interface with story rings and user avatars
-  - [ ] 6.4 Create full-screen story viewer with swipe navigation
+  - [x] 6.4 Create full-screen story viewer with swipe navigation
   - [ ] 6.5 Implement automatic story expiration and cleanup service
   - [ ] 6.6 Add story view tracking and seen indicators
   - [ ] 6.7 Create Zustand store for story state management
