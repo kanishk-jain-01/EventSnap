@@ -5,7 +5,7 @@
 - **Phase**: Phase 7 Real-time Chat System - 🚀 **MAJOR PROGRESS** (6/8 sub-tasks completed)
 - **Status**: Professional chat system with comprehensive UI and real-time messaging implemented
 - **Developer Level**: Beginner to mobile app development
-- **Priority**: Resolve React infinite loop issue in ChatScreen, then continue with Phase 7 Tasks 7.7-7.8
+- **Priority**: Verify snap sending/viewing stability (Reanimated integration), then continue with Phase 7 Tasks 7.7-7.8
 
 ## Immediate Focus
 
@@ -80,10 +80,7 @@
 - **ESLint Compliance**: ✅ Fixed all linting errors and trailing comma issues
 
 #### **Outstanding Issue**:
-- **React Infinite Loop**: ⚠️ ChatScreen experiencing "Maximum update depth exceeded" error
-  - **Attempted Fix**: Refactored multiple Zustand hooks to single store call
-  - **Status**: Issue persists, needs further investigation
-  - **Impact**: Chat functionality works but with console errors
+- **Snap Workflow Stability**: Occasional crash still reported when sending a snap between devices. Investigate any remaining Reanimated/RNGH interactions inside `RecipientSelectionScreen` and `SnapViewerScreen`.
 
 ## Recent Achievements
 
@@ -430,3 +427,22 @@
 - Phase 4 Camera Integration & Image Handling significantly advanced with Task 4.5 completion
 - Professional image optimization system now rivals commercial applications
 - Ready to proceed with image preview and editing interface (Task 4.6)
+
+### ✅ **Critical Fixes (2025-06-25)**
+
+1. **React Infinite Loop Resolved**
+   - Removed `chatStore` object from several `useEffect` dependency arrays in `ChatScreen.tsx`.
+   - Chat no longer triggers "Maximum update depth exceeded"; performance normal.
+
+2. **Keyboard & Layout Polishing**
+   - Added `useHeaderHeight` + `useSafeAreaInsets` to compute accurate `keyboardVerticalOffset`.
+   - Text input + send button stay visible when keyboard opens.
+
+3. **Gesture Handler Foundation**
+   - Added global import `'react-native-gesture-handler'` in `index.ts`.
+   - Wrapped root app with `GestureHandlerRootView` in `App.tsx`.
+
+4. **Reanimated Version Alignment**
+   - Locked `react-native-reanimated` to `3.17.4` (native match for Expo SDK 53).
+   - Added Babel plugin `react-native-reanimated/plugin`.
+   - Eliminated JS/native version mismatch & `makeMutable` undefined error during snap sending.

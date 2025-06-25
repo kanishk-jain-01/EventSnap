@@ -8,15 +8,16 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-
 } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../navigation/types';
-import { useChatStore, useChatMessages, useTypingUsers } from '../../store/chatStore';
+import { useChatStore } from '../../store/chatStore';
 import { useAuthStore } from '../../store/authStore';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import type { ChatMessage } from '../../services/realtime/models';
+import { useHeaderHeight } from '@react-navigation/elements';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ChatScreenRouteProp = RouteProp<MainStackParamList, 'ChatScreen'>;
 type ChatScreenNavigationProp = NativeStackNavigationProp<MainStackParamList, 'ChatScreen'>;
@@ -184,6 +185,9 @@ export const ChatScreen: React.FC = () => {
   const markedAsReadRef = useRef<Set<string>>(new Set());
   const loadedChatsRef = useRef<Set<string>>(new Set());
   
+  const headerHeight = useHeaderHeight();
+  const insets = useSafeAreaInsets();
+  
   // Set active conversation on mount
   useEffect(() => {
     chatStore.setActiveConversation(chatId);
@@ -191,7 +195,7 @@ export const ChatScreen: React.FC = () => {
     return () => {
       chatStore.setActiveConversation(null);
     };
-  }, [chatId, chatStore]);
+  }, [chatId]);
   
   // Load messages on mount
   useEffect(() => {
@@ -199,7 +203,7 @@ export const ChatScreen: React.FC = () => {
       loadedChatsRef.current.add(chatId);
       chatStore.loadMessages(chatId);
     }
-  }, [chatId, user?.uid, chatStore]);
+  }, [chatId, user?.uid]);
   
   // Set navigation title
   useEffect(() => {
@@ -226,7 +230,7 @@ export const ChatScreen: React.FC = () => {
         chatStore.markMessagesAsRead(chatId, messageIds, user.uid);
       }
     }
-  }, [messages, user?.uid, chatId, chatStore]);
+  }, [messages, user?.uid, chatId]);
   
   // Handle typing indicator
   const handleTyping = useCallback((text: string) => {
@@ -338,6 +342,7 @@ export const ChatScreen: React.FC = () => {
     <KeyboardAvoidingView
       className="flex-1 bg-snap-dark"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight + insets.bottom : 0}
     >
       {/* Messages List */}
       <FlatList
