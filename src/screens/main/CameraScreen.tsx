@@ -21,6 +21,7 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { formatFileSize } from '../../utils/imageUtils';
 import { ImageEditor } from '../../components/media/ImageEditor';
 import { MainStackParamList } from '../../navigation/types';
+import { useStoryStore } from '../../store/storyStore';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -74,6 +75,9 @@ export const CameraScreen: React.FC = () => {
 
   // Camera ref
   const cameraRef = useRef<CameraView>(null);
+
+  // Story posting
+  const { postStory, isPosting: isPostingStory, postingProgress } = useStoryStore();
 
   // Check initial permissions and camera availability
   useEffect(() => {
@@ -445,6 +449,24 @@ export const CameraScreen: React.FC = () => {
     await checkInitialState();
   };
 
+  // Story posting
+  const handlePostStory = async () => {
+    if (!capturedPhoto) return;
+
+    const success = await postStory(capturedPhoto);
+    if (success) {
+      Alert.alert('Story Posted!', 'Your story has been posted successfully.');
+      // Navigate back to Home tab to view your story
+      navigation.navigate('MainTabs', { screen: 'Home' });
+      // Reset image so user can take another
+      setCapturedPhoto(null);
+      setSelectedImage(null);
+      setImageSource(null);
+    } else {
+      Alert.alert('Error', 'Failed to post story.');
+    }
+  };
+
   // Loading screen
   if (isLoading) {
     return (
@@ -707,6 +729,17 @@ export const CameraScreen: React.FC = () => {
 
             {/* Action Buttons */}
             <View className='flex-row justify-center space-x-3 mt-4'>
+              {/* Post Story */}
+              <TouchableOpacity
+                onPress={handlePostStory}
+                className='bg-blue-500 px-4 py-3 rounded-full flex-1'
+                disabled={isPostingStory}
+              >
+                <Text className='text-white font-semibold text-center'>
+                  {isPostingStory ? `🚀 Posting ${Math.round(postingProgress)}%` : '📖 Post Story'}
+                </Text>
+              </TouchableOpacity>
+
               <TouchableOpacity
                 onPress={() => setShowImageEditor(true)}
                 className='bg-snap-yellow px-4 py-3 rounded-full flex-1'

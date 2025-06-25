@@ -14,6 +14,9 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSnapStore } from '../../store/snapStore';
 import { useAuthStore } from '../../store/authStore';
+import { useStoryStore } from '../../store/storyStore';
+import { Story } from '../../types';
+import { StoryRing } from '../../components/social/StoryRing';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { MainStackParamList } from '../../navigation/types';
 import { Snap, User } from '../../types';
@@ -136,9 +139,16 @@ export const HomeScreen: React.FC = () => {
     clearError,
   } = useSnapStore();
 
+  const {
+    stories,
+    loadStories,
+    subscribeToStories,
+  } = useStoryStore();
+
   const [refreshing, setRefreshing] = useState(false);
   const [senders, setSenders] = useState<Map<string, User>>(new Map());
   const [loadingSenders, setLoadingSenders] = useState(false);
+  const [storyOwners, setStoryOwners] = useState<Map<string, User>>(new Map());
 
   // Load snaps on focus
   useFocusEffect(
@@ -160,6 +170,23 @@ export const HomeScreen: React.FC = () => {
   useEffect(() => {
     loadSenderInfo();
   }, [receivedSnaps]);
+
+  // Subscribe to stories on focus
+  useFocusEffect(
+    useCallback(() => {
+      if (user) {
+        // initial load
+        loadStories();
+        const unsub = subscribeToStories();
+        return () => unsub();
+      }
+    }, [user]),
+  );
+
+  // Load story owner information
+  useEffect(() => {
+    loadStoryOwnerInfo();
+  }, [stories]);
 
   const loadSenderInfo = async () => {
     if (receivedSnaps.length === 0) return;
@@ -201,6 +228,30 @@ export const HomeScreen: React.FC = () => {
     }
   };
 
+  const loadStoryOwnerInfo = async () => {
+    if (stories.length === 0) return;
+
+    const newMap = new Map(storyOwners);
+    const ownerIds = [...new Set(stories.map(s => s.userId))];
+    const unknown = ownerIds.filter(id => !newMap.has(id));
+
+    const promises = unknown.map(async id => {
+      try {
+        const res = await FirestoreService.getUser(id);
+        if (res.success && res.data) return { id, user: res.data };
+      } catch (_err) {
+        // Ignore failure for individual user fetch
+        return null;
+      }
+    });
+
+    const results = await Promise.all(promises);
+    results.forEach(r => {
+      if (r) newMap.set(r.id, r.user);
+    });
+    setStoryOwners(newMap);
+  };
+
   const handleRefresh = async () => {
     if (!user) return;
 
@@ -209,6 +260,7 @@ export const HomeScreen: React.FC = () => {
 
     try {
       await loadReceivedSnaps(user.uid);
+      await loadStories();
     } finally {
       setRefreshing(false);
     }
@@ -274,6 +326,77 @@ export const HomeScreen: React.FC = () => {
     </View>
   );
 
+  // Compute storyRingData
+  const storyRingData = React.useMemo(() => {
+    const groups: { user: User; hasUnviewed: boolean; isMe: boolean }[] = [];
+    if (!user) return groups;
+
+    const storiesByUser: Record<string, Story[]> = {} as any;
+    stories.forEach(story => {
+      if (!storiesByUser[story.userId]) storiesByUser[story.userId] = [];
+      storiesByUser[story.userId].push(story);
+    });
+
+    Object.keys(storiesByUser).forEach(uid => {
+      const userObj = storyOwners.get(uid);
+      if (!userObj) return; // wait until loaded
+
+      const hasUnviewed = !storiesByUser[uid].every(st => st.viewedBy.includes(user.uid));
+      const isMe = uid === user.uid;
+      groups.push({ user: userObj, hasUnviewed, isMe });
+    });
+
+    // always ensure current user appears first even if no stories yet
+    if (!groups.find(g => g.isMe) && user) {
+      groups.unshift({ user: user as User, hasUnviewed: false, isMe: true });
+    }
+
+    // Sort so current user is always first
+    groups.sort((a, b) => {
+      if (a.isMe) return -1;
+      if (b.isMe) return 1;
+      return 0;
+    });
+
+    return groups;
+  }, [stories, storyOwners, user]);
+
+  // Always show current user ring even if no stories
+  const finalStoryRingData = React.useMemo(() => {
+    if (!user) return storyRingData;
+    
+    // If no rings yet but user exists, show current user ring
+    if (storyRingData.length === 0) {
+      return [{ user: user as User, hasUnviewed: false, isMe: true }];
+    }
+
+    return storyRingData;
+  }, [storyRingData, user]);
+
+  // Create renderStoriesHeader function
+  const renderStoriesHeader = () => (
+    <View className='pt-4 pb-2'>
+      <FlatList
+        data={finalStoryRingData}
+        renderItem={({ item }) => (
+          <StoryRing
+            user={item.user}
+            hasUnviewed={item.hasUnviewed}
+            isCurrentUser={item.isMe}
+            onPress={() => {
+              // TODO: navigate to viewer in task 6.4
+              Alert.alert('Story', 'Story viewer coming soon!');
+            }}
+          />
+        )}
+        keyExtractor={item => item.user.uid}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16 }}
+      />
+    </View>
+  );
+
   if (isLoading && receivedSnaps.length === 0) {
     return (
       <SafeAreaView className='flex-1 bg-snap-dark'>
@@ -325,14 +448,14 @@ export const HomeScreen: React.FC = () => {
       <View className='flex-1'>
         {error && !isLoading ? (
           renderErrorState()
-        ) : receivedSnaps.length === 0 && !isLoading ? (
-          renderEmptyState()
         ) : (
           <FlatList
             data={receivedSnaps}
             renderItem={renderSnapItem}
             keyExtractor={item => item.id}
-            contentContainerStyle={{ padding: 16 }}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
+            ListHeaderComponent={renderStoriesHeader}
+            ListEmptyComponent={receivedSnaps.length === 0 && !isLoading ? renderEmptyState : undefined}
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}

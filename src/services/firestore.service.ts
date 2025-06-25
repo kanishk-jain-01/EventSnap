@@ -16,8 +16,10 @@ import {
   Timestamp,
   Unsubscribe,
   writeBatch,
+  arrayUnion,
 } from 'firebase/firestore';
 import { firestore } from './firebase/config';
+import type { Story } from '../types';
 import { ApiResponse, Snap, User } from '../types';
 
 // Firestore collection names
@@ -341,6 +343,140 @@ export class FirestoreService {
         onError?.(error.message);
       },
     );
+  }
+
+  /**
+   * STORY OPERATIONS
+   */
+
+  /**
+   * Create a new story document
+   */
+  static async createStory(
+    userId: string,
+    imageUrl: string,
+    imagePath: string,
+    metadata?: StoryDocument['metadata'],
+  ): Promise<ApiResponse<Story>> {
+    try {
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+      const storyData: StoryDocument = {
+        userId,
+        imageUrl,
+        imagePath,
+        timestamp: serverTimestamp() as Timestamp,
+        expiresAt: Timestamp.fromDate(expiresAt),
+        viewedBy: [],
+        metadata,
+      };
+
+      const docRef = await addDoc(
+        collection(firestore, COLLECTIONS.STORIES),
+        storyData,
+      );
+
+      const story: Story = {
+        id: docRef.id,
+        userId,
+        imageUrl,
+        timestamp: now,
+        expiresAt,
+        viewedBy: [],
+      };
+
+      return { success: true, data: story };
+    } catch (_error) {
+      return { success: false, error: 'Failed to create story' };
+    }
+  }
+
+  /**
+   * Get active stories (non-expired)
+   */
+  static async getActiveStories(limitCount: number = 100): Promise<
+    ApiResponse<Story[]>
+  > {
+    try {
+      const q = query(
+        collection(firestore, COLLECTIONS.STORIES),
+        where('expiresAt', '>', new Date()),
+        orderBy('timestamp', 'desc'),
+        limit(limitCount),
+      );
+
+      const querySnapshot = await getDocs(q);
+      const stories: Story[] = [];
+      querySnapshot.forEach(docSnap => {
+        const data = docSnap.data() as StoryDocument;
+        stories.push({
+          id: docSnap.id,
+          userId: data.userId,
+          imageUrl: data.imageUrl,
+          timestamp: data.timestamp.toDate(),
+          expiresAt: data.expiresAt.toDate(),
+          viewedBy: data.viewedBy,
+        });
+      });
+
+      return { success: true, data: stories };
+    } catch (_error) {
+      return { success: false, error: 'Failed to get stories' };
+    }
+  }
+
+  /**
+   * Listen to active stories in real-time
+   */
+  static subscribeToStories(
+    callback: (_stories: Story[]) => void,
+    onError?: (_error: string) => void,
+  ): Unsubscribe {
+    const q = query(
+      collection(firestore, COLLECTIONS.STORIES),
+      where('expiresAt', '>', new Date()),
+      orderBy('timestamp', 'desc'),
+    );
+
+    return onSnapshot(
+      q,
+      snapshot => {
+        const stories: Story[] = [];
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data() as StoryDocument;
+          stories.push({
+            id: docSnap.id,
+            userId: data.userId,
+            imageUrl: data.imageUrl,
+            timestamp: data.timestamp.toDate(),
+            expiresAt: data.expiresAt.toDate(),
+            viewedBy: data.viewedBy,
+          });
+        });
+        callback(stories);
+      },
+      error => onError?.(error.message),
+    );
+  }
+
+  /**
+   * Mark a story as viewed by the current user (idempotent)
+   */
+  static async markStoryViewed(
+    storyId: string,
+    viewerId: string,
+  ): Promise<ApiResponse<void>> {
+    try {
+      const storyRef = doc(firestore, COLLECTIONS.STORIES, storyId);
+      await updateDoc(storyRef, {
+        viewedBy: arrayUnion(viewerId),
+      });
+
+      return { success: true };
+    } catch (_error) {
+      return { success: false, error: 'Failed to mark story viewed' };
+    }
   }
 
   /**

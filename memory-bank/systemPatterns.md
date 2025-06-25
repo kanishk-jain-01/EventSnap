@@ -33,12 +33,22 @@
 4. Firestore document creation → Metadata stored
 5. Real-time listener → Recipient notification
 
-#### Story Posting Flow
+#### Story Posting Flow (NEW - IMPLEMENTED TODAY)
 
-1. Image selection → Local processing
-2. Storage upload → Public URL
-3. Firestore document → With expiration timestamp
-4. Background cleanup → Expired stories removed
+1. Camera capture/gallery selection → Local image processing
+2. Image optimization → Context-aware compression
+3. Firebase Storage upload → Public story URL
+4. Firestore document creation → Story metadata with 24-hour expiration
+5. Real-time listeners → Story feed updates
+6. Background cleanup → Expired stories automatically removed
+
+#### Story Feed Display Flow (NEW - IMPLEMENTED TODAY)
+
+1. HomeScreen mount → Subscribe to active stories
+2. Firestore query → Stories within 24-hour window
+3. User data loading → Story owner information
+4. Story ring computation → Visual status indicators
+5. Real-time updates → Live story feed refresh
 
 #### Real-time Messaging Flow
 
@@ -60,10 +70,12 @@ screens/
 │   ├── RegisterScreen.tsx   # User registration
 │   └── AuthLoadingScreen.tsx # Auth state check
 └── main/
-    ├── CameraScreen.tsx     # Photo capture interface
-    ├── HomeScreen.tsx       # Story feed and navigation
+    ├── CameraScreen.tsx     # Photo capture + story posting (ENHANCED)
+    ├── HomeScreen.tsx       # Story feed + snaps list (ENHANCED)
     ├── ChatListScreen.tsx   # Chat conversations
     ├── ChatScreen.tsx       # Individual chat
+    ├── SnapViewerScreen.tsx # Full-screen snap viewing
+    ├── RecipientSelectionScreen.tsx # Snap recipient selection
     └── ProfileScreen.tsx    # User profile management
 ```
 
@@ -75,13 +87,14 @@ components/
 │   ├── Button.tsx           # Styled button component
 │   ├── Input.tsx            # Form input with validation
 │   ├── LoadingSpinner.tsx   # Loading states
-│   └── Modal.tsx            # Modal dialogs
+│   ├── Modal.tsx            # Modal dialogs
+│   └── ErrorBoundary.tsx    # Error handling
 ├── media/
 │   ├── ImageViewer.tsx      # Full-screen image display
-│   ├── CameraControls.tsx   # Camera interface controls
-│   └── ImagePicker.tsx      # Gallery selection
+│   ├── ImageEditor.tsx      # Image editing interface
+│   └── CameraControls.tsx   # Camera interface controls
 └── social/
-    ├── StoryRing.tsx        # Story preview circle
+    ├── StoryRing.tsx        # Story avatar rings (NEW - IMPLEMENTED)
     ├── SnapPreview.tsx      # Snap thumbnail
     └── UserAvatar.tsx       # User profile image
 ```
@@ -100,10 +113,13 @@ interface AppState {
   // Snaps
   receivedSnaps: Snap[];
   sentSnaps: Snap[];
+  sendingSnap: boolean;
 
-  // Stories
+  // Stories (NEW - IMPLEMENTED)
   stories: Story[];
-  viewedStories: string[];
+  storyOwners: { [userId: string]: User };
+  postingStory: boolean;
+  storyError: string | null;
 
   // Chat
   conversations: Conversation[];
@@ -134,14 +150,15 @@ interface AppState {
 ```
 services/
 ├── auth.service.ts          # Authentication operations
-├── firestore.service.ts     # Database CRUD operations
+├── firestore.service.ts     # Database CRUD + Stories operations (ENHANCED)
 ├── storage.service.ts       # File upload/download
 ├── realtime/
 │   ├── index.ts             # Main realtime service facade
 │   ├── messaging.service.ts # Enhanced messaging operations
 │   ├── models.ts            # TypeScript interfaces and types
 │   └── database-schema.md   # Database structure documentation
-└── cleanup.service.ts       # Expired content removal
+└── cleanup/
+    └── snapCleanup.service.ts # Expired content removal
 ```
 
 ### Data Models and Relationships
@@ -159,11 +176,12 @@ Snaps Collection
 ├── imageUrl, timestamp, viewed
 └── expiresAt (24 hours)
 
-Stories Collection
+Stories Collection (NEW - IMPLEMENTED)
 ├── storyId (auto-generated)
-├── userId → Users.uid
-├── imageUrl, timestamp
-└── expiresAt (24 hours)
+├── creator → Users.uid
+├── imageUrl, createdAt
+├── expiresAt (24 hours from creation)
+└── viewedBy: string[] (user IDs who viewed)
 
 Realtime Database
 └── chats/
@@ -177,6 +195,54 @@ Realtime Database
     │       └── {chatId}
     └── userPresence/
         └── {userId}
+```
+
+### Stories Implementation Patterns (NEW - IMPLEMENTED TODAY)
+
+#### Story Ring Visual Indicators
+
+```typescript
+// Color-coded status system
+const getStoryRingColor = (story: Story, currentUserId: string) => {
+  if (story.creator === currentUserId) return 'border-blue-500'; // Own story
+  if (story.viewedBy.includes(currentUserId)) return 'border-gray-400'; // Viewed
+  return 'border-yellow-400'; // Unviewed
+};
+```
+
+#### Story Feed Integration
+
+```typescript
+// HomeScreen layout pattern
+<FlatList
+  data={snaps}
+  ListHeaderComponent={
+    <FlatList
+      horizontal
+      data={storyRingData}
+      renderItem={({ item }) => <StoryRing {...item} />}
+    />
+  }
+  renderItem={({ item }) => <SnapItem {...item} />}
+  ListEmptyComponent={EmptyState}
+/>
+```
+
+#### Story Posting Flow
+
+```typescript
+// CameraScreen story posting pattern
+const handlePostStory = async (imageUri: string) => {
+  setPostingStory(true);
+  try {
+    await storyStore.postStory(imageUri);
+    navigation.navigate('MainTabs', { screen: 'Home' });
+  } catch (error) {
+    Alert.alert('Error', 'Failed to post story');
+  } finally {
+    setPostingStory(false);
+  }
+};
 ```
 
 ## Security Patterns
@@ -194,6 +260,13 @@ match /snaps/{snapId} {
   allow read: if request.auth != null &&
     (request.auth.uid == resource.data.senderId ||
      request.auth.uid == resource.data.receiverId);
+}
+
+// Stories readable by all authenticated users (NEW)
+match /stories/{storyId} {
+  allow read: if request.auth != null;
+  allow create: if request.auth != null && request.auth.uid == resource.data.creator;
+  allow update: if request.auth != null; // For view tracking
 }
 ```
 
