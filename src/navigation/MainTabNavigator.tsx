@@ -1,23 +1,14 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text } from 'react-native';
 import { MainTabParamList } from '../types';
 import { CameraScreen } from '../screens/main/CameraScreen';
-
-const MainTab = createBottomTabNavigator<MainTabParamList>();
 
 // Import the HomeScreen from the screens directory
 import { HomeScreen } from '../screens/main/HomeScreen';
 import { ChatListScreen } from '../screens/main/ChatListScreen';
+import { ProfileScreen } from '../screens/main/ProfileScreen';
 
-// CameraScreen is now imported from screens/main/CameraScreen.tsx
-
-const ProfileScreen: React.FC = () => (
-  <View className='flex-1 bg-snap-dark items-center justify-center'>
-    <Text className='text-white text-xl'>Profile Screen</Text>
-    <Text className='text-gray-400 text-sm mt-2'>Coming in Phase 8</Text>
-  </View>
-);
+const MainTab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainTabNavigator: React.FC = () => {
   return (

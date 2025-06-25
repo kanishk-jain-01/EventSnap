@@ -2,23 +2,25 @@
 
 ## Current Project State
 
-- **Phase**: Phase 6 Stories Feature - ✅ **COMPLETE** (8/8 tasks completed)
-- **Status**: Stories feature fully tested and complete
+- **Phase**: Phase 8 User Management & Social Features – **IN PROGRESS** (5/8 tasks completed)
+- **Status**: Core user-profile foundation implemented; avatar upload, profile editing, user search screens functional
 - **Developer Level**: Beginner to mobile app development
-- **Priority**: Execute Phase 6 Task 6.8 (end-to-end stories testing)
+- **Priority**: Implement Contacts/Friends management (Task 8.6)
 
 ## Immediate Focus
 
 **Current Phase**: Phase 6 - Stories Feature Implementation
 
-1. **Task 6.1**: ✅ **COMPLETED TODAY** Create Firestore data model and collection for stories with 24-hour expiration
-2. **Task 6.2**: ✅ **COMPLETED TODAY** Implement story posting functionality from camera or gallery
-3. **Task 6.3**: ✅ **COMPLETED TODAY** Build story feed interface with story rings and user avatars
-4. **Task 6.4**: ✅ Create full-screen story viewer with swipe navigation – COMPLETED
-5. **Task 6.5**: ✅ Automatic story expiration & cleanup service (cleanup class + Firestore helpers)
-6. **Task 6.6**: ✅ Story view tracking and yellow→grey ring indicators implemented (rules fixed)
-7. **Task 6.7**: ✅ Zustand store finalised with `markStoryViewed` action
-8. **Task 6.8**: ✅ Story feature tested (manual) and validated
+**Current Phase**: Phase 8 - User Management & Social Features Implementation
+
+1. **Task 8.1**: ✅ Firestore user schema & search support
+2. **Task 8.2**: ✅ Created Zustand `userStore` for profile & contacts
+3. **Task 8.3**: ✅ Avatar upload flow & profile update action
+4. **Task 8.4**: ✅ Built `ProfileScreen` with editing UI
+5. **Task 8.5**: ✅ Implemented `UserSearchScreen` & `UserProfileScreen`
+6. **Task 8.6**: ⏳ Basic Contacts/Friends management (in progress)
+7. **Task 8.7**: ⏳ Integrate contacts with Snaps, Stories & Chat
+8. **Task 8.8**: ⏳ End-to-end QA & polish
 
 ## Today's Major Achievements
 

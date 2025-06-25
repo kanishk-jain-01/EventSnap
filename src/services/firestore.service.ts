@@ -29,6 +29,7 @@ export const COLLECTIONS = {
   STORIES: 'stories',
   CHATS: 'chats',
   MESSAGES: 'messages',
+  CONTACTS: 'contacts', // Sub-collection name for user contacts (planned)
 } as const;
 
 // Snap document interface for Firestore
@@ -73,6 +74,7 @@ export interface UserDocument {
   lastSeen: Timestamp;
   snapCount?: number;
   storyCount?: number;
+  contacts?: string[]; // UIDs of friends/contacts
 }
 
 export class FirestoreService {
@@ -676,6 +678,59 @@ export class FirestoreService {
       return {
         success: false,
         error: 'Failed to get users',
+      };
+    }
+  }
+
+  /**
+   * Search users by display name (case-insensitive prefix match)
+   *
+   * NOTE: Firestore requires a composite index for range queries on strings. Ensure
+   * an index exists on (displayName, email) if orderBy is modified.
+   */
+  static async searchUsers(
+    searchText: string,
+    limitCount: number = 20,
+  ): Promise<ApiResponse<User[]>> {
+    try {
+      if (!searchText) {
+        // fall back to all users when no query provided
+        return this.getAllUsers(undefined, limitCount);
+      }
+
+      const normalized = searchText.trim().toLowerCase();
+
+      const q = query(
+        collection(firestore, COLLECTIONS.USERS),
+        orderBy('displayName'),
+        where('displayName', '>=', normalized),
+        where('displayName', '<=', normalized + '\uf8ff'),
+        limit(limitCount),
+      );
+
+      const querySnapshot = await getDocs(q);
+      const users: User[] = [];
+
+      querySnapshot.forEach(doc => {
+        const data = doc.data() as UserDocument;
+        users.push({
+          uid: doc.id,
+          email: data.email,
+          displayName: data.displayName,
+          avatarUrl: data.avatarUrl,
+          createdAt: data.createdAt.toDate(),
+          lastSeen: data.lastSeen.toDate(),
+        });
+      });
+
+      return {
+        success: true,
+        data: users,
+      };
+    } catch (_error) {
+      return {
+        success: false,
+        error: 'Failed to search users',
       };
     }
   }

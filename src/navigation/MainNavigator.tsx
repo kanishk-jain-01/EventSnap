@@ -5,6 +5,8 @@ import { RecipientSelectionScreen } from '../screens/main/RecipientSelectionScre
 import { SnapViewerScreen } from '../screens/main/SnapViewerScreen';
 import { ChatScreen } from '../screens/main/ChatScreen';
 import { StoryViewerScreen } from '../screens/main/StoryViewerScreen';
+import { UserSearchScreen } from '../screens/main/UserSearchScreen';
+import { UserProfileScreen } from '../screens/main/UserProfileScreen';
 import { MainStackParamList } from '../navigation/types';
 
 const MainStack = createNativeStackNavigator<MainStackParamList>();
@@ -73,6 +75,34 @@ export const MainNavigator: React.FC = () => {
           presentation: 'fullScreenModal',
           gestureEnabled: false,
           headerShown: false,
+        }}
+      />
+
+      {/* User Search */}
+      <MainStack.Screen
+        name='UserSearch'
+        component={UserSearchScreen}
+        options={{
+          presentation: 'card',
+          headerShown: true,
+          title: 'Find Friends',
+          headerStyle: { backgroundColor: '#1F1F1F' },
+          headerTitleStyle: { color: '#FFFFFF' },
+          headerTintColor: '#FFFC00',
+        }}
+      />
+
+      {/* View Other User Profile */}
+      <MainStack.Screen
+        name='UserProfile'
+        component={UserProfileScreen}
+        options={{
+          presentation: 'card',
+          headerShown: true,
+          title: 'Profile',
+          headerStyle: { backgroundColor: '#1F1F1F' },
+          headerTitleStyle: { color: '#FFFFFF' },
+          headerTintColor: '#FFFC00',
         }}
       />
 

@@ -21,6 +21,7 @@ export type MainStackParamList = {
   StoryViewer: { stories: Story[]; initialIndex: number };
   SnapViewer: { snap: Snap };
   UserProfile: { userId: string };
+  UserSearch: undefined;
   RecipientSelection: { imageUri: string };
 };
 
