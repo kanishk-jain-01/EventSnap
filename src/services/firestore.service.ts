@@ -482,6 +482,93 @@ export class FirestoreService {
   }
 
   /**
+   * Delete a story by ID
+   */
+  static async deleteStory(storyId: string): Promise<ApiResponse<void>> {
+    try {
+      await deleteDoc(doc(firestore, COLLECTIONS.STORIES, storyId));
+      return {
+        success: true,
+      };
+    } catch (_error) {
+      return {
+        success: false,
+        error: 'Failed to delete story',
+      };
+    }
+  }
+
+  /**
+   * Delete expired stories (expiresAt <= now)
+   */
+  static async deleteExpiredStories(): Promise<ApiResponse<number>> {
+    try {
+      const q = query(
+        collection(firestore, COLLECTIONS.STORIES),
+        where('expiresAt', '<=', new Date()),
+      );
+
+      const querySnapshot = await getDocs(q);
+      const batch = writeBatch(firestore);
+      let deleteCount = 0;
+
+      querySnapshot.forEach(docSnap => {
+        batch.delete(docSnap.ref);
+        deleteCount += 1;
+      });
+
+      if (deleteCount > 0) {
+        await batch.commit();
+      }
+
+      return {
+        success: true,
+        data: deleteCount,
+      };
+    } catch (_error) {
+      return {
+        success: false,
+        error: 'Failed to delete expired stories',
+      };
+    }
+  }
+
+  /**
+   * Get expired stories along with their imagePath for storage cleanup
+   */
+  static async getExpiredStoriesForCleanup(): Promise<
+    ApiResponse<(StoryDocument & { id: string })[]>
+  > {
+    try {
+      const q = query(
+        collection(firestore, COLLECTIONS.STORIES),
+        where('expiresAt', '<=', new Date()),
+      );
+
+      const querySnapshot = await getDocs(q);
+      const expiredStories: Array<StoryDocument & { id: string }> = [];
+
+      querySnapshot.forEach(docSnap => {
+        const data = docSnap.data() as StoryDocument;
+        expiredStories.push({
+          ...data,
+          id: docSnap.id,
+        });
+      });
+
+      return {
+        success: true,
+        data: expiredStories,
+      };
+    } catch (_error) {
+      return {
+        success: false,
+        error: 'Failed to get expired stories',
+      };
+    }
+  }
+
+  /**
    * USER OPERATIONS
    */
 

@@ -14,6 +14,7 @@ interface StoryStoreState extends StoryState {
   loadStories: () => Promise<void>;
   subscribeToStories: () => () => void;
   clearError: () => void;
+  markStoryViewed: (_storyId: string) => Promise<void>;
 }
 
 export const useStoryStore = create<StoryStoreState>((set, get) => ({
@@ -126,4 +127,32 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
   },
 
   clearError: () => set({ error: null, postingError: null }),
+
+  // Mark a story as viewed
+  markStoryViewed: async (storyId: string): Promise<void> => {
+    const { user } = useAuthStore.getState();
+    if (!user) return;
+
+    const state = get();
+
+    // Optimistic: if already marked locally, skip
+    if (state.viewedStories.includes(storyId)) return;
+
+    // Optimistically update local state first
+    set(prev => {
+      const updatedStories = prev.stories.map(s =>
+        s.id === storyId && !s.viewedBy.includes(user.uid)
+          ? { ...s, viewedBy: [...s.viewedBy, user.uid] }
+          : s,
+      );
+
+      return {
+        stories: updatedStories,
+        viewedStories: [...prev.viewedStories, storyId],
+      } as Partial<StoryStoreState>;
+    });
+
+    // Update Firestore
+    await FirestoreService.markStoryViewed(storyId, user.uid);
+  },
 })); 

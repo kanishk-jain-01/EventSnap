@@ -14,7 +14,7 @@ import { MainStackParamList } from '../../navigation/types';
 import { Story } from '../../types';
 import { UI_CONSTANTS } from '../../utils/constants';
 import { useAuthStore } from '../../store/authStore';
-import { FirestoreService } from '../../services/firestore.service';
+import { useStoryStore } from '../../store/storyStore';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -31,8 +31,9 @@ export const StoryViewerScreen: React.FC = () => {
   // Local state
   const [currentIndex, setCurrentIndex] = useState<number>(initialIndex);
 
-  // Auth user for view tracking
+  // Auth user & store action for view tracking
   const { user } = useAuthStore();
+  const markViewedAction = useStoryStore(s => s.markStoryViewed);
 
   // Animation & timer refs
   const progressAnim = useRef(new Animated.Value(0)).current;
@@ -67,9 +68,7 @@ export const StoryViewerScreen: React.FC = () => {
    */
   const markViewed = async (story: Story) => {
     if (!user) return;
-    if (!story.viewedBy.includes(user.uid)) {
-      await FirestoreService.markStoryViewed(story.id, user.uid);
-    }
+    await markViewedAction(story.id);
   };
 
   /**

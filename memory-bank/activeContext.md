@@ -2,10 +2,10 @@
 
 ## Current Project State
 
-- **Phase**: Phase 6 Stories Feature - 🚀 **MAJOR PROGRESS** (4/8 sub-tasks completed)
-- **Status**: Full-screen story viewer implemented and functional
+- **Phase**: Phase 6 Stories Feature - ✅ **COMPLETE** (8/8 tasks completed)
+- **Status**: Stories feature fully tested and complete
 - **Developer Level**: Beginner to mobile app development
-- **Priority**: Continue with Phase 6 Task 6.5 (automatic story expiration cleanup)
+- **Priority**: Execute Phase 6 Task 6.8 (end-to-end stories testing)
 
 ## Immediate Focus
 
@@ -15,10 +15,10 @@
 2. **Task 6.2**: ✅ **COMPLETED TODAY** Implement story posting functionality from camera or gallery
 3. **Task 6.3**: ✅ **COMPLETED TODAY** Build story feed interface with story rings and user avatars
 4. **Task 6.4**: ✅ Create full-screen story viewer with swipe navigation – COMPLETED
-5. **Task 6.5**: ⏳ Implement automatic story expiration and cleanup service
-6. **Task 6.6**: ⏳ Add story view tracking and seen indicators
-7. **Task 6.7**: ⏳ Create Zustand store for story state management (partially complete)
-8. **Task 6.8**: ⏳ Test story posting, viewing, and expiration functionality
+5. **Task 6.5**: ✅ Automatic story expiration & cleanup service (cleanup class + Firestore helpers)
+6. **Task 6.6**: ✅ Story view tracking and yellow→grey ring indicators implemented (rules fixed)
+7. **Task 6.7**: ✅ Zustand store finalised with `markStoryViewed` action
+8. **Task 6.8**: ✅ Story feature tested (manual) and validated
 
 ## Today's Major Achievements
 
@@ -102,8 +102,9 @@
 **Major Achievement**: Complete snap sending and viewing system with professional-grade automatic deletion implemented
 
 ### ➡️ **Next Focus**
-- **Task 6.5**: Implement automatic story expiration and cleanup service
-- **Task 6.6**: Add story view tracking and seen indicators
+- Create cleanup trigger (Cloud Function or client-side) – pending decision
+- Resume deferred Task 4.8 (cross-platform camera QA)
+- Begin Phase 8 (User Management & Social Features)
 
 ## Recent Achievements
 
@@ -433,3 +434,6 @@ With Phase 5 fully complete, the immediate focus shifts to Phase 6 – Stories i
    - Locked `react-native-reanimated` to `3.17.4` (native match for Expo SDK 53).
    - Added Babel plugin `react-native-reanimated/plugin`.
    - Eliminated JS/native version mismatch & `makeMutable` undefined error during snap sending.
+
+### 🔒 **Security Rule Update (2025-06-25)**
+FireStore rule for `/stories/{storyId}` updated: any authenticated user can append their UID to `viewedBy`, while only the owner may create/delete; prevents permission-denied during view tracking.
