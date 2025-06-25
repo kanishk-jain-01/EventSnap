@@ -40,6 +40,15 @@
 3. Firestore document → With expiration timestamp
 4. Background cleanup → Expired stories removed
 
+#### Real-time Messaging Flow
+
+1. Message composition → Local validation
+2. Optimistic UI update → Immediate display
+3. Firebase Realtime DB write → Message persisted
+4. Status update (sending → sent → delivered → read)
+5. Real-time listeners → Recipient receives message
+6. Typing indicators → Real-time status updates
+
 ## Component Architecture
 
 ### Screen-Level Components
@@ -98,7 +107,11 @@ interface AppState {
 
   // Chat
   conversations: Conversation[];
+  messages: { [chatId: string]: Message[] };
   activeChat: string | null;
+  typingUsers: { [chatId: string]: string[] };
+  userPresence: { [userId: string]: UserPresence };
+  isConnected: boolean;
 
   // UI State
   currentScreen: string;
@@ -123,7 +136,11 @@ services/
 ├── auth.service.ts          # Authentication operations
 ├── firestore.service.ts     # Database CRUD operations
 ├── storage.service.ts       # File upload/download
-├── realtime.service.ts      # Real-time chat operations
+├── realtime/
+│   ├── index.ts             # Main realtime service facade
+│   ├── messaging.service.ts # Enhanced messaging operations
+│   ├── models.ts            # TypeScript interfaces and types
+│   └── database-schema.md   # Database structure documentation
 └── cleanup.service.ts       # Expired content removal
 ```
 
@@ -150,9 +167,16 @@ Stories Collection
 
 Realtime Database
 └── chats/
-    └── {chatId}/
-        └── messages/
-            └── {messageId}
+    ├── {chatId}/
+    │   ├── messages/
+    │   │   └── {messageId}
+    │   └── typing/
+    │       └── {userId}
+    ├── userChats/
+    │   └── {userId}/
+    │       └── {chatId}
+    └── userPresence/
+        └── {userId}
 ```
 
 ## Security Patterns

@@ -7,9 +7,17 @@
       "$chatId": {
         ".read": "auth != null && (auth.uid == data.child('participants').child('0').val() || auth.uid == data.child('participants').child('1').val())",
         ".write": "auth != null && (auth.uid == data.child('participants').child('0').val() || auth.uid == data.child('participants').child('1').val())",
+        ".indexOn": ["lastMessageAt", "updatedAt"],
         "messages": {
           "$messageId": {
-            ".write": "auth != null && auth.uid == newData.child('senderId').val()"
+            ".write": "auth != null && auth.uid == newData.child('senderId').val()",
+            ".indexOn": ["timestamp"]
+          }
+        },
+        "typing": {
+          "$userId": {
+            ".read": "auth != null && (auth.uid == root.child('chats').child($chatId).child('participants').child('0').val() || auth.uid == root.child('chats').child($chatId).child('participants').child('1').val())",
+            ".write": "auth != null && auth.uid == $userId"
           }
         }
       }
@@ -17,6 +25,13 @@
     "userPresence": {
       "$userId": {
         ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $userId",
+        ".indexOn": ["lastSeen"]
+      }
+    },
+    "userChats": {
+      "$userId": {
+        ".read": "auth != null && auth.uid == $userId",
         ".write": "auth != null && auth.uid == $userId"
       }
     }

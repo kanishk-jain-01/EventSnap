@@ -54,6 +54,45 @@ export interface StoryState {
 }
 
 // Chat Types
+export type MessageStatus = 'sent' | 'delivered' | 'read';
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  recipientId: string;
+  content: string;
+  type: 'text' | 'image';
+  timestamp: number | object; // Firebase serverTimestamp
+  status: MessageStatus;
+  readAt: number | object | null; // Firebase serverTimestamp
+}
+
+export interface ChatConversation {
+  id: string;
+  participants: string[];
+  createdAt: number | object; // Firebase serverTimestamp
+  lastMessage: string | null;
+  lastMessageAt: number | object | null; // Firebase serverTimestamp
+  unreadCount: {
+    [userId: string]: number;
+  };
+}
+
+export interface UserPresence {
+  isOnline: boolean;
+  lastSeen: number | object; // Firebase serverTimestamp
+}
+
+export interface ChatState {
+  conversations: ChatConversation[];
+  messages: { [chatId: string]: ChatMessage[] };
+  activeChat: string | null;
+  isLoading: boolean;
+  error: string | null;
+  isTyping: { [chatId: string]: boolean };
+}
+
+// Legacy types for backward compatibility
 export interface Message {
   id: string;
   chatId: string;
@@ -69,14 +108,6 @@ export interface Conversation {
   lastMessage?: Message;
   lastMessageAt?: Date;
   unreadCount: number;
-}
-
-export interface ChatState {
-  conversations: Conversation[];
-  messages: { [chatId: string]: Message[] };
-  activeChat: string | null;
-  isLoading: boolean;
-  error: string | null;
 }
 
 // Navigation Types
