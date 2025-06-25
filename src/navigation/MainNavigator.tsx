@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabNavigator } from './MainTabNavigator';
 import { RecipientSelectionScreen } from '../screens/main/RecipientSelectionScreen';
 import { SnapViewerScreen } from '../screens/main/SnapViewerScreen';
+import { ChatScreen } from '../screens/main/ChatScreen';
 import { MainStackParamList } from '../navigation/types';
 
 const MainStack = createNativeStackNavigator<MainStackParamList>();
@@ -44,9 +45,27 @@ export const MainNavigator: React.FC = () => {
         }}
       />
 
+      {/* Chat Screen */}
+      <MainStack.Screen
+        name='ChatScreen'
+        component={ChatScreen}
+        options={{
+          presentation: 'card',
+          gestureEnabled: true,
+          headerShown: true,
+          title: 'Chat',
+          headerStyle: {
+            backgroundColor: '#1F1F1F',
+          },
+          headerTitleStyle: {
+            color: '#FFFFFF',
+          },
+          headerTintColor: '#FFFC00',
+        }}
+      />
+
       {/* Future modal screens will be added here */}
       {/* 
-      <MainStack.Screen name="ChatScreen" component={ChatScreen} />
       <MainStack.Screen name="StoryViewer" component={StoryViewer} />
       <MainStack.Screen name="UserProfile" component={UserProfile} />
       */}

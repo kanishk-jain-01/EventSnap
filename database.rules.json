@@ -5,13 +5,13 @@
     ".write": false,
     "chats": {
       "$chatId": {
-        ".read": "auth != null && (auth.uid == data.child('participants').child('0').val() || auth.uid == data.child('participants').child('1').val())",
-        ".write": "auth != null && (auth.uid == data.child('participants').child('0').val() || auth.uid == data.child('participants').child('1').val())",
+        ".read": "auth != null && ($chatId.contains(auth.uid) || (data.exists() && (auth.uid == data.child('participants').child('0').val() || auth.uid == data.child('participants').child('1').val())))",
+        ".write": "auth != null && (auth.uid == newData.child('participants').child('0').val() || auth.uid == newData.child('participants').child('1').val())",
         ".indexOn": ["lastMessageAt", "updatedAt"],
         "messages": {
+          ".indexOn": ["timestamp"],
           "$messageId": {
-            ".write": "auth != null && auth.uid == newData.child('senderId').val()",
-            ".indexOn": ["timestamp"]
+            ".write": "auth != null && auth.uid == newData.child('senderId').val()"
           }
         },
         "typing": {

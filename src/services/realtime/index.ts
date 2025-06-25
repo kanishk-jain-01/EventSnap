@@ -69,14 +69,23 @@ class RealtimeService {
     userId2: string,
   ): Promise<string> {
     try {
+      console.log('🚀 createOrGetConversation called with:', { userId1, userId2 });
+      
       // Create consistent chat ID regardless of user order
       const chatId = [userId1, userId2].sort().join('_');
+      console.log('📝 Generated chatId:', chatId);
+      console.log('👥 Sorted participants:', [userId1, userId2].sort());
+      
       const chatRef = ref(realtimeDb, `chats/${chatId}`);
 
+      console.log('🔍 Step 1: Checking if conversation exists...');
       // Check if conversation exists
       const snapshot = await get(chatRef);
+      console.log('✅ Step 1 completed: Conversation exists?', snapshot.exists());
 
       if (!snapshot.exists()) {
+        console.log('🆕 Step 2: Creating new conversation...');
+        
         // Create new conversation
         const conversation: Omit<ChatConversation, 'id'> = {
           participants: [userId1, userId2],
@@ -99,13 +108,43 @@ class RealtimeService {
           conversationType: 'direct',
         };
 
+        console.log('💾 About to write conversation to:', `chats/${chatId}`);
+        console.log('📄 Conversation data:', JSON.stringify(conversation, null, 2));
+        
         await set(chatRef, conversation);
+        console.log('✅ Step 2 completed: Conversation created successfully');
+
+        console.log('🔗 Step 3: Updating userChats index for current user...');
+        
+        // Only update userChats index for the current user
+        // The other user's userChats will be updated when they first access the conversation
+        const currentUserChatsRef = ref(realtimeDb, `userChats/${userId1}/${chatId}`);
+        
+        console.log('📍 UserChats path for current user:', `userChats/${userId1}/${chatId}`);
+        
+        const userChatData = {
+          lastReadMessageId: null,
+          lastReadTimestamp: null,
+          isArchived: false,
+          isMuted: false,
+          isPinned: false,
+        };
+
+        await set(currentUserChatsRef, userChatData);
+        console.log('✅ Step 3 completed: UserChats index updated for current user');
+      } else {
+        console.log('♻️ Conversation already exists, skipping creation');
       }
 
+      console.log('🎉 createOrGetConversation completed successfully:', chatId);
       return chatId;
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error('Error creating/getting conversation:', error);
+      console.error('💥 Error in createOrGetConversation:', error);
+      console.error('💥 Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       throw new Error('Failed to create conversation');
     }
   }
@@ -148,51 +187,114 @@ class RealtimeService {
   }
 
   /**
+   * Ensure user has userChats entry for a conversation they're part of
+   */
+  private async ensureUserChatEntry(userId: string, chatId: string): Promise<void> {
+    try {
+      const userChatRef = ref(realtimeDb, `userChats/${userId}/${chatId}`);
+      const snapshot = await get(userChatRef);
+      
+      if (!snapshot.exists()) {
+        console.log(`📝 Creating userChats entry for user ${userId} in chat ${chatId}`);
+        const userChatData = {
+          lastReadMessageId: null,
+          lastReadTimestamp: null,
+          isArchived: false,
+          isMuted: false,
+          isPinned: false,
+        };
+        await set(userChatRef, userChatData);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`Error ensuring userChat entry for ${userId}:`, error);
+    }
+  }
+
+  /**
    * Subscribe to user's conversations
+   * Uses userChats index to work with security rules
    */
   subscribeToConversations(
     userId: string,
     callback: (_conversations: ChatConversation[]) => void,
   ): () => void {
-    const chatsRef = ref(realtimeDb, 'chats');
-
-    const unsubscribe = onValue(chatsRef, snapshot => {
+    // First, try to get user's chat list from userChats index
+    const userChatsRef = ref(realtimeDb, `userChats/${userId}`);
+    
+    const unsubscribe = onValue(userChatsRef, async snapshot => {
       const conversations: ChatConversation[] = [];
+      console.log('RealtimeService: subscribeToConversations called for user:', userId);
+      console.log('RealtimeService: userChats snapshot exists:', snapshot.exists());
 
-      if (snapshot.exists()) {
-        snapshot.forEach(childSnapshot => {
-          const conversation = childSnapshot.val() as Omit<
-            ChatConversation,
-            'id'
-          >;
+      try {
+        if (snapshot.exists()) {
+          // Get all chat IDs for this user
+          const chatIds = Object.keys(snapshot.val());
+          
+          // Fetch each conversation individually (allowed by security rules)
+          const conversationPromises = chatIds.map(async (chatId) => {
+            try {
+              const chatRef = ref(realtimeDb, `chats/${chatId}`);
+              const chatSnapshot = await get(chatRef);
+              
+              if (chatSnapshot.exists()) {
+                const conversation = chatSnapshot.val() as Omit<ChatConversation, 'id'>;
+                
+                // Verify user is actually a participant (security check)
+                if (conversation.participants && conversation.participants.includes(userId)) {
+                  return {
+                    id: chatId,
+                    ...conversation,
+                  } as ChatConversation;
+                }
+              }
+            } catch (error) {
+              // eslint-disable-next-line no-console
+              console.error(`Error fetching conversation ${chatId}:`, error);
+            }
+            return null;
+          });
 
-          // Only include conversations where user is a participant
-          if (
-            conversation.participants &&
-            conversation.participants.includes(userId)
-          ) {
-            conversations.push({
-              id: childSnapshot.key!,
-              ...conversation,
-            });
-          }
+          const results = await Promise.all(conversationPromises);
+          conversations.push(...results.filter((conv): conv is ChatConversation => conv !== null));
+        } else {
+          // No userChats entry exists yet - check if user is part of any existing conversations
+          // This handles cases where the user was added to conversations but their userChats wasn't updated
+          console.log(`No userChats found for user ${userId} - checking for existing conversations...`);
+          
+          // For now, we'll just log this. In a production app, you might want to scan for
+          // conversations where this user is a participant and update their userChats accordingly.
+          // This is an edge case that mainly occurs during development/testing.
+        }
+
+        // Sort by last message timestamp (newest first)
+        conversations.sort((a, b) => {
+          const aTime = typeof a.lastMessageAt === 'number' ? a.lastMessageAt : 0;
+          const bTime = typeof b.lastMessageAt === 'number' ? b.lastMessageAt : 0;
+          return bTime - aTime;
         });
+
+        console.log('RealtimeService: Final conversations count:', conversations.length);
+        callback(conversations);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Error in subscribeToConversations:', error);
+        // Still call callback with empty array to stop loading state
+        callback([]);
       }
-
-      // Sort by last message timestamp (newest first)
-      conversations.sort((a, b) => {
-        const aTime = typeof a.lastMessageAt === 'number' ? a.lastMessageAt : 0;
-        const bTime = typeof b.lastMessageAt === 'number' ? b.lastMessageAt : 0;
-        return bTime - aTime;
-      });
-
-      callback(conversations);
+    }, (error) => {
+      // Handle Firebase errors
+      // eslint-disable-next-line no-console
+      console.error('Firebase error in subscribeToConversations:', error);
+      // Call callback with empty array to stop loading state
+      callback([]);
     });
 
     // Store listener for cleanup
     const listenerId = `conversations_${userId}`;
     this.conversationListeners.set(listenerId, () => {
-      off(chatsRef, 'value', unsubscribe);
+      off(userChatsRef, 'value', unsubscribe);
     });
 
     return () => {

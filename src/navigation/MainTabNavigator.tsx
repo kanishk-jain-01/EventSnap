@@ -8,15 +8,9 @@ const MainTab = createBottomTabNavigator<MainTabParamList>();
 
 // Import the HomeScreen from the screens directory
 import { HomeScreen } from '../screens/main/HomeScreen';
+import { ChatListScreen } from '../screens/main/ChatListScreen';
 
 // CameraScreen is now imported from screens/main/CameraScreen.tsx
-
-const ChatScreen: React.FC = () => (
-  <View className='flex-1 bg-snap-dark items-center justify-center'>
-    <Text className='text-white text-xl'>Chat Screen</Text>
-    <Text className='text-gray-400 text-sm mt-2'>Coming in Phase 7</Text>
-  </View>
-);
 
 const ProfileScreen: React.FC = () => (
   <View className='flex-1 bg-snap-dark items-center justify-center'>
@@ -59,7 +53,7 @@ export const MainTabNavigator: React.FC = () => {
       />
       <MainTab.Screen
         name='Chat'
-        component={ChatScreen}
+        component={ChatListScreen}
         options={{
           tabBarLabel: 'Chat',
         }}

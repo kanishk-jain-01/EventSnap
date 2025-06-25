@@ -57,6 +57,7 @@ interface ChatActions {
   // Message actions
   sendMessage: (
     _chatId: string,
+    _senderId: string,
     _payload: CreateMessagePayload,
   ) => Promise<string>;
   loadMessages: (
@@ -138,9 +139,11 @@ export const useChatStore = create<ChatStore>()(
       try {
         // Subscribe to conversations
         realtimeService.subscribeToConversations(userId, conversations => {
+          console.log('ChatStore: Received conversations:', conversations.length);
           set({ conversations, isLoading: false });
         });
       } catch (error) {
+        console.error('ChatStore: Error in loadConversations:', error);
         set({
           error:
             error instanceof Error
@@ -218,21 +221,18 @@ export const useChatStore = create<ChatStore>()(
 
     // ===== MESSAGE ACTIONS =====
 
-    sendMessage: async (chatId: string, payload: CreateMessagePayload) => {
+    sendMessage: async (chatId: string, senderId: string, payload: CreateMessagePayload) => {
       set({ error: null });
 
       try {
-        const currentUserId = get().activeConversationId; // This should come from auth store
-        if (!currentUserId) {
+        if (!senderId) {
           throw new Error('User not authenticated');
         }
 
-        const messageId = await realtimeService.sendMessage(
+        const messageId = await realtimeService.sendMessageWithPayload(
           chatId,
-          currentUserId,
-          payload.recipientId,
-          payload.content,
-          payload.type,
+          senderId,
+          payload,
         );
 
         return messageId;
@@ -550,14 +550,20 @@ export const useActiveConversation = () => {
  * Hook to get messages for a specific chat
  */
 export const useChatMessages = (chatId: string) => {
-  return useChatStore(state => state.messages[chatId] || []);
+  return useChatStore((state) => {
+    const messages = state.messages[chatId];
+    return messages || [];
+  });
 };
 
 /**
  * Hook to get typing users for a specific chat
  */
 export const useTypingUsers = (chatId: string) => {
-  return useChatStore(state => state.typingUsers[chatId] || []);
+  return useChatStore((state) => {
+    const typingUsers = state.typingUsers[chatId];
+    return typingUsers || [];
+  });
 };
 
 /**
