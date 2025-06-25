@@ -126,7 +126,7 @@
   - [x] 5.5 Implement snap viewing interface with automatic deletion
   - [x] 5.6 Create Zustand store for snap state management
   - [x] 5.7 Add snap metadata tracking (sender, recipient, timestamp, viewed status)
-  - [ ] 5.8 Test complete snap sending and receiving workflow
+  - [x] 5.8 Test complete snap workflow (send, receive, view) and 24-hour expiration cleanup
 
 - [ ] 6.0 Stories Feature Implementation
   - [ ] 6.1 Create Firestore data model and collection for stories with 24-hour expiration

@@ -95,7 +95,7 @@
 5. **Added fan-out writes to `userChats/{uid}/{chatId}` on new message to trigger chat list updates for recipients.**
 
 ### ➡️ **Next Focus**
-• Phase 5 Task 5.8 – Full snap workflow QA & expiration cleanup.
+• Phase 5 Task 5.8 – ✅ Completed snap workflow testing and 24-hour expiration cleanup implemented.
 • Phase 4 Task 4.8 – Cross-platform camera testing (deferred).
 • Prepare for Phase 6 Stories implementation.
 
@@ -389,7 +389,7 @@
 5. **Task 5.5**: Implement snap viewing interface with automatic deletion
 6. **Task 5.6**: ✅ Create Zustand store for snap state management (COMPLETE)
 7. **Task 5.7**: ✅ Add snap metadata tracking (sender, recipient, timestamp, viewed status) (COMPLETE)
-8. **Task 5.8**: Test complete snap sending and receiving workflow
+8. **Task 5.8**: ✅ Completed snap workflow testing and 24-hour expiration cleanup implementation.
 
 ## Current Challenges
 
