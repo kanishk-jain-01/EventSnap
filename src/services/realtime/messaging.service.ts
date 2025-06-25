@@ -522,7 +522,7 @@ export class MessagingService {
       const conversationRef = ref(realtimeDb, DB_PATHS.CONVERSATION(chatId));
       const displayContent = type === 'image' ? '📷 Photo' : content;
 
-      const updates = {
+      const conversationUpdates = {
         lastMessage: {
           id: messageId,
           type,
@@ -536,7 +536,18 @@ export class MessagingService {
           (await this.getUnreadCount(chatId, recipientId)) + 1,
       };
 
-      await update(conversationRef, updates);
+      const userChatUpdates: { [key: string]: any } = {
+        [`userChats/${senderId}/${chatId}/lastMessageAt`]: serverTimestamp(),
+        [`userChats/${recipientId}/${chatId}/lastMessageAt`]: serverTimestamp(),
+        [`userChats/${senderId}/${chatId}/lastMessageId`]: messageId,
+        [`userChats/${recipientId}/${chatId}/lastMessageId`]: messageId,
+      };
+
+      // Update conversation document
+      await update(conversationRef, conversationUpdates);
+
+      // Fan-out to userChats index so listeners on that path fire
+      await update(ref(realtimeDb), userChatUpdates);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error updating conversation metadata:', error);

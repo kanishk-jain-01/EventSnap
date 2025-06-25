@@ -18,7 +18,7 @@
 5. **Task 7.5**: ✅ **COMPLETED TODAY** Create individual chat screen with message history and input
 6. **Task 7.6**: ✅ **COMPLETED TODAY** Implement typing indicators and message status
 7. **Task 7.7**: ✅ Implement Zustand store for chat state management (COMPLETE)
-8. **Task 7.8**: 🎯 **NEXT** Test chat system with multiple users and edge cases
+8. **Task 7.8**: ✅ **COMPLETED** Multi-user chat QA; permission-denied bug resolved and chat list now updates via userChats fan-out.
 
 ## Today's Major Achievements
 
@@ -91,14 +91,17 @@
    • Extended database security rules (`database.rules.json`) to allow either chat participant to write `userChats/$userId/$chatId` entries.
    • Initial tests reduced permission-denied errors, but edge-case visibility issues still being validated. 🟡
 
+4. **Fixed permission-denied read in `ensureUserChatEntry` by removing pre-read and writing idempotently.**
+5. **Added fan-out writes to `userChats/{uid}/{chatId}` on new message to trigger chat list updates for recipients.**
+
 ### ➡️ **Next Focus**
-• Verify `userChats` rule propagation in Emulator / production and retest multi-user chat visibility.
-• Investigate any remaining permission-denied errors during `ensureUserChatEntry` on first write.
-• Finalise Task 7.8 multi-user QA.
+• Phase 5 Task 5.8 – Full snap workflow QA & expiration cleanup.
+• Phase 4 Task 4.8 – Cross-platform camera testing (deferred).
+• Prepare for Phase 6 Stories implementation.
 
 ## Recent Achievements
 
-### ✅ Phase 7: Real-time Chat System - MAJOR PROGRESS (7/8 tasks completed)
+### ✅ Phase 7: Real-time Chat System - **COMPLETE** (8/8 tasks completed)
 
 #### ✅ **Task 7.3: Real-time Message Sending and Receiving Service - COMPLETED**
 

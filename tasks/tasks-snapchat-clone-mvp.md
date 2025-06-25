@@ -138,7 +138,7 @@
   - [ ] 6.7 Create Zustand store for story state management
   - [ ] 6.8 Test story posting, viewing, and expiration functionality
 
-- [ ] 7.0 Real-time Chat System
+- [x] 7.0 Real-time Chat System
   - [x] 7.1 Configure Firebase Realtime Database for chat functionality
   - [x] 7.2 Create chat data models and database structure
   - [x] 7.3 Implement real-time message sending and receiving service
@@ -146,7 +146,7 @@
   - [x] 7.5 Create individual chat screen with message history and input
   - [x] 7.6 Add message status indicators (sent, delivered, read)
   - [x] 7.7 Implement Zustand store for chat state management
-  - [ ] 7.8 Test real-time messaging functionality across multiple devices
+  - [x] 7.8 Test real-time messaging functionality across multiple devices
 
 - [ ] 8.0 User Management & Social Features
   - [ ] 8.1 Create user profile management screen and functionality

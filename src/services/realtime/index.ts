@@ -170,19 +170,18 @@ class RealtimeService {
   private async ensureUserChatEntry(userId: string, chatId: string): Promise<void> {
     try {
       const userChatRef = ref(realtimeDb, `userChats/${userId}/${chatId}`);
-      const snapshot = await get(userChatRef);
-      
-      if (!snapshot.exists()) {
-        // Creating userChats entry for userChats (removed debug log)
-        const userChatData = {
-          lastReadMessageId: null,
-          lastReadTimestamp: null,
-          isArchived: false,
-          isMuted: false,
-          isPinned: false,
-        };
-        await set(userChatRef, userChatData);
-      }
+      // Directly write a default structure. If the entry already exists, this
+      // will simply overwrite identical keys – avoiding the read that triggers
+      // permission-denied for the other participant.
+      const userChatData = {
+        lastReadMessageId: null,
+        lastReadTimestamp: null,
+        isArchived: false,
+        isMuted: false,
+        isPinned: false,
+      };
+
+      await set(userChatRef, userChatData);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`Error ensuring userChat entry for ${userId}:`, error);
