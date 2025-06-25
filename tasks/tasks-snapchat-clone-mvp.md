@@ -118,7 +118,7 @@
   - [x] 4.7 Build custom hook for camera functionality and permissions
   - [ ] 4.8 Test camera functionality on both iOS and Android devices
 
-- [ ] 5.0 Firebase Storage & Snap System
+- [x] 5.0 Firebase Storage & Snap System
   - [x] 5.1 Configure Firebase Storage with proper security rules
   - [x] 5.2 Implement image upload service with progress tracking
   - [x] 5.3 Create Firestore data model and collection for snaps

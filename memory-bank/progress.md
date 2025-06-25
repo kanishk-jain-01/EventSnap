@@ -1,6 +1,6 @@
 # Progress: Snapchat Clone MVP
 
-## Current Status: **Phase 5 Snap Workflow QA (Task 5.8) – NEXT UP**
+## Current Status: **Phase 6 Stories Feature – NEXT UP**
 
 ### Completed ✅
 
@@ -177,9 +177,9 @@
 - **Professional Metadata**: ✅ File size, dimensions, compression ratio, and source tracking
 - **Custom Hook Abstraction**: ✅ Complete camera functionality abstracted into reusable useCamera hook
 
-### ✅ **Phase 5: Firebase Storage & Snap System (COMPLETED - 7/8 tasks completed)**
+### ✅ **Phase 5: Firebase Storage & Snap System (COMPLETED - 8/8 tasks completed)**
 
-**Phase 5 Status**: COMPLETED with complete snap sending and viewing system
+**Phase 5 Status**: COMPLETED – snap sending, viewing, and 24-hour cleanup fully implemented
 
 **Major Achievements**:
 
@@ -207,10 +207,6 @@
   - ✅ Real-time updates via Firestore subscriptions
   - ✅ Professional UI with progress bars and gesture controls
   - ✅ Automatic cleanup from both Firestore and Storage
-
-**Remaining Tasks in Phase 5**:
-
-- [x] **Task 5.8**: Test complete snap workflow (send, receive, view) and implement 24-hour expiration cleanup (COMPLETE)
 
 ### ✅ **Phase 7: Real-time Chat System (COMPLETED - 8/8 tasks)**
 
