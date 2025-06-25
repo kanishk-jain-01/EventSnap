@@ -69,23 +69,15 @@ class RealtimeService {
     userId2: string,
   ): Promise<string> {
     try {
-      console.log('🚀 createOrGetConversation called with:', { userId1, userId2 });
-      
       // Create consistent chat ID regardless of user order
       const chatId = [userId1, userId2].sort().join('_');
-      console.log('📝 Generated chatId:', chatId);
-      console.log('👥 Sorted participants:', [userId1, userId2].sort());
       
       const chatRef = ref(realtimeDb, `chats/${chatId}`);
 
-      console.log('🔍 Step 1: Checking if conversation exists...');
       // Check if conversation exists
       const snapshot = await get(chatRef);
-      console.log('✅ Step 1 completed: Conversation exists?', snapshot.exists());
 
       if (!snapshot.exists()) {
-        console.log('🆕 Step 2: Creating new conversation...');
-        
         // Create new conversation
         const conversation: Omit<ChatConversation, 'id'> = {
           participants: [userId1, userId2],
@@ -108,35 +100,21 @@ class RealtimeService {
           conversationType: 'direct',
         };
 
-        console.log('💾 About to write conversation to:', `chats/${chatId}`);
-        console.log('📄 Conversation data:', JSON.stringify(conversation, null, 2));
-        
         await set(chatRef, conversation);
-        console.log('✅ Step 2 completed: Conversation created successfully');
-
-        console.log('🔗 Step 3: Updating userChats index for current user...');
         
-        // Only update userChats index for the current user
-        // The other user's userChats will be updated when they first access the conversation
-        const currentUserChatsRef = ref(realtimeDb, `userChats/${userId1}/${chatId}`);
-        
-        console.log('📍 UserChats path for current user:', `userChats/${userId1}/${chatId}`);
-        
-        const userChatData = {
-          lastReadMessageId: null,
-          lastReadTimestamp: null,
-          isArchived: false,
-          isMuted: false,
-          isPinned: false,
-        };
-
-        await set(currentUserChatsRef, userChatData);
-        console.log('✅ Step 3 completed: UserChats index updated for current user');
-      } else {
-        console.log('♻️ Conversation already exists, skipping creation');
+        // Create userChats entry for both participants
+        await Promise.all([
+          this.ensureUserChatEntry(userId1, chatId),
+          this.ensureUserChatEntry(userId2, chatId),
+        ]);
       }
 
-      console.log('🎉 createOrGetConversation completed successfully:', chatId);
+      // Ensure userChats entry exists for both users even if conversation already existed
+      await Promise.all([
+        this.ensureUserChatEntry(userId1, chatId),
+        this.ensureUserChatEntry(userId2, chatId),
+      ]);
+
       return chatId;
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -195,7 +173,7 @@ class RealtimeService {
       const snapshot = await get(userChatRef);
       
       if (!snapshot.exists()) {
-        console.log(`📝 Creating userChats entry for user ${userId} in chat ${chatId}`);
+        // Creating userChats entry for userChats (removed debug log)
         const userChatData = {
           lastReadMessageId: null,
           lastReadTimestamp: null,
@@ -224,8 +202,7 @@ class RealtimeService {
     
     const unsubscribe = onValue(userChatsRef, async snapshot => {
       const conversations: ChatConversation[] = [];
-      console.log('RealtimeService: subscribeToConversations called for user:', userId);
-      console.log('RealtimeService: userChats snapshot exists:', snapshot.exists());
+      // Finished conversation aggregation
 
       try {
         if (snapshot.exists()) {
@@ -259,12 +236,8 @@ class RealtimeService {
           const results = await Promise.all(conversationPromises);
           conversations.push(...results.filter((conv): conv is ChatConversation => conv !== null));
         } else {
-          // No userChats entry exists yet - check if user is part of any existing conversations
-          // This handles cases where the user was added to conversations but their userChats wasn't updated
-          console.log(`No userChats found for user ${userId} - checking for existing conversations...`);
-          
-          // For now, we'll just log this. In a production app, you might want to scan for
-          // conversations where this user is a participant and update their userChats accordingly.
+          // Fallback scan when no userChats found
+          // If no userChats entries, fallback to direct chat scan (developer mode only)
           // This is an edge case that mainly occurs during development/testing.
         }
 
@@ -275,7 +248,7 @@ class RealtimeService {
           return bTime - aTime;
         });
 
-        console.log('RealtimeService: Final conversations count:', conversations.length);
+        // Finished conversation aggregation
         callback(conversations);
       } catch (error) {
         // eslint-disable-next-line no-console

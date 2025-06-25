@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   Alert,
+  SafeAreaView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -165,40 +166,23 @@ export const ChatListScreen: React.FC = () => {
   // Load conversations on mount
   useEffect(() => {
     if (user?.uid) {
-      console.log('ChatListScreen: Loading conversations for user:', user.uid);
       loadConversations(user.uid);
-    } else {
-      console.log('ChatListScreen: No user UID available');
     }
   }, [user?.uid, loadConversations]);
-
-  // Debug logging for conversations state
-  useEffect(() => {
-    console.log('ChatListScreen: Conversations updated:', {
-      count: conversations.length,
-      isLoading,
-      error,
-      conversations: conversations.map(c => ({ id: c.id, participants: c.participants })),
-    });
-  }, [conversations, isLoading, error]);
 
   // Load all users for creating new conversations
   const loadUsers = useCallback(async () => {
     if (!user?.uid) {
-      console.log('ChatListScreen: No user UID for loading users');
       return;
     }
     
-    console.log('ChatListScreen: Loading users...');
     setIsLoadingUsers(true);
     try {
       const response = await FirestoreService.getAllUsers(user.uid);
-      console.log('ChatListScreen: Users response:', { success: response.success, userCount: response.data?.length || 0 });
       if (response.success && response.data) {
         setUsers(response.data);
-        console.log('ChatListScreen: Users loaded:', response.data.length);
       } else {
-        console.log('ChatListScreen: No users found or failed to load');
+        // Silent fail
       }
     } catch (_error) {
       // eslint-disable-next-line no-console
@@ -312,7 +296,7 @@ export const ChatListScreen: React.FC = () => {
   }
 
   return (
-    <View className="flex-1 bg-snap-dark">
+    <SafeAreaView className="flex-1 bg-snap-dark">
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-800">
         <Text className="text-white text-xl font-bold">Chats</Text>
@@ -364,6 +348,6 @@ export const ChatListScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }; 

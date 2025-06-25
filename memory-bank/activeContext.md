@@ -82,6 +82,20 @@
 #### **New Fix (2025-06-25)**
 - **Reanimated Mismatch Resolved**: Aligned JavaScript library and Babel plugin to `react-native-reanimated@3.17.4`, cleared Metro cache, and confirmed RecipientSelectionScreen loads without crashes.
 
+### 🟢 **Updates (2025-06-25)**
+
+1. **UI Fix**: Wrapped `ChatListScreen` in `SafeAreaView` to make the "New" button touchable under notches / status-bar. ✅
+2. **Debug Cleanup**: Removed all temporary `console.log` statements from chat screens, store, and realtime services. Production console is now clean. ✅
+3. **Chat Visibility Fix (In Progress)**:
+   • Reworked `RealtimeService.createOrGetConversation` to call `ensureUserChatEntry` for **both** participants, guaranteeing a `userChats` index entry for every user.
+   • Extended database security rules (`database.rules.json`) to allow either chat participant to write `userChats/$userId/$chatId` entries.
+   • Initial tests reduced permission-denied errors, but edge-case visibility issues still being validated. 🟡
+
+### ➡️ **Next Focus**
+• Verify `userChats` rule propagation in Emulator / production and retest multi-user chat visibility.
+• Investigate any remaining permission-denied errors during `ensureUserChatEntry` on first write.
+• Finalise Task 7.8 multi-user QA.
+
 ## Recent Achievements
 
 ### ✅ Phase 7: Real-time Chat System - MAJOR PROGRESS (7/8 tasks completed)

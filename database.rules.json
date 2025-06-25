@@ -32,7 +32,9 @@
     "userChats": {
       "$userId": {
         ".read": "auth != null && auth.uid == $userId",
-        ".write": "auth != null && auth.uid == $userId"
+        "$chatId": {
+          ".write": "auth != null && (auth.uid == $userId || $chatId.contains(auth.uid))"
+        }
       }
     }
   }

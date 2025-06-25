@@ -139,7 +139,6 @@ export const useChatStore = create<ChatStore>()(
       try {
         // Subscribe to conversations
         realtimeService.subscribeToConversations(userId, conversations => {
-          console.log('ChatStore: Received conversations:', conversations.length);
           set({ conversations, isLoading: false });
         });
       } catch (error) {

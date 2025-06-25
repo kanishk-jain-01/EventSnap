@@ -50,13 +50,11 @@ export class MessagingService {
     onValue(this.connectionRef, snapshot => {
       this.isConnected = snapshot.val() === true;
 
-      if (this.isConnected) {
-        // eslint-disable-next-line no-console
-        console.log('Connected to Firebase Realtime Database');
-      } else {
-        // eslint-disable-next-line no-console
-        console.log('Disconnected from Firebase Realtime Database');
+      /* Connection status debug logging (uncomment for development)
+      if (__DEV__) {
+        console.debug('Realtime DB connection status:', this.isConnected);
       }
+      */
     });
   }
 
