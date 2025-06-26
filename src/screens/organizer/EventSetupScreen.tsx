@@ -15,7 +15,7 @@ import { EventVisibility, EventPalette } from '../../types';
 import { useEventStore } from '../../store/eventStore';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigation } from '@react-navigation/native';
-import type { MainStackParamList } from '../../navigation/types';
+import type { RootStackParamList } from '../../navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as DocumentPicker from 'expo-document-picker';
 import { UploadProgress } from '../../components/ui/UploadProgress';
@@ -85,7 +85,7 @@ export const EventSetupScreen: React.FC = () => {
   const { userId } = useAuth();
   const createEvent = useEventStore(state => state.createEvent);
   const navigation =
-    useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const activeEvent = useEventStore(state => state.activeEvent);
 
   const handleStartChange = (_event: any, selectedDate?: Date) => {
@@ -452,9 +452,11 @@ export const EventSetupScreen: React.FC = () => {
             <View className='mt-6 space-y-3'>
               <Button
                 title='Done'
-                onPress={() =>
-                  navigation.navigate('MainTabs', { screen: 'Home' })
-                }
+                onPress={() => {
+                  // AppNavigator will automatically navigate to Main when activeEvent is set
+                  // We just need to go back to let the navigation flow handle it
+                  navigation.goBack();
+                }}
               />
 
               <Button

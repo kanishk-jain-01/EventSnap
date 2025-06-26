@@ -5,6 +5,8 @@ import { Story, Snap } from '../types';
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
   Main: NavigatorScreenParams<MainStackParamList>;
+  EventSelection: undefined;
+  EventSetup: undefined;
 };
 
 // Authentication Stack

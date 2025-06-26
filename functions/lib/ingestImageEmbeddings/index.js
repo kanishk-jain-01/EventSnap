@@ -104,7 +104,9 @@ exports.ingestImageEmbeddings = functions.https.onCall(async (request) => {
                 input: base64,
             });
             const vector = embedResp.data[0].embedding;
-            await getPineconeIndex().namespace(eventId).upsert([
+            await getPineconeIndex()
+                .namespace(eventId)
+                .upsert([
                 {
                     id: `${storagePath}#0`,
                     values: vector,
@@ -117,7 +119,12 @@ exports.ingestImageEmbeddings = functions.https.onCall(async (request) => {
                 .doc(eventId)
                 .collection('assets')
                 .doc(storagePath.split('/').pop())
-                .set({ storagePath, embedded: true, chunks: 1, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                .set({
+                storagePath,
+                embedded: true,
+                chunks: 1,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            }, { merge: true });
             return { success: true, chunks: 1 };
         }
         // chunk text and embed
@@ -125,7 +132,10 @@ exports.ingestImageEmbeddings = functions.https.onCall(async (request) => {
         const vectors = [];
         let idx = 0;
         for (const chunk of chunks) {
-            const emb = await getOpenAI().embeddings.create({ model: 'text-embedding-3-small', input: chunk });
+            const emb = await getOpenAI().embeddings.create({
+                model: 'text-embedding-3-small',
+                input: chunk,
+            });
             vectors.push({
                 id: `${storagePath}#${idx}`,
                 values: emb.data[0].embedding,
@@ -135,7 +145,9 @@ exports.ingestImageEmbeddings = functions.https.onCall(async (request) => {
         }
         const BATCH = 100;
         for (let i = 0; i < vectors.length; i += BATCH) {
-            await getPineconeIndex().namespace(eventId).upsert(vectors.slice(i, i + BATCH));
+            await getPineconeIndex()
+                .namespace(eventId)
+                .upsert(vectors.slice(i, i + BATCH));
         }
         await admin
             .firestore()
@@ -143,7 +155,12 @@ exports.ingestImageEmbeddings = functions.https.onCall(async (request) => {
             .doc(eventId)
             .collection('assets')
             .doc(storagePath.split('/').pop())
-            .set({ storagePath, embedded: true, chunks: vectors.length, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+            .set({
+            storagePath,
+            embedded: true,
+            chunks: vectors.length,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
         return { success: true, chunks: vectors.length };
     }
     catch (err) {

@@ -18,10 +18,10 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { Event } from '../../types';
-import { AuthStackParamList } from '../../navigation/types';
+import { RootStackParamList } from '../../navigation/types';
 
 type EventSelectionScreenNavigationProp =
-  NativeStackNavigationProp<AuthStackParamList>;
+  NativeStackNavigationProp<RootStackParamList>;
 
 interface PublicEventItemProps {
   event: Event;
@@ -187,11 +187,8 @@ export const EventSelectionScreen: React.FC = () => {
             {
               text: 'Continue',
               onPress: () => {
-                // Navigate to main app
-                navigation.getParent()?.reset({
-                  index: 0,
-                  routes: [{ name: 'MainTabs' }],
-                });
+                // AppNavigator will automatically navigate to Main when activeEvent is set
+                // No manual navigation needed
               },
             },
           ],
@@ -231,11 +228,8 @@ export const EventSelectionScreen: React.FC = () => {
             {
               text: 'Continue',
               onPress: () => {
-                // Navigate to main app
-                navigation.getParent()?.reset({
-                  index: 0,
-                  routes: [{ name: 'MainTabs' }],
-                });
+                // AppNavigator will automatically navigate to Main when activeEvent is set
+                // No manual navigation needed
               },
             },
           ],

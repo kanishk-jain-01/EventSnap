@@ -1,8 +1,10 @@
 import React from 'react';
+import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MainTabParamList } from '../types';
 import { CameraScreen } from '../screens/main/CameraScreen';
 import { useThemeColors } from '../components/ui/ThemeProvider';
+import { useEventStore } from '../store/eventStore';
 
 // Import the EventFeedScreen instead of HomeScreen
 import { EventFeedScreen } from '../screens/main/EventFeedScreen';
@@ -13,6 +15,7 @@ const MainTab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainTabNavigator: React.FC = () => {
   const colors = useThemeColors();
+  const { role } = useEventStore();
 
   return (
     <MainTab.Navigator
@@ -42,27 +45,70 @@ export const MainTabNavigator: React.FC = () => {
         component={EventFeedScreen}
         options={{
           tabBarLabel: 'Feed',
+          tabBarIcon: ({ focused, color }) => (
+            <Text
+              style={{
+                fontSize: 20,
+                color: color,
+              }}
+            >
+              {focused ? '📱' : '📱'}
+            </Text>
+          ),
         }}
       />
       <MainTab.Screen
         name='Camera'
         component={CameraScreen}
         options={{
-          tabBarLabel: 'Camera',
+          tabBarLabel: role === 'host' ? 'Camera' : 'View Only',
+          tabBarIcon: ({ focused, color }) => (
+            <Text
+              style={{
+                fontSize: 20,
+                color: color,
+              }}
+            >
+              {role === 'host' ? (focused ? '📸' : '📸') : (focused ? '👀' : '👀')}
+            </Text>
+          ),
         }}
       />
+      
+      {/* Chat tab - available to all roles */}
       <MainTab.Screen
         name='Chat'
         component={ChatListScreen}
         options={{
           tabBarLabel: 'Chat',
+          tabBarIcon: ({ focused, color }) => (
+            <Text
+              style={{
+                fontSize: 20,
+                color: color,
+              }}
+            >
+              {focused ? '💬' : '💬'}
+            </Text>
+          ),
         }}
       />
+      
       <MainTab.Screen
         name='Profile'
         component={ProfileScreen}
         options={{
-          tabBarLabel: 'Profile',
+          tabBarLabel: role === 'host' ? 'Host Profile' : 'Profile',
+          tabBarIcon: ({ focused, color }) => (
+            <Text
+              style={{
+                fontSize: 20,
+                color: color,
+              }}
+            >
+              {role === 'host' ? (focused ? '👑' : '👑') : (focused ? '👤' : '👤')}
+            </Text>
+          ),
         }}
       />
     </MainTab.Navigator>

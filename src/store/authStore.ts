@@ -3,6 +3,7 @@ import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '../services/firebase/config';
 import { AuthService } from '../services/auth.service';
 import { AuthState } from '../types';
+import { useEventStore } from './eventStore';
 
 interface AuthStore extends AuthState {
   // Actions
@@ -96,6 +97,9 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
       const response = await AuthService.logout();
 
       if (response.success) {
+        // Clear event store when logging out
+        useEventStore.getState().clearState();
+        
         set({
           user: null,
           isAuthenticated: false,
@@ -186,7 +190,9 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
             });
           }
         } else {
-          // User is signed out
+          // User is signed out - clear event store as well
+          useEventStore.getState().clearState();
+          
           set({
             user: null,
             isAuthenticated: false,

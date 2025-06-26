@@ -87,13 +87,13 @@
   - [x] 5.5 Role gating: hide post buttons for Guests in UI and services
   - [x] 5.6 Update navigation: add `EventTabNavigator` (Feed, Assistant, Profile) and remove `HomeScreen`
 
-- [ ] 6.0 Role-Aware Onboarding & Permissions
+- [x] 6.0 Role-Aware Onboarding & Permissions
   - [x] 6.1 Build `EventSelectionScreen` with Public Events list (paginated) & Private join-code form
   - [x] 6.2 Implement Firestore query for public events; ordering by `startTime`
   - [x] 6.3 Implement `joinEvent` via `joinCode`; update `eventStore` & participants sub-collection
-  - [ ] 6.4 Integrate selection screen into auth flow (redirect when `activeEvent` null)
-  - [ ] 6.5 Persist last `activeEvent` in AsyncStorage; auto-rejoin on app launch
-  - [ ] 6.6 Conditional navigation/screens based on role (Host vs Guest)
+  - [x] 6.4 Integrate selection screen into auth flow (redirect when `activeEvent` null)
+  - [x] 6.5 Persist last `activeEvent` in AsyncStorage; auto-rejoin on app launch
+  - [x] 6.6 Conditional navigation/screens based on role (Host vs Guest)
 
 - [ ] 7.0 Content Lifecycle Management & Auto-Expiry
   - [ ] 7.1 Write `deleteExpiredContent` Cloud Function to purge stories/snaps older than `event.endTime + 24h`

@@ -1465,6 +1465,32 @@ export class FirestoreService {
     }
   }
 
+  /** Get participant data for an event */
+  static async getParticipant(
+    eventId: string,
+    userId: string,
+  ): Promise<ApiResponse<EventParticipantDocument>> {
+    try {
+      const participantRef = doc(
+        firestore,
+        COLLECTIONS.EVENTS,
+        eventId,
+        'participants',
+        userId,
+      );
+      const participantSnap = await getDoc(participantRef);
+
+      if (!participantSnap.exists()) {
+        return { success: false, error: 'Participant not found' };
+      }
+
+      const data = participantSnap.data() as EventParticipantDocument;
+      return { success: true, data };
+    } catch (_error) {
+      return { success: false, error: 'Failed to get participant' };
+    }
+  }
+
   /** Get public events ordered by start time */
   static async getPublicEvents(
     limitCount: number = 20,
