@@ -1,5 +1,17 @@
 # Active Context: Snapchat Clone MVP
 
+## Pivot Update (2025-06-27)
+
+**Focus**: Transitioning the MVP into an event-centric platform.
+
+- **Roles**: `host` (event creator, full write access) and `guest` (read-only).  Role stored per-event in `/events/{eventId}/participants/{uid}`.
+- **Event Visibility**: `public` events discoverable in a list; `private` events joinable via `joinCode`.
+- **Removed Features**: Global Contacts/Friends UI and 1-to-1 Chat are deprecated; old HomeScreen replaced by `EventFeedScreen` scoped to the current event.  Snap workflow remains but is limited to same-event participants.
+- **UI Theme**: Snapchat yellow palette will be retired in favour of a single modern colour scheme.
+- **Testing Strategy**: Manual testing only.  All automated unit/integration/Jest plans have been removed from the task list.
+
+**Next Immediate Task**: Begin **Task 1.1 – Design Firestore `events` schema**.
+
 ## Current Project State
 
 - **Phase**: Phase 8 User Management & Social Features – **COMPLETE** (8/8 tasks completed)

@@ -376,3 +376,37 @@ flowchart TD
 - **Fallback Mode**: If `eventStore.activeEvent` is `null`, app behaves as original Snapchat clone.
 - **Dynamic Theming**: `ThemeProvider` injects Tailwind palette from event document.
 - **RAG Assistant**: Cloud Function performs similarity search over vector DB and streams completion.
+
+## Role-Based Onboarding Patterns (Added 2025-06-27)
+
+### Overview
+The application now differentiates **Hosts** and **Guests** on a per-event basis.  A participant's role is stored in the `/events/{eventId}/participants/{uid}` sub-collection.
+
+### Screens & Flow
+1. **EventSelectionScreen**
+   - Lists `visibility = 'public'` events.
+   - Allows joining a private event via `joinCode`.
+   - "Create Event" FAB routes Hosts to **EventSetupScreen**.
+2. **EventSetupScreen (Host)**
+   - Creates the event document; user is recorded as Host.
+   - Optional PDF asset upload triggers embedding pipeline.
+3. **EventTabNavigator** (after joining/creating)
+   - `EventFeedScreen` (stories + snaps)
+   - `AssistantScreen` (AI chat)
+   - `ProfileScreen`
+
+### UI Gating
+- Only Hosts see buttons to **Post Story/Snap**, **Upload Asset**, and **End Event**.
+- Guests have read-only feed and assistant access.
+- Camera and stores enforce `role === 'host'` before writes.
+
+### Security Rules Pattern
+```javascript
+match /stories/{storyId} {
+  allow read: if participantInEvent(eventId);
+  allow create, update: if participantIsHost(eventId);
+}
+```
+
+### Legacy Removal Pattern
+- Contacts and Chat code paths are under `legacy/` tag for deletion during 8.0 cleanup.

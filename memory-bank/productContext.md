@@ -133,3 +133,14 @@ Event attendees struggle to capture real-time moments and locate context (sessio
 - ≥ 40 % attendees post at least one snap
 - AI assistant median response ≤ 3 s
 - 100 % content deletion ≤ 25 h post-event
+
+### Pivot Revision (2025-06-27)
+
+Following further scoping, the event model has been simplified to two roles:
+
+* **Host** – The event creator.  Can post stories/snaps, upload PDFs, edit theme, and end the event early.
+* **Guest** – Any participant who joins an event (via public list or private join code).  Read-only access to feed and AI assistant.
+
+The dynamic per-event colour palette has been deferred.  For MVP we will adopt a single modern palette that replaces Snapchat yellow.
+
+All existing Contacts/Friends and 1-to-1 Chat requirements have been removed.  Snap workflow persists but is scoped to event participants only.

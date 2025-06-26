@@ -124,3 +124,24 @@ src/
 ### Security Considerations
 - Event membership enforced via Firestore rules.
 - Asset PDFs uploaded to Storage under `/events/{eventId}/assets/` bucket.
+
+## Event Pivot Tech Additions (2025-06-27)
+
+### New Frontend Modules
+- `eventStore` Zustand slice for current event & role.
+- Role-aware screens: `EventSelectionScreen`, `EventSetupScreen`, `EventFeedScreen`.
+- `EventTabNavigator` replaces `MainTabNavigator`.
+
+### Removed / Deprecated
+- Realtime Database chat infrastructure and related screens/stores.
+- Contacts/Friends Firestore sub-collection.
+- Automated Jest/unit tests – **manual testing only**.
+
+### Backend Changes
+- Firestore `events` collection with `participants` sub-collection.
+- Cloud Functions: `assistantChat`, `ingestPDFEmbeddings`, `deleteExpiredContent`.
+- Pinecone (or Supabase Vector) for embedding storage.
+
+### Security Rule Highlights
+- Host write, Guest read-only enforced at collection level.
+- Private event join requires `joinCode` match.

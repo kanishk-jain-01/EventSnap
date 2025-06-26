@@ -1,5 +1,18 @@
 # Progress: Snapchat Clone MVP
 
+## Pivot: Event-Driven Networking (2025-06-27)
+
+A new task list (`tasks-prd-event-driven-networking.md`) has been created with eight parent tasks (1.0–8.0) covering the event-centric refactor.  No work has started yet; all tasks remain unchecked.
+
+Key changes for this phase:
+- Role-based model (Host vs Guest) with public/private events.
+- Contacts UI and 1-to-1 Chat slated for removal during **8.0 Legacy Cleanup**.
+- HomeScreen will be replaced by `EventFeedScreen` scoped to the active event.
+- Single modern colour palette will replace Snapchat yellow (no dynamic theming in MVP).
+- **Testing**: Manual only.  All automated unit/integration tests have been removed from the plan.
+
+Next milestone: **Task 1.1 – Design Firestore `events` schema**.
+
 ## Current Status: **Phase 6 Stories Feature – COMPLETE (8/8 tasks completed)**
 
 ## Current Status: **Phase 8 User Management & Social Features – COMPLETE (8/8 tasks completed)**
