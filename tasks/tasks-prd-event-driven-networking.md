@@ -5,19 +5,20 @@
 - `src/services/ai/assistant.service.ts` – NEW: client helper to call AI assistant Cloud Function and stream responses
 - `src/services/ai/ingestion.service.ts` – Helper to call Cloud Functions for PDF & image embeddings
 - `src/store/eventStore.ts` – NEW: Zustand store for current event, role, and participants
-- `src/navigation/EventTabNavigator.tsx` – NEW: Tab navigator for `EventFeed`, `Assistant`, `Profile`
+- `src/navigation/EventTabNavigator.tsx` – NEW: Tab navigator for `EventFeed`, `Assistant` (placeholder), `Profile` with Creative Light Theme styling
+- `src/navigation/types.ts` – MODIFIED: added EventTabParamList type definition
 - `src/screens/auth/EventSelectionScreen.tsx` – NEW: list public events / join private event
 - `src/screens/organizer/EventSetupScreen.tsx` – NEW: event creation form UI (Host only)
-- `src/screens/main/EventFeedScreen.tsx` – CREATED: combined event feed (stories + snaps) with Creative Light Theme
+- `src/screens/main/EventFeedScreen.tsx` – MODIFIED: combined event feed (stories + snaps) with Creative Light Theme and role-based permissions banner (host vs guest messaging)
 - `src/screens/ai/AssistantScreen.tsx` – NEW: chat UI for AI assistant
-- `src/screens/main/CameraScreen.tsx` – MODIFY: role gating & text-overlay before posting
+- `src/screens/main/CameraScreen.tsx` – MODIFIED: added optional ≤200-char text overlay workflow with modal UI, character count validation, text display on photo preview, and role-based event snap sending (host-only with direct participant delivery)
 - `src/components/ui/ThemeProvider.tsx` – CREATED: provide modern palette tokens via React Context
 - `src/components/ui/Button.tsx` – REFACTORED: use Creative Light Theme tokens
 - `src/components/ui/Input.tsx` – REFACTORED: use Creative Light Theme tokens
 - `src/components/ui/LoadingSpinner.tsx` – REFACTORED: use Creative Light Theme tokens
 - `src/components/ui/Modal.tsx` – REFACTORED: use Creative Light Theme tokens
 - `src/components/social/StoryRing.tsx` – REFACTORED: use Creative Light Theme tokens
-- `src/navigation/MainTabNavigator.tsx` – REFACTORED: use Creative Light Theme tokens
+- `src/navigation/MainTabNavigator.tsx` – MODIFIED: replaced HomeScreen with EventFeedScreen, updated tab label from "Stories" to "Feed"
 - `src/screens/auth/AuthLoadingScreen.tsx` – REFACTORED: use Creative Light Theme and EventSnap branding
 - `src/screens/auth/LoginScreen.tsx` – REFACTORED: use Creative Light Theme and EventSnap branding  
 - `src/screens/auth/RegisterScreen.tsx` – REFACTORED: use Creative Light Theme and EventSnap branding
@@ -32,7 +33,7 @@
 - `functions/deleteExpiredContent/index.ts` – NEW: Cloud Function for cleaning up expired event content
 - `src/services/ai/cleanup.service.ts` – NEW: Client service for calling cleanup Cloud Function
 - `src/store/chatStore.ts`, `src/services/realtime/`, `src/screens/main/Chat*` – DELETE: retire 1-to-1 chat
-- `src/screens/main/HomeScreen.tsx` – DELETE: superseded by `EventFeedScreen`
+- `src/screens/main/HomeScreen.tsx` – DELETED: superseded by `EventFeedScreen` in main navigation
 
 ### Notes
 - Place AI-related service files under `src/services/ai/`.
@@ -77,13 +78,13 @@
   - [x] 4.4 Remove all references to Snapchat yellow and old brand assets
   - [x] 4.5 Manual verification of new Creative Light Theme rendering across all refactored components
 
-- [ ] 5.0 Event Stories, Snaps & Feed Adaptation
+- [x] 5.0 Event Stories, Snaps & Feed Adaptation ✅ **PHASE COMPLETE - 100%**
   - [x] 5.1 Create `EventFeedScreen` combining stories + snaps for current event
   - [x] 5.2 Update `storyStore` & Firestore queries to filter by `eventId`
   - [x] 5.3 Update `snapStore` & Firestore queries to filter by `eventId` and enforce Host-only posting
-  - [ ] 5.4 Add optional ≤200-char text overlay workflow in `CameraScreen` before posting
-  - [ ] 5.5 Role gating: hide post buttons for Guests in UI and services
-  - [ ] 5.6 Update navigation: add `EventTabNavigator` (Feed, Assistant, Profile) and remove `HomeScreen`
+  - [x] 5.4 Add optional ≤200-char text overlay workflow in `CameraScreen` before posting
+  - [x] 5.5 Role gating: hide post buttons for Guests in UI and services
+  - [x] 5.6 Update navigation: add `EventTabNavigator` (Feed, Assistant, Profile) and remove `HomeScreen`
 
 - [ ] 6.0 Role-Aware Onboarding & Permissions
   - [ ] 6.1 Build `EventSelectionScreen` with Public Events list (paginated) & Private join-code form

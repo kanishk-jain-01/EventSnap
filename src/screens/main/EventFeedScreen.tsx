@@ -486,6 +486,29 @@ export const EventFeedScreen: React.FC = () => {
         </Text>
       </View>
 
+      {/* Role-based Permissions Banner for Task 5.5 */}
+      {role && (
+        <View style={{
+          backgroundColor: role === 'host' ? colors.primary + '10' : colors.accent + '10',
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          paddingHorizontal: 16,
+          paddingVertical: 8,
+        }}>
+          <Text style={{
+            color: role === 'host' ? colors.primary : colors.accent,
+            fontSize: 12,
+            fontWeight: '600',
+            textAlign: 'center',
+          }}>
+            {role === 'host' 
+              ? '👑 Host: You can post stories and send snaps to all participants'
+              : '👥 Guest: You can post stories and view content from other participants'
+            }
+          </Text>
+        </View>
+      )}
+
       <FlatList
         data={eventSnaps}
         renderItem={renderSnapItem}

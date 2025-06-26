@@ -33,6 +33,13 @@ export type MainTabParamList = {
   Profile: undefined;
 };
 
+// Event Tab Navigator (for event-scoped navigation)
+export type EventTabParamList = {
+  EventFeed: undefined;
+  Assistant: undefined;
+  Profile: undefined;
+};
+
 // Declare global types for React Navigation
 declare global {
   // eslint-disable-next-line no-unused-vars

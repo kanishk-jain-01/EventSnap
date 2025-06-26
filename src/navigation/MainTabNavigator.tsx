@@ -4,8 +4,8 @@ import { MainTabParamList } from '../types';
 import { CameraScreen } from '../screens/main/CameraScreen';
 import { useThemeColors } from '../components/ui/ThemeProvider';
 
-// Import the HomeScreen from the screens directory
-import { HomeScreen } from '../screens/main/HomeScreen';
+// Import the EventFeedScreen instead of HomeScreen
+import { EventFeedScreen } from '../screens/main/EventFeedScreen';
 import { ChatListScreen } from '../screens/main/ChatListScreen';
 import { ProfileScreen } from '../screens/main/ProfileScreen';
 
@@ -39,9 +39,9 @@ export const MainTabNavigator: React.FC = () => {
     >
       <MainTab.Screen
         name='Home'
-        component={HomeScreen}
+        component={EventFeedScreen}
         options={{
-          tabBarLabel: 'Stories',
+          tabBarLabel: 'Feed',
         }}
       />
       <MainTab.Screen

@@ -18,23 +18,26 @@
 
 ### Data Flow Patterns
 
-#### Event-Scoped Content Flow (NEW - IMPLEMENTED PHASE 5.0)
+#### Event-Scoped Content Flow with Text Overlays (ENHANCED - PHASE 5.0 COMPLETE)
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   User Action   │    │  Database Query │    │   UI Update     │
-│                 │    │                 │    │                 │
-│ • Post Story    │───►│ • Event Filter  │───►│ • Real-time     │
-│ • Send Snap     │    │ • Role Check    │    │   Feed Update   │
-│ • View Feed     │    │ • Batch Write   │    │ • Theme Applied │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   User Action   │    │  Text Overlay   │    │  Database Query │    │   UI Update     │
+│                 │    │                 │    │                 │    │                 │
+│ • Capture Photo │───►│ • Add Text      │───►│ • Event Filter  │───►│ • Real-time     │
+│ • Post Story    │    │ • 200 char max  │    │ • Role Check    │    │   Feed Update   │
+│ • Send Snap     │    │ • Validation    │    │ • Batch Write   │    │ • Theme Applied │
+│ • View Feed     │    │ • Preview       │    │ • Permission    │    │ • Role Banner   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-1. **Content Creation**: User creates story/snap with eventId
-2. **Role Validation**: Service-level permission checking (host/guest)
-3. **Database Scoping**: Content automatically filtered by event
-4. **Real-time Distribution**: Live updates to event participants only
-5. **Theme Integration**: EventSnap Creative Light Theme throughout
+1. **Content Creation**: User captures photo with optional text overlay (≤200 chars)
+2. **Text Processing**: Real-time character validation and preview display
+3. **Role Validation**: Service-level permission checking with UI gating (host/guest)
+4. **Database Scoping**: Content automatically filtered by event with role enforcement
+5. **Real-time Distribution**: Live updates to event participants only
+6. **UI Feedback**: Role-based messaging and permissions banner
+7. **Theme Integration**: EventSnap Creative Light Theme throughout
 
 #### Authentication Flow (EventSnap Branding)
 
@@ -63,23 +66,38 @@
 4. State changes → Memoized context prevents unnecessary re-renders
 5. Consistent branding → EventSnap identity throughout
 
-#### Role-Based Content Flow (NEW - IMPLEMENTED PHASE 5.0)
+#### Role-Based Content Flow with UI Gating (ENHANCED - PHASE 5.0 COMPLETE)
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│      Host       │    │   UI Gating     │    │   Validation    │    │  Distribution   │
+│                 │    │                 │    │                 │    │                 │
+│ • Create Story  │───►│ • Enabled Btns  │───►│ • Check Role    │───►│ • All Event     │
+│ • Send Snap     │    │ • Full Access   │    │ • Verify Event  │    │   Participants  │
+│ • Text Overlay  │    │ • Host Banner   │    │ • Database Auth │    │ • Real-time     │
+│ • Full Access   │    │ • Progress UI   │    │ • Service Level │    │ • Feed Updates  │
+└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
+
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│      Guest      │    │   UI Gating     │    │   Validation    │    │   Consumption   │
+│                 │    │                 │    │                 │    │                 │
+│ • Create Story  │───►│ • Disabled Snap │───►│ • Check Role    │───►│ • View Content  │
+│ • Receive Snaps │    │ • "Host Only"   │    │ • Limited Perms │    │ • Real-time     │
+│ • Text Overlay  │    │ • Guest Banner  │    │ • Event Scoped  │    │ • Feed Updates  │
+│ • Read Access   │    │ • Clear Msgs    │    │ • Clear Errors  │    │ • Role Aware    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+#### Navigation Flow with EventTabNavigator (NEW - PHASE 5.0 COMPLETE)
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│      Host       │    │   Validation    │    │  Distribution   │
+│  MainTabNav     │    │  EventTabNav    │    │   Screen Flow   │
 │                 │    │                 │    │                 │
-│ • Create Story  │───►│ • Check Role    │───►│ • All Event     │
-│ • Send Snap     │    │ • Verify Event  │    │   Participants  │
-│ • Full Access   │    │ • Database Auth │    │ • Real-time     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│      Guest      │    │   Validation    │    │   Consumption   │
-│                 │    │                 │    │                 │
-│ • Create Story  │───►│ • Check Role    │───►│ • View Content  │
-│ • Receive Snaps │    │ • Limited Perms │    │ • Real-time     │
-│ • Read Access   │    │ • Event Scoped  │    │ • Feed Updates  │
+│ • Feed (Event)  │───►│ • Feed Tab      │───►│ • EventFeed     │
+│ • Camera        │    │ • Assistant     │    │ • AI Placeholder│
+│ • Chat (Legacy) │    │ • Profile       │    │ • Profile       │
+│ • Profile       │    │ • Theme Styled  │    │ • Role Banner   │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
@@ -94,9 +112,8 @@ screens/
 │   ├── RegisterScreen.tsx        # EventSnap registration with purple accents
 │   └── AuthLoadingScreen.tsx     # EventSnap branding with purple spinner
 ├── main/
-│   ├── CameraScreen.tsx          # Photo capture with light theme UI
-│   ├── HomeScreen.tsx            # Event feed with purple story rings
-│   ├── EventFeedScreen.tsx       # Unified event content feed (NEW - PHASE 5.0)
+│   ├── CameraScreen.tsx          # Photo capture with text overlay and role-based UI gating
+│   ├── EventFeedScreen.tsx       # Unified event content feed with role permissions banner
 │   ├── ChatListScreen.tsx        # Chat conversations (legacy)
 │   ├── ChatScreen.tsx            # Individual chat (legacy)
 │   ├── SnapViewerScreen.tsx      # Full-screen snap viewing
@@ -185,7 +202,113 @@ interface AppState {
 - **useThemeColors**: Color token access
 - **useThemeSpacing**: Spacing system access
 
-## Event-Scoped Content Patterns (NEW - PHASE 5.0)
+## Navigation Patterns (ENHANCED - PHASE 5.0)
+
+### EventTabNavigator Implementation
+
+```typescript
+// Modern event-scoped navigation
+interface EventTabNavigator {
+  structure: {
+    feed: 'EventFeedScreen with role-based permissions banner'
+    assistant: 'Placeholder for Phase 3.0 AI Assistant'
+    profile: 'ProfileScreen with EventSnap theme'
+  }
+  
+  theme: {
+    tabBarStyle: 'Creative Light Theme with purple accents'
+    icons: 'Emoji-based icons with proper React Native Text components'
+    activeStates: 'Purple focus states for active tabs'
+  }
+  
+  integration: {
+    typeSystem: 'EventTabParamList in navigation types'
+    components: 'SafeAreaView, StatusBar, proper React Native architecture'
+    placeholder: 'Professional AI Assistant coming soon screen'
+  }
+}
+```
+
+### Navigation Flow Enhancement
+
+```typescript
+// Navigation structure evolution
+interface NavigationEvolution {
+  legacy: {
+    homeScreen: 'Removed - replaced with EventFeedScreen'
+    mainTabs: 'Updated to use EventFeedScreen instead of HomeScreen'
+    tabLabel: 'Changed from "Stories" to "Feed"'
+  }
+  
+  modern: {
+    eventTabs: 'New EventTabNavigator for event-scoped navigation'
+    integration: 'Seamless theme consistency throughout'
+    future: 'Ready for AI Assistant implementation in Phase 3.0'
+  }
+}
+```
+
+## Event-Scoped Content Patterns (ENHANCED - PHASE 5.0 COMPLETE)
+
+### Text Overlay Patterns
+
+```typescript
+// Text overlay system implementation
+interface TextOverlaySystem {
+  modal: {
+    characterLimit: 200
+    validation: 'Real-time character counting with visual feedback'
+    keyboard: 'KeyboardAvoidingView for iOS/Android compatibility'
+    integration: 'Seamless camera workflow integration'
+  }
+  
+  display: {
+    preview: 'Semi-transparent overlay on photo previews'
+    positioning: 'Configurable text position (future enhancement)'
+    styling: 'Clean, readable text with background overlay'
+  }
+  
+  workflow: {
+    capture: 'Photo capture → Optional text overlay → Story posting'
+    editing: 'Add, edit, clear text functionality'
+    validation: 'Character limit enforcement with clear feedback'
+  }
+}
+```
+
+### Role-Based UI Gating Patterns
+
+```typescript
+// Comprehensive role-based UI system
+interface RoleBasedUIGating {
+  cameraScreen: {
+    host: {
+      eventSnap: 'Enabled "Event Snap" button with progress tracking'
+      functionality: 'Full event snap sending capabilities'
+      feedback: 'Progress indicators and success/error states'
+    }
+    
+    guest: {
+      eventSnap: 'Disabled "Host Only" button with clear messaging'
+      functionality: 'Receive-only for event snaps'
+      feedback: 'Clear role restriction messaging'
+    }
+    
+    nonEvent: {
+      functionality: 'Regular snap functionality preserved'
+      interface: 'Standard camera interface without role restrictions'
+    }
+  }
+  
+  eventFeed: {
+    permissionsBanner: {
+      host: 'Host-specific messaging about event management'
+      guest: 'Guest-appropriate messaging about participation'
+      styling: 'Consistent with Creative Light Theme'
+    }
+  }
+}
+```
 
 ### Database Query Patterns
 

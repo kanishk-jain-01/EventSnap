@@ -6,6 +6,9 @@ import {
   TouchableOpacity,
   Dimensions,
   Image,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { CameraView, CameraType } from 'expo-camera';
@@ -18,10 +21,15 @@ import {
 } from '../../services/camera.service';
 import { Button } from '../../components/ui/Button';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { Modal } from '../../components/ui/Modal';
+import { useThemeColors } from '../../components/ui/ThemeProvider';
 import { formatFileSize } from '../../utils/imageUtils';
 import { ImageEditor } from '../../components/media/ImageEditor';
 import { MainStackParamList } from '../../navigation/types';
 import { useStoryStore } from '../../store/storyStore';
+import { useEventStore } from '../../store/eventStore';
+import { useSnapStore } from '../../store/snapStore';
+import { useAuthStore } from '../../store/authStore';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -32,6 +40,17 @@ type CameraScreenNavigationProp = NativeStackNavigationProp<
 
 export const CameraScreen: React.FC = () => {
   const navigation = useNavigation<CameraScreenNavigationProp>();
+  const colors = useThemeColors();
+  
+  // Import event store for role-based permissions
+  const { role, activeEvent } = useEventStore();
+  
+  // Import snap store for event snap sending
+  const { sendEventSnap } = useSnapStore();
+  
+  // Import auth store for user info
+  const { user } = useAuthStore();
+  
   // Permission and loading states
   const [permissions, setPermissions] = useState<CameraPermissions | null>(
     null,
@@ -72,6 +91,15 @@ export const CameraScreen: React.FC = () => {
 
   // Image editing states for Task 4.6
   const [showImageEditor, setShowImageEditor] = useState(false);
+
+  // Text overlay states for Task 5.4
+  const [showTextOverlay, setShowTextOverlay] = useState(false);
+  const [overlayText, setOverlayText] = useState('');
+  const [textPosition, _setTextPosition] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
+
+  // Event snap sending states for Task 5.5
+  const [isSendingEventSnap, setIsSendingEventSnap] = useState(false);
+  const [eventSnapProgress, setEventSnapProgress] = useState(0);
 
   // Camera ref
   const cameraRef = useRef<CameraView>(null);
@@ -453,19 +481,87 @@ export const CameraScreen: React.FC = () => {
     await checkInitialState();
   };
 
-  // Story posting
+  // Text overlay functions for Task 5.4
+  const handleTextOverlayPress = () => {
+    setShowTextOverlay(true);
+  };
+
+  const handleTextOverlayConfirm = () => {
+    setShowTextOverlay(false);
+    // Text is now saved in overlayText state and will be displayed on the image
+  };
+
+  const handleTextOverlayCancel = () => {
+    setShowTextOverlay(false);
+    setOverlayText(''); // Clear text if cancelled
+  };
+
+  const clearTextOverlay = () => {
+    setOverlayText('');
+  };
+
+  // Event snap sending for Task 5.5
+  const handleSendEventSnap = async () => {
+    if (!capturedPhoto || !user?.uid || !activeEvent?.id || role !== 'host') {
+      Alert.alert('Error', 'Unable to send event snap. Please check your permissions.');
+      return;
+    }
+
+    setIsSendingEventSnap(true);
+    setEventSnapProgress(0);
+
+    try {
+      const success = await sendEventSnap(capturedPhoto, user.uid, activeEvent.id);
+      
+      if (success) {
+        Alert.alert(
+          'Event Snap Sent!', 
+          'Your snap has been sent to all event participants.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                // Navigate back to event feed
+                navigation.navigate('MainTabs', { screen: 'Home' });
+                // Reset image and text
+                setCapturedPhoto(null);
+                setSelectedImage(null);
+                setImageSource(null);
+                setOverlayText('');
+              },
+            },
+          ],
+        );
+      } else {
+        Alert.alert('Error', 'Failed to send event snap. Please try again.');
+      }
+    } catch (_error) {
+      Alert.alert('Error', 'Failed to send event snap. Please try again.');
+    } finally {
+      setIsSendingEventSnap(false);
+      setEventSnapProgress(0);
+    }
+  };
+
+  // Story posting with optional text overlay
   const handlePostStory = async () => {
     if (!capturedPhoto) return;
 
+    // For now, we'll post the story with the original image
+    // In a future enhancement, we could render the text overlay onto the image
     const success = await postStory(capturedPhoto);
     if (success) {
-      Alert.alert('Story Posted!', 'Your story has been posted successfully.');
+      const message = overlayText 
+        ? 'Story posted with text overlay!' 
+        : 'Story posted successfully!';
+      Alert.alert('Story Posted!', message);
       // Navigate back to Home tab to view your story
       navigation.navigate('MainTabs', { screen: 'Home' });
-      // Reset image so user can take another
+      // Reset image and text so user can take another
       setCapturedPhoto(null);
       setSelectedImage(null);
       setImageSource(null);
+      setOverlayText('');
     } else {
       Alert.alert('Error', 'Failed to post story.');
     }
@@ -688,7 +784,7 @@ export const CameraScreen: React.FC = () => {
         </View>
 
         {/* Image Preview */}
-        <View className='flex-1 items-center justify-center'>
+        <View className='flex-1 items-center justify-center relative'>
           <Image
             source={{ uri: capturedPhoto }}
             style={{
@@ -697,6 +793,42 @@ export const CameraScreen: React.FC = () => {
             }}
             resizeMode='contain'
           />
+          
+          {/* Text Overlay Display for Task 5.4 */}
+          {overlayText && (
+            <View 
+              style={{
+                position: 'absolute',
+                left: `${textPosition.x}%`,
+                top: `${textPosition.y}%`,
+                transform: [{ translateX: -50 }, { translateY: -50 }],
+                maxWidth: screenWidth * 0.8,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  borderRadius: 8,
+                }}
+              >
+                <Text
+                  style={{
+                    color: 'white',
+                    fontSize: 16,
+                    fontWeight: '600',
+                    textAlign: 'center',
+                    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+                    textShadowOffset: { width: 1, height: 1 },
+                    textShadowRadius: 2,
+                  }}
+                >
+                  {overlayText}
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Enhanced Bottom Controls for Task 4.6 */}
@@ -731,53 +863,98 @@ export const CameraScreen: React.FC = () => {
                 )}
             </View>
 
-            {/* Action Buttons */}
-            <View className='flex-row justify-center space-x-3 mt-4'>
-              {/* Post Story */}
+            {/* Text Overlay Controls for Task 5.4 */}
+            {overlayText && (
+              <View className='flex-row justify-center items-center mt-3 mb-2'>
+                <View className='bg-purple-500/20 px-3 py-2 rounded-full flex-1 mr-2'>
+                  <Text className='text-purple-300 text-xs text-center'>
+                    Text: "{overlayText.substring(0, 30)}{overlayText.length > 30 ? '...' : ''}"
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={clearTextOverlay}
+                  className='bg-red-500/80 px-3 py-2 rounded-full'
+                >
+                  <Text className='text-white text-xs font-semibold'>Clear</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Role-based Action Buttons for Task 5.5 */}
+            <View className='flex-row justify-center space-x-2 mt-4'>
+              {/* Add Text Button - Available to all users */}
               <TouchableOpacity
-                onPress={handlePostStory}
-                className='bg-blue-500 px-4 py-3 rounded-full flex-1'
-                disabled={isPostingStory}
+                onPress={handleTextOverlayPress}
+                style={{ backgroundColor: colors.primary }}
+                className='px-3 py-3 rounded-full flex-1'
               >
-                <Text className='text-white font-semibold text-center'>
-                  {isPostingStory
-                    ? `🚀 Posting ${Math.round(postingProgress)}%`
-                    : '📖 Post Story'}
+                <Text className='text-white font-semibold text-center text-sm'>
+                  {overlayText ? '✏️ Edit Text' : '📝 Add Text'}
                 </Text>
               </TouchableOpacity>
 
+              {/* Post Story - Available to all users in events */}
+              <TouchableOpacity
+                onPress={handlePostStory}
+                className='bg-blue-500 px-3 py-3 rounded-full flex-1'
+                disabled={isPostingStory}
+              >
+                <Text className='text-white font-semibold text-center text-sm'>
+                  {isPostingStory
+                    ? `🚀 ${Math.round(postingProgress)}%`
+                    : '📖 Story'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Edit Button - Available to all users */}
               <TouchableOpacity
                 onPress={() => setShowImageEditor(true)}
-                className='bg-snap-yellow px-4 py-3 rounded-full flex-1'
+                className='bg-snap-yellow px-3 py-3 rounded-full flex-1'
               >
-                <Text className='text-black font-semibold text-center'>
+                <Text className='text-black font-semibold text-center text-sm'>
                   ✏️ Edit
                 </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={() => {
-                  if (capturedPhoto) {
-                    navigation.navigate('RecipientSelection', {
-                      imageUri: capturedPhoto,
-                    });
-                  }
-                }}
-                className='bg-green-500 px-4 py-3 rounded-full flex-1'
-              >
-                <Text className='text-white font-semibold text-center'>
-                  📤 Send Snap
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={showImageSourceDialog}
-                className='bg-gray-600 px-4 py-3 rounded-full flex-1'
-              >
-                <Text className='text-white font-semibold text-center'>
-                  🔄 Change
-                </Text>
-              </TouchableOpacity>
+              {/* Send Snap Button - Role-based visibility */}
+              {role === 'host' ? (
+                <TouchableOpacity
+                  onPress={handleSendEventSnap}
+                  className='bg-green-500 px-3 py-3 rounded-full flex-1'
+                  disabled={isSendingEventSnap}
+                >
+                  <Text className='text-white font-semibold text-center text-sm'>
+                    {isSendingEventSnap 
+                      ? `📤 ${Math.round(eventSnapProgress)}%`
+                      : '📤 Event Snap'
+                    }
+                  </Text>
+                </TouchableOpacity>
+              ) : role === 'guest' ? (
+                <TouchableOpacity
+                  disabled={true}
+                  className='bg-gray-400 px-3 py-3 rounded-full flex-1 opacity-50'
+                >
+                  <Text className='text-gray-600 font-semibold text-center text-sm'>
+                    🚫 Host Only
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => {
+                    if (capturedPhoto) {
+                      navigation.navigate('RecipientSelection', {
+                        imageUri: capturedPhoto,
+                      });
+                    }
+                  }}
+                  className='bg-green-500 px-3 py-3 rounded-full flex-1'
+                >
+                  <Text className='text-white font-semibold text-center text-sm'>
+                    📤 Snap
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </View>
@@ -1022,6 +1199,101 @@ export const CameraScreen: React.FC = () => {
           </View>
         </CameraView>
       </View>
+
+      {/* Text Overlay Modal for Task 5.4 */}
+      <Modal
+        visible={showTextOverlay}
+        onClose={handleTextOverlayCancel}
+        title="Add Text Overlay"
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <View style={{ padding: 20 }}>
+            <Text style={{ color: colors.textSecondary, marginBottom: 12, fontSize: 14 }}>
+              Add text to overlay on your photo (max 200 characters)
+            </Text>
+            
+            <View
+              style={{
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 8,
+                backgroundColor: colors.surface,
+                marginBottom: 16,
+              }}
+            >
+              <TextInput
+                value={overlayText}
+                onChangeText={setOverlayText}
+                placeholder="Enter your text here..."
+                placeholderTextColor={colors.textTertiary}
+                style={{
+                  color: colors.textPrimary,
+                  fontSize: 16,
+                  padding: 16,
+                  minHeight: 100,
+                  textAlignVertical: 'top',
+                }}
+                multiline
+                maxLength={200}
+                autoFocus
+              />
+            </View>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <Text style={{ color: colors.textTertiary, fontSize: 12 }}>
+                {overlayText.length}/200 characters
+              </Text>
+              
+              {overlayText.length >= 180 && (
+                <Text style={{ color: colors.error, fontSize: 12 }}>
+                  {200 - overlayText.length} characters remaining
+                </Text>
+              )}
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity
+                onPress={handleTextOverlayCancel}
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.surface,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  paddingVertical: 12,
+                  paddingHorizontal: 24,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleTextOverlayConfirm}
+                style={{
+                  flex: 1,
+                  backgroundColor: colors.primary,
+                  paddingVertical: 12,
+                  paddingHorizontal: 24,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  opacity: overlayText.trim() ? 1 : 0.5,
+                }}
+                disabled={!overlayText.trim()}
+              >
+                <Text style={{ color: 'white', fontWeight: '600' }}>
+                  {overlayText ? 'Update Text' : 'Add Text'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 };

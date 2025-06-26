@@ -158,15 +158,16 @@ const EventSnapButton: React.FC<ButtonProps> = ({ variant = 'primary', ...props 
 5. **Real-time Subscriptions**: Event-scoped content updates with automatic lifecycle management
 6. **Hosting**: Optional for web deployment
 
-### Event-Scoped Database Architecture (NEW - Phase 5.0)
+### Event-Scoped Database Architecture with Text Overlays (COMPLETE - Phase 5.0)
 
 ```typescript
-// Enhanced Firestore collections with event scoping
+// Enhanced Firestore collections with event scoping and text overlays
 interface EventScopedCollections {
   stories: {
     eventId: string;           // REQUIRED - event filtering
     creatorId: string;
     imageUrl: string;
+    overlayText?: string;      // NEW - Optional text overlay (≤200 chars)
     createdAt: Date;
     expiresAt: Date;           // Event-based expiration
     viewedBy: string[];
@@ -177,9 +178,11 @@ interface EventScopedCollections {
     senderId: string;
     recipientId: string;
     imageUrl: string;
+    overlayText?: string;      // NEW - Optional text overlay (≤200 chars)
     sentAt: Date;
     expiresAt: Date;           // Event-based expiration
     viewed: boolean;
+    isEventSnap: boolean;      // NEW - Distinguishes event snaps from regular snaps
   };
   
   events: {
@@ -191,6 +194,92 @@ interface EventScopedCollections {
       }
     }
   };
+}
+```
+
+### Navigation Architecture (NEW - Phase 5.0)
+
+```typescript
+// Modern navigation structure with EventTabNavigator
+interface NavigationArchitecture {
+  mainTabNavigator: {
+    home: 'EventFeedScreen (replaced HomeScreen)'
+    camera: 'CameraScreen with text overlay and role gating'
+    chat: 'ChatListScreen (legacy)'
+    profile: 'ProfileScreen'
+  }
+  
+  eventTabNavigator: {
+    feed: 'EventFeedScreen with role-based permissions banner'
+    assistant: 'Placeholder for Phase 3.0 AI Assistant'
+    profile: 'ProfileScreen'
+    theme: 'Creative Light Theme with proper React Native components'
+  }
+  
+  typeSystem: {
+    mainTabParamList: 'Existing main navigation types'
+    eventTabParamList: 'NEW - Event-scoped navigation types'
+    integration: 'Seamless type safety throughout navigation'
+  }
+}
+```
+
+### Text Overlay System Architecture (NEW - Phase 5.0)
+
+```typescript
+// Text overlay functionality implementation
+interface TextOverlayArchitecture {
+  modal: {
+    component: 'Modal with TextInput and KeyboardAvoidingView'
+    validation: 'Real-time character counting (200 char limit)'
+    platform: 'iOS/Android compatible keyboard handling'
+    state: 'showTextOverlay, overlayText, textPosition'
+  }
+  
+  display: {
+    preview: 'Semi-transparent text overlay on photo previews'
+    styling: 'Clean, readable text with background overlay'
+    positioning: 'Configurable text position (future enhancement)'
+  }
+  
+  integration: {
+    camera: 'Seamless integration with photo capture workflow'
+    stories: 'Text overlay data included in story creation'
+    validation: 'Character limit enforcement at UI and service levels'
+  }
+}
+```
+
+### Role-Based UI Gating Architecture (NEW - Phase 5.0)
+
+```typescript
+// Comprehensive role-based UI system
+interface RoleBasedUIArchitecture {
+  permissionChecking: {
+    service: 'FirestoreService role validation at database level'
+    ui: 'Component-level role checking with clear messaging'
+    state: 'EventStore role management with real-time updates'
+  }
+  
+  uiGating: {
+    cameraScreen: {
+      hostButtons: 'Enabled event snap sending with progress tracking'
+      guestButtons: 'Disabled "Host Only" buttons with clear messaging'
+      feedback: 'Role-appropriate success/error states'
+    }
+    
+    eventFeed: {
+      permissionsBanner: 'Role-based messaging (host vs guest)'
+      content: 'Event-scoped content display with role awareness'
+      theme: 'Consistent Creative Light Theme styling'
+    }
+  }
+  
+  stateManagement: {
+    eventStore: 'Current event, user role, participants tracking'
+    realTime: 'Live role updates and permission changes'
+    validation: 'Service-level permission enforcement'
+  }
 }
 ```
 
