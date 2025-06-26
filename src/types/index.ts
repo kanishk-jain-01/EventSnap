@@ -26,6 +26,8 @@ export interface Snap {
   expiresAt: Date;
   viewed: boolean;
   viewedAt?: Date;
+  /** ID of the event this snap belongs to; null if legacy/global */
+  eventId?: string;
 }
 
 export interface SnapState {
@@ -43,6 +45,8 @@ export interface Story {
   timestamp: Date;
   expiresAt: Date;
   viewedBy: string[];
+  /** ID of the event this story belongs to; null if legacy/global */
+  eventId?: string;
 }
 
 export interface StoryState {
@@ -232,4 +236,48 @@ export interface Theme {
     lg: number;
     full: number;
   };
+}
+
+// Event Types (Event-Driven Networking Pivot)
+
+export type EventVisibility = 'public' | 'private';
+
+export interface EventPalette {
+  /** Primary brand color for the event (HEX) */
+  primary: string;
+  /** Accent color for buttons / highlights (HEX) */
+  accent: string;
+  /** Background color (HEX) */
+  background: string;
+}
+
+export interface Event {
+  /** Firestore auto-generated ID */
+  id: string;
+  /** Human-readable event name */
+  name: string;
+  /** Publicly listed or private (join-code) */
+  visibility: EventVisibility;
+  /** Optional 6-digit join code for private events */
+  joinCode?: string | null;
+  /** ISO start time */
+  startTime: Date;
+  /** ISO end time */
+  endTime: Date;
+  /** UID of the user that created the event */
+  hostUid: string;
+  /** Colour palette tokens for dynamic theming */
+  palette: EventPalette;
+  /** Storage paths/URLs to uploaded PDF assets */
+  assets: string[];
+  /** Document creation timestamp */
+  createdAt: Date;
+}
+
+export interface EventParticipant {
+  uid: string;
+  /** Participant role within the event */
+  role: 'host' | 'guest';
+  /** When the participant joined this event */
+  joinedAt: Date;
 }

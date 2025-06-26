@@ -20,6 +20,7 @@ import {
 } from 'firebase/firestore';
 import { firestore } from './firebase/config';
 import type { Story } from '../types';
+import type { Event as AppEvent } from '../types';
 import { ApiResponse, Snap, User } from '../types';
 
 // Firestore collection names
@@ -29,6 +30,7 @@ export const COLLECTIONS = {
   STORIES: 'stories',
   CHATS: 'chats',
   MESSAGES: 'messages',
+  EVENTS: 'events',
   CONTACTS: 'contacts', // Sub-collection name for user contacts (planned)
 } as const;
 
@@ -42,6 +44,7 @@ export interface SnapDocument {
   expiresAt: Timestamp;
   viewed: boolean;
   viewedAt?: Timestamp;
+  eventId?: string;
   metadata?: {
     fileSize: number;
     contentType: string;
@@ -58,6 +61,7 @@ export interface StoryDocument {
   timestamp: Timestamp;
   expiresAt: Timestamp;
   viewedBy: string[];
+  eventId?: string;
   metadata?: {
     fileSize: number;
     contentType: string;
@@ -81,6 +85,31 @@ export interface UserDocument {
 export interface ContactDocument {
   createdAt: Timestamp;
   status: 'accepted'; // MVP uses auto-accepted contacts
+}
+
+/**
+ * EVENT (Event-Driven Networking) document interface for Firestore
+ */
+export interface EventDocument {
+  name: string;
+  visibility: 'public' | 'private';
+  joinCode?: string | null;
+  startTime: Timestamp;
+  endTime: Timestamp;
+  hostUid: string;
+  palette: {
+    primary: string;
+    accent: string;
+    background: string;
+  };
+  assets: string[];
+  createdAt: Timestamp;
+}
+
+/** Participant sub-document interface */
+export interface EventParticipantDocument {
+  role: 'host' | 'guest';
+  joinedAt: Timestamp;
 }
 
 export class FirestoreService {
@@ -965,6 +994,208 @@ export class FirestoreService {
       }
     } catch (_error) {
       return 0;
+    }
+  }
+
+  /**
+   * =============================
+   * EVENT OPERATIONS (NEW)
+   * =============================
+   */
+
+  /** Create a new event and assign current user as host */
+  static async createEvent(
+    event: Omit<AppEvent, 'id' | 'createdAt'>,
+  ): Promise<ApiResponse<AppEvent>> {
+    try {
+      const {
+        name,
+        visibility,
+        joinCode = null,
+        startTime,
+        endTime,
+        hostUid,
+        palette,
+        assets = [],
+      } = event;
+
+      const eventData: EventDocument = {
+        name,
+        visibility,
+        joinCode,
+        startTime: Timestamp.fromDate(startTime),
+        endTime: Timestamp.fromDate(endTime),
+        hostUid,
+        palette,
+        assets,
+        createdAt: serverTimestamp() as Timestamp,
+      };
+
+      // Add event document
+      const docRef = await addDoc(
+        collection(firestore, COLLECTIONS.EVENTS),
+        eventData,
+      );
+
+      // Add host participant sub-doc
+      await setDoc(
+        doc(
+          firestore,
+          COLLECTIONS.EVENTS,
+          docRef.id,
+          'participants',
+          hostUid,
+        ),
+        {
+          role: 'host',
+          joinedAt: serverTimestamp(),
+        } as EventParticipantDocument,
+      );
+
+      const createdEvent: AppEvent = {
+        id: docRef.id,
+        name,
+        visibility,
+        joinCode,
+        startTime,
+        endTime,
+        hostUid,
+        palette,
+        assets,
+        createdAt: new Date(),
+      };
+
+      return { success: true, data: createdEvent };
+    } catch (_error) {
+      return { success: false, error: 'Failed to create event' };
+    }
+  }
+
+  /**
+   * Join an event (adds participant as guest); validates join code for private events.
+   */
+  static async joinEvent(
+    eventId: string,
+    userId: string,
+    joinCodeInput?: string | null,
+  ): Promise<ApiResponse<void>> {
+    try {
+      const evtRef = doc(firestore, COLLECTIONS.EVENTS, eventId);
+      const evtSnap = await getDoc(evtRef);
+
+      if (!evtSnap.exists()) {
+        return { success: false, error: 'Event not found' };
+      }
+
+      const data = evtSnap.data() as EventDocument;
+
+      if (
+        data.visibility === 'private' &&
+        ((data.joinCode === null || data.joinCode === undefined) || data.joinCode !== joinCodeInput)
+      ) {
+        return { success: false, error: 'Invalid join code' };
+      }
+
+      // Add participant document
+      await setDoc(
+        doc(
+          firestore,
+          COLLECTIONS.EVENTS,
+          eventId,
+          'participants',
+          userId,
+        ),
+        {
+          role: userId === data.hostUid ? 'host' : 'guest',
+          joinedAt: serverTimestamp(),
+        } as EventParticipantDocument,
+        { merge: true },
+      );
+
+      return { success: true };
+    } catch (_error) {
+      return { success: false, error: 'Failed to join event' };
+    }
+  }
+
+  /** Fetch an event by ID */
+  static async getActiveEvent(eventId: string): Promise<ApiResponse<AppEvent>> {
+    try {
+      const evtRef = doc(firestore, COLLECTIONS.EVENTS, eventId);
+      const evtSnap = await getDoc(evtRef);
+
+      if (!evtSnap.exists()) {
+        return { success: false, error: 'Event not found' };
+      }
+
+      const data = evtSnap.data() as EventDocument;
+
+      const event: AppEvent = {
+        id: evtSnap.id,
+        name: data.name,
+        visibility: data.visibility,
+        joinCode: data.joinCode ?? null,
+        startTime: data.startTime.toDate(),
+        endTime: data.endTime.toDate(),
+        hostUid: data.hostUid,
+        palette: data.palette,
+        assets: data.assets,
+        createdAt: data.createdAt.toDate(),
+      };
+
+      return { success: true, data: event };
+    } catch (_error) {
+      return { success: false, error: 'Failed to fetch event' };
+    }
+  }
+
+  /** Add or update a participant role for an event */
+  static async addParticipant(
+    eventId: string,
+    userId: string,
+    role: 'host' | 'guest' = 'guest',
+  ): Promise<ApiResponse<void>> {
+    try {
+      await setDoc(
+        doc(
+          firestore,
+          COLLECTIONS.EVENTS,
+          eventId,
+          'participants',
+          userId,
+        ),
+        {
+          role,
+          joinedAt: serverTimestamp(),
+        } as EventParticipantDocument,
+        { merge: true },
+      );
+
+      return { success: true };
+    } catch (_error) {
+      return { success: false, error: 'Failed to add participant' };
+    }
+  }
+
+  /** Remove participant from event */
+  static async removeParticipant(
+    eventId: string,
+    userId: string,
+  ): Promise<ApiResponse<void>> {
+    try {
+      await deleteDoc(
+        doc(
+          firestore,
+          COLLECTIONS.EVENTS,
+          eventId,
+          'participants',
+          userId,
+        ),
+      );
+
+      return { success: true };
+    } catch (_error) {
+      return { success: false, error: 'Failed to remove participant' };
     }
   }
 }

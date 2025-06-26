@@ -2,6 +2,15 @@ rules_version='2'
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Helper functions
+    function participantInEvent(eventId) {
+      return exists(/databases/$(database)/documents/events/$(eventId)/participants/$(request.auth.uid));
+    }
+
+    function participantIsHost(eventId) {
+      return get(/databases/$(database)/documents/events/$(eventId)/participants/$(request.auth.uid)).data.role == 'host';
+    }
+
     // Users collection - users can only read/write their own data
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
@@ -16,36 +25,60 @@ service cloud.firestore {
       allow read, write, delete: if request.auth != null && request.auth.uid == userId;
     }
     
+    /**
+     * EVENTS COLLECTION
+     * -----------------
+     * • Any authenticated user can create an event (they become host).
+     * • Event document readable only by participants (public events handled by listing security via indexes).
+     * • Only the host can update or delete the event document.
+     */
+    match /events/{eventId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && participantInEvent(eventId);
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.hostUid;
+
+      // Participants sub-collection
+      match /participants/{participantId} {
+        allow read: if request.auth != null && request.auth.uid == participantId;
+
+        // A user can create their own participant doc (joining) or host can add others
+        allow create: if request.auth != null && (
+          request.auth.uid == participantId || participantIsHost(eventId)
+        );
+
+        // Participant can delete themselves (leave event) or host can remove
+        allow delete: if request.auth != null && (
+          request.auth.uid == participantId || participantIsHost(eventId)
+        );
+      }
+    }
+    
     // Snaps collection - readable by sender and recipient only
     match /snaps/{snapId} {
-      allow read: if request.auth != null && 
-        (request.auth.uid == resource.data.senderId || 
-         request.auth.uid == resource.data.receiverId);
-      allow write: if request.auth != null && request.auth.uid == request.resource.data.senderId;
-      allow delete: if request.auth != null && 
-        (request.auth.uid == resource.data.senderId || 
-         request.auth.uid == resource.data.receiverId);
+      allow read: if request.auth != null && participantInEvent(resource.data.eventId);
+      // Only event hosts may create snaps
+      allow create: if request.auth != null && participantIsHost(request.resource.data.eventId);
+      allow delete: if request.auth != null && participantIsHost(resource.data.eventId);
     }
     
     // Stories collection
-    // Anyone authenticated can read.
-    // The story owner can create/delete.
+    // Event participants can read; only hosts can create/delete.
     // Any authenticated user can update *only* the viewedBy array to include their UID.
     match /stories/{storyId} {
-      allow read: if request.auth != null;
+      allow read: if request.auth != null && participantInEvent(resource.data.eventId);
 
-      // Create (write) — only the owner of the story (userId) may create documents
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // Create — only hosts may post stories
+      allow create: if request.auth != null && participantIsHost(request.resource.data.eventId);
 
-      // Delete — only the owner may delete their own story
-      allow delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      // Delete — only hosts may delete stories
+      allow delete: if request.auth != null && participantIsHost(resource.data.eventId);
 
       // Update — allow two cases:
       //  1) Owner updating any fields
       //  2) Any authenticated user adding themselves to viewedBy using arrayUnion and NOT modifying other fields
       allow update: if request.auth != null && (
-        // Owner can always update
-        request.auth.uid == resource.data.userId ||
+        // Host can always update
+        participantIsHost(resource.data.eventId) ||
 
         // Non-owner: only allowed if the diff is exactly adding their UID to viewedBy
         (

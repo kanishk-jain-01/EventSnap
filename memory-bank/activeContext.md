@@ -1,5 +1,28 @@
 # Active Context: Snapchat Clone MVP
 
+## Update (2025-06-27) – Event Layer Foundations Implemented ✅
+
+**Completed Today**: **Task 1.0 – Event Data Model & Access Control** (all 7 subtasks)
+
+Highlights
+- Added TypeScript types `Event`, `EventParticipant`, and palette helpers.
+- Extended `FirestoreService` with `createEvent`, `joinEvent`, `getActiveEvent`, `addParticipant`, `removeParticipant`.
+- Created `eventStore` Zustand slice (activeEvent, role, participants, loading/error).
+- Introduced `/events` and `/events/{eventId}/participants/{uid}` Firestore collections.
+- Updated Firestore security rules:
+  - Helper functions `participantInEvent`, `participantIsHost`.
+  - Host-only writes; participant-scoped reads.
+  - Snaps/Stories now gated by `eventId` and host permissions.
+- Added composite indexes for `events` (visibility, startTime) and `participants` (role, joinedAt).
+- Linter clean; no runtime issues expected.
+
+**Next Immediate Focus**: **Task 2.0 – Event Setup & Asset Ingestion Pipeline**
+1. Build `EventSetupScreen` UI and create-event flow.
+2. Extend `storage.service.ts` & new `ingestion.service.ts` for PDF upload + Cloud Function trigger.
+3. Add "End Event" action linking to scheduled clean-up CF.
+
+Unblocked dependencies: event schema & permissions are live.
+
 ## Pivot Update (2025-06-27)
 
 **Focus**: Transitioning the MVP into an event-centric platform.

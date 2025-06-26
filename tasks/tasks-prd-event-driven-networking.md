@@ -29,14 +29,14 @@
 
 ## Tasks
 
-- [ ] 1.0 Event Data Model & Access Control
-  - [ ] 1.1 Define Firestore `events` schema with fields: `name`, `visibility` (`public`|`private`), `joinCode` (nullable), `startTime`, `endTime`, `hostUid`, `palette`, `assets` []
-  - [ ] 1.2 Create `/events/{eventId}/participants/{uid}` sub-collection with `{ role: 'host'|'guest', joinedAt }`
-  - [ ] 1.3 Add `eventId` to `stories` and `snaps` documents; write one-off migration script (optional during dev)
-  - [ ] 1.4 Update `firestore.service.ts` with helpers: `createEvent`, `joinEvent`, `getActiveEvent`, `addParticipant`, `removeParticipant`
-  - [ ] 1.5 Implement `eventStore` Zustand slice (current event, role, participants, loading/error states)
-  - [ ] 1.6 Amend `firebase.rules` to enforce: Host write access, Guest read-only, private event join via `joinCode`
-  - [ ] 1.7 Add Firestore indexes for event visibility & participant queries
+- [x] 1.0 Event Data Model & Access Control
+  - [x] 1.1 Define Firestore `events` schema with fields: `name`, `visibility` (`public`|`private`), `joinCode` (nullable), `startTime`, `endTime`, `hostUid`, `palette`, `assets` []
+  - [x] 1.2 Create `/events/{eventId}/participants/{uid}` sub-collection with `{ role: 'host'|'guest', joinedAt }`
+  - [x] 1.3 Add `eventId` to `stories` and `snaps` documents (migration script deemed unnecessary)
+  - [x] 1.4 Update `firestore.service.ts` with helpers: `createEvent`, `joinEvent`, `getActiveEvent`, `addParticipant`, `removeParticipant`
+  - [x] 1.5 Implement `eventStore` Zustand slice (current event, role, participants, loading/error states)
+  - [x] 1.6 Amend `firebase.rules` to enforce: Host write access, Guest read-only, private event join via `joinCode`
+  - [x] 1.7 Add Firestore indexes for event visibility & participant queries
 
 - [ ] 2.0 Event Setup & Asset Ingestion Pipeline (Host only)
   - [ ] 2.1 Create `EventSetupScreen` form for event details & palette picker

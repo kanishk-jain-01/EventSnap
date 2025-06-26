@@ -2,16 +2,17 @@
 
 ## Pivot: Event-Driven Networking (2025-06-27)
 
-A new task list (`tasks-prd-event-driven-networking.md`) has been created with eight parent tasks (1.0–8.0) covering the event-centric refactor.  No work has started yet; all tasks remain unchecked.
+### Progress Today – Event Layer Foundations ✅
+- **1.0 Event Data Model & Access Control – COMPLETED (7/7 subtasks)**
+  - 1.1 Event schema types created
+  - 1.2 Participants sub-collection defined
+  - 1.3 `eventId` added to Snaps & Stories
+  - 1.4 FirestoreService event helpers implemented
+  - 1.5 `eventStore` Zustand slice added
+  - 1.6 Firestore security rules amended for hosts/guests
+  - 1.7 Composite indexes for `events` & `participants` added
 
-Key changes for this phase:
-- Role-based model (Host vs Guest) with public/private events.
-- Contacts UI and 1-to-1 Chat slated for removal during **8.0 Legacy Cleanup**.
-- HomeScreen will be replaced by `EventFeedScreen` scoped to the active event.
-- Single modern colour palette will replace Snapchat yellow (no dynamic theming in MVP).
-- **Testing**: Manual only.  All automated unit/integration tests have been removed from the plan.
-
-Next milestone: **Task 1.1 – Design Firestore `events` schema**.
+Next milestone: **2.0 Event Setup & Asset Ingestion Pipeline**
 
 ## Current Status: **Phase 6 Stories Feature – COMPLETE (8/8 tasks completed)**
 
