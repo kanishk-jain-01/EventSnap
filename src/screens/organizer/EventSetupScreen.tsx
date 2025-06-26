@@ -14,6 +14,7 @@ import { UploadProgress } from '../../components/ui/UploadProgress';
 import { StorageService } from '../../services/storage.service';
 import { IngestionService } from '../../services/ai/ingestion.service';
 import { UploadStatus } from '../../components/ui/UploadProgress';
+import { CleanupService } from '../../services/ai/cleanup.service';
 
 interface ColorOption {
   label: string;
@@ -69,6 +70,7 @@ export const EventSetupScreen: React.FC = () => {
 
   const [uploads, setUploads] = useState<UploadItem[]>([]);
   const [eventCreated, setEventCreated] = useState(false);
+  const [endingEvent, setEndingEvent] = useState(false);
 
   const { userId } = useAuth();
   const createEvent = useEventStore(state => state.createEvent);
@@ -144,7 +146,7 @@ export const EventSetupScreen: React.FC = () => {
       copyToCacheDirectory: true,
     });
 
-    if (result.type !== 'success') return;
+    if (result.canceled) return;
 
     const file = (result as any).assets ? (result as any).assets[0] : result; // compatibility
     const { uri, name, mimeType } = file;
@@ -216,13 +218,63 @@ export const EventSetupScreen: React.FC = () => {
       setUploads(prev =>
         prev.map(u => (u.id === assetId ? { ...u, progress: 100, status: 'success' } : u)),
       );
-    } catch (err) {
+    } catch (_err) {
       setUploads(prev =>
         prev.map(u =>
           u.fileName === name ? { ...u, status: 'error', error: 'Unknown error' } : u,
         ),
       );
     }
+  };
+
+  /** End the event and clean up all content */
+  const handleEndEvent = async () => {
+    if (!activeEvent?.id) {
+      Alert.alert('Error', 'No active event found');
+      return;
+    }
+
+    Alert.alert(
+      'End Event',
+      'This will permanently delete all event content including stories, snaps, and assets. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'End Event',
+          style: 'destructive',
+          onPress: async () => {
+            setEndingEvent(true);
+            
+            const result = await CleanupService.endEvent(activeEvent.id, true);
+            
+            setEndingEvent(false);
+            
+            if (result.success) {
+              Alert.alert(
+                'Event Ended',
+                `Successfully cleaned up:\n• ${result.data?.deletedStories || 0} stories\n• ${result.data?.deletedSnaps || 0} snaps\n• ${result.data?.deletedAssets || 0} assets`,
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => {
+                      // Clear event store and navigate to auth
+                      useEventStore.getState().clearState();
+                      // Navigate to auth by resetting the entire navigation stack
+                      navigation.getParent()?.reset({
+                        index: 0,
+                        routes: [{ name: 'Auth' }],
+                      });
+                    },
+                  },
+                ],
+              );
+            } else {
+              Alert.alert('Error', result.error || 'Failed to end event');
+            }
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -359,12 +411,21 @@ export const EventSetupScreen: React.FC = () => {
               ))}
             </View>
 
-            {/* Done button */}
-            <Button
-              title='Done'
-              className='mt-6'
-              onPress={() => navigation.navigate('MainTabs', { screen: 'Home' })}
-            />
+            {/* Done and End Event buttons */}
+            <View className='mt-6 space-y-3'>
+              <Button
+                title='Done'
+                onPress={() => navigation.navigate('MainTabs', { screen: 'Home' })}
+              />
+              
+              <Button
+                title='End Event'
+                onPress={handleEndEvent}
+                disabled={endingEvent}
+                loading={endingEvent}
+                variant='danger'
+              />
+            </View>
           </View>
         )}
       </ScrollView>

@@ -33,6 +33,9 @@ export const Button: React.FC<ButtonProps> = ({
       case 'outline':
         baseStyles += ' bg-transparent border-2 border-snap-yellow';
         break;
+      case 'danger':
+        baseStyles += ' bg-red-600 border border-red-600';
+        break;
       default: // primary
         baseStyles += ' bg-snap-yellow';
     }
@@ -67,6 +70,9 @@ export const Button: React.FC<ButtonProps> = ({
         break;
       case 'outline':
         textStyles += ' text-snap-yellow';
+        break;
+      case 'danger':
+        textStyles += ' text-white';
         break;
       default: // primary
         textStyles += ' text-snap-dark';

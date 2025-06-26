@@ -20,6 +20,8 @@
 - `functions/deleteExpiredContent/index.ts` – NEW: scheduled Cloud Function for cleanup
 - `functions/ingestPDFEmbeddings/index.ts` – NEW: Cloud Function for PDF → embeddings pipeline
 - `functions/ingestImageEmbeddings/index.ts` – NEW: Cloud Function for image → OCR/vision embeddings pipeline
+- `functions/deleteExpiredContent/index.ts` – NEW: Cloud Function for cleaning up expired event content
+- `src/services/ai/cleanup.service.ts` – NEW: Client service for calling cleanup Cloud Function
 - `src/store/chatStore.ts`, `src/services/realtime/`, `src/screens/main/Chat*` – DELETE: retire 1-to-1 chat
 - `src/screens/main/HomeScreen.tsx` – DELETE: superseded by `EventFeedScreen`
 
@@ -39,7 +41,7 @@
   - [x] 1.6 Amend `firebase.rules` to enforce: Host write access, Guest read-only, private event join via `joinCode`
   - [x] 1.7 Add Firestore indexes for event visibility & participant queries
 
-- [ ] 2.0 Event Setup & Asset Ingestion Pipeline (Host only)
+- [x] 2.0 Event Setup & Asset Ingestion Pipeline (Host only) ✅ **PHASE COMPLETE - 100%**
   - [x] 2.1 Create `EventSetupScreen` form for event details & palette picker
   - [x] 2.2 Build client createEvent flow: validation, palette selection, Host assignment
   - [x] 2.3 Extend `storage.service.ts` for uploading assets (PDFs **and** images) to `/events/{eventId}/assets/`
@@ -47,7 +49,7 @@
   - [x] 2.5 Write Cloud Function `ingestPDFEmbeddings` storing text embeddings in Pinecone & asset metadata in Firestore
   - [x] 2.6 Write Cloud Function `ingestImageEmbeddings` performing OCR +/or Vision embeddings, store vectors & metadata in Pinecone/Firestore
   - [x] 2.7 Show asset upload progress & error handling in UI
-  - [ ] 2.8 Add "End Event" / delete event action for Host; hook into cleanup CF
+  - [x] 2.8 Add "End Event" / delete event action for Host; hook into cleanup CF ✅ **COMPLETED TODAY**
 
 - [ ] 3.0 AI Assistant Integration (RAG Backend + UI)
   - [ ] 3.1 Configure Pinecone/vector DB credentials & environment variables

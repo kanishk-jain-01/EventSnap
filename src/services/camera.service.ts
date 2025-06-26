@@ -335,11 +335,7 @@ export class CameraService {
                 [{ text: 'OK' }],
               );
             }
-          } catch (optimizationError) {
-            console.warn(
-              'Image optimization failed, using original:',
-              optimizationError,
-            );
+          } catch {
             // Continue with original image if optimization fails
           }
         }
@@ -460,11 +456,7 @@ export class CameraService {
                 [{ text: 'OK' }],
               );
             }
-          } catch (optimizationError) {
-            console.warn(
-              'Image optimization failed, using original:',
-              optimizationError,
-            );
+          } catch {
             // Continue with original image if optimization fails
           }
         }

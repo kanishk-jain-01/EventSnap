@@ -54,6 +54,13 @@ module.exports = [
       'no-implied-eval': 'error',
     },
   },
+  // Cloud Functions specific rules - allow console statements for logging
+  {
+    files: ['functions/**/*.{js,ts}'],
+    rules: {
+      'no-console': 'off', // Console statements are the standard logging method for Cloud Functions
+    },
+  },
   {
     ignores: [
       'node_modules/',
@@ -61,6 +68,7 @@ module.exports = [
       'dist/',
       'build/',
       'coverage/',
+      'functions/lib/',
       '*.log',
       '.DS_Store',
       '.env*',

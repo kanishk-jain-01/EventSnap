@@ -48,9 +48,6 @@ if (!admin.apps.length) {
     admin.initializeApp();
 }
 // ***** Environment Variables ***** //
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const PINECONE_API_KEY = process.env.PINECONE_API_KEY;
-const PINECONE_ENVIRONMENT = process.env.PINECONE_ENVIRONMENT ?? 'us-east-1-aws';
 const PINECONE_INDEX = process.env.PINECONE_INDEX ?? 'event-embeddings';
 // ****** External Clients ****** //
 let _openai = null;

@@ -25,13 +25,25 @@
 3. Navigation redirect based on auth status
 4. Protected routes check auth state
 
-#### Snap Sending Flow
+#### Event Lifecycle Flow (NEW - EVENT-DRIVEN ARCHITECTURE)
+
+1. Host creates event → EventSetupScreen validation
+2. Event document creation → Firestore with palette/settings
+3. Asset upload → Firebase Storage + Cloud Function triggers
+4. PDF/Image ingestion → Pinecone embeddings + metadata
+5. Event participation → Host/guest role assignment
+6. Content creation → Event-scoped stories/snaps
+7. Event end → Manual or automatic (24h) cleanup
+8. Comprehensive cleanup → All content + vectors deleted
+
+#### Snap Sending Flow (EVENT-SCOPED)
 
 1. Camera capture → Local image
 2. Image compression → Optimized file
-3. Firebase Storage upload → URL returned
-4. Firestore document creation → Metadata stored
-5. Real-time listener → Recipient notification
+3. Event validation → Ensure user is participant
+4. Firebase Storage upload → URL returned
+5. Firestore document creation → Metadata stored with eventId
+6. Real-time listener → Event participants notification
 
 #### Story Posting Flow (NEW - IMPLEMENTED TODAY)
 
@@ -150,54 +162,134 @@ interface AppState {
 ```
 services/
 ├── auth.service.ts          # Authentication operations
-├── firestore.service.ts     # Database CRUD + Stories operations (ENHANCED)
-├── storage.service.ts       # File upload/download
+├── firestore.service.ts     # Database CRUD + Event operations (ENHANCED)
+├── storage.service.ts       # File upload/download + Event assets
+├── ai/
+│   ├── ingestion.service.ts # Cloud Function triggers for embeddings
+│   └── cleanup.service.ts   # Event cleanup Cloud Function calls (NEW)
 ├── realtime/
 │   ├── index.ts             # Main realtime service facade
 │   ├── messaging.service.ts # Enhanced messaging operations
 │   ├── models.ts            # TypeScript interfaces and types
 │   └── database-schema.md   # Database structure documentation
 └── cleanup/
-    └── snapCleanup.service.ts # Expired content removal
+    ├── snapCleanup.service.ts # Legacy expired content removal
+    └── storyCleanup.service.ts # Legacy story cleanup
 ```
 
 ### Data Models and Relationships
 
 ```
+Events Collection (NEW - PRIMARY ARCHITECTURE)
+├── eventId (document ID)
+├── name, description, location
+├── hostId → Users.uid
+├── palette (color scheme)
+├── visibility (public/private)
+├── joinCode (for private events)
+├── startTime, endTime
+├── createdAt, updatedAt
+└── participants/ (subcollection)
+    └── {userId}/
+        ├── role (host/guest)
+        ├── joinedAt
+        └── permissions
+
 Users Collection
 ├── uid (document ID)
 ├── email, displayName, avatarUrl
-└── createdAt
+├── createdAt
+└── activeEventId → Events.eventId (current event)
 
-Snaps Collection
+Snaps Collection (EVENT-SCOPED)
 ├── snapId (auto-generated)
+├── eventId → Events.eventId (NEW - REQUIRED)
 ├── senderId → Users.uid
 ├── receiverId → Users.uid
 ├── imageUrl, timestamp, viewed
 └── expiresAt (24 hours)
 
-Stories Collection (NEW - IMPLEMENTED)
+Stories Collection (EVENT-SCOPED)
 ├── storyId (auto-generated)
+├── eventId → Events.eventId (NEW - REQUIRED)
 ├── creator → Users.uid
 ├── imageUrl, createdAt
 ├── expiresAt (24 hours from creation)
 └── viewedBy: string[] (user IDs who viewed)
 
-Realtime Database
+Realtime Database (EVENT-SCOPED)
 └── chats/
-    ├── {chatId}/
+    ├── {eventId}-{chatId}/
     │   ├── messages/
     │   │   └── {messageId}
     │   └── typing/
     │       └── {userId}
     ├── userChats/
     │   └── {userId}/
-    │       └── {chatId}
+    │       └── {eventId}-{chatId}
     └── userPresence/
         └── {userId}
 ```
 
-### Stories Implementation Patterns (NEW - IMPLEMENTED TODAY)
+### Cloud Functions Architecture (NEW - IMPLEMENTED TODAY)
+
+```
+functions/
+├── index.ts                    # Barrel exports for all functions
+├── package.json               # Dependencies (OpenAI v4, Pinecone v6)
+├── tsconfig.json              # TypeScript configuration
+├── ingestPDFEmbeddings/
+│   └── index.ts               # PDF processing + Pinecone ingestion
+├── ingestImageEmbeddings/
+│   └── index.ts               # Image processing + Pinecone ingestion
+├── deleteExpiredContent/
+│   └── index.ts               # Event cleanup system (NEW)
+└── types/
+    └── pdf-parse.d.ts         # Type declarations
+```
+
+#### Cloud Function Patterns
+
+**Asset Ingestion Functions:**
+- Triggered by Firebase Storage uploads
+- Process PDFs/images with OpenAI embeddings
+- Store vectors in Pinecone with metadata
+- Event-scoped namespacing for isolation
+
+**Cleanup Functions:**
+- `deleteExpiredContent`: Manual/automatic event cleanup
+- `cleanupExpiredEventsScheduled`: Daily scheduled cleanup (2:00 AM UTC)
+- Comprehensive content removal: Firestore + Storage + Pinecone
+- Host permission validation for manual cleanup
+- Detailed error reporting and logging
+
+### Event Cleanup Architecture (NEW - IMPLEMENTED TODAY)
+
+```
+Cleanup Triggers:
+├── Manual (Host-initiated)
+│   ├── EventSetupScreen "End Event" button
+│   ├── Permission validation (host-only)
+│   ├── Confirmation dialog
+│   └── CleanupService → deleteExpiredContent CF
+└── Automatic (Scheduled)
+    ├── Cloud Scheduler (daily 2:00 AM UTC)
+    ├── cleanupExpiredEventsScheduled CF
+    ├── Query expired events (24h+ past endTime)
+    └── Batch cleanup processing
+
+Cleanup Process:
+1. Event validation & permission checks
+2. Stories deletion (Firestore + Storage)
+3. Snaps deletion (Firestore + Storage)
+4. Event assets deletion (Storage)
+5. Participants removal (Firestore subcollection)
+6. Pinecone vectors deletion (namespace cleanup)
+7. Event document deletion (Firestore)
+8. Cleanup reporting & error handling
+```
+
+### Stories Implementation Patterns (LEGACY - REPLACED BY EVENT ARCHITECTURE)
 
 #### Story Ring Visual Indicators
 
