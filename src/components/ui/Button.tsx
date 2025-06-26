@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, ActivityIndicator, View } from 'react-native';
 import { ButtonProps } from '../../types';
+import { useThemeColors } from './ThemeProvider';
 
 export const Button: React.FC<ButtonProps> = ({
   title,
@@ -10,6 +11,8 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
   loading = false,
 }) => {
+  const colors = useThemeColors();
+
   const getButtonStyles = () => {
     let baseStyles = 'rounded-lg flex-row items-center justify-center';
 
@@ -25,19 +28,19 @@ export const Button: React.FC<ButtonProps> = ({
         baseStyles += ' px-6 py-3';
     }
 
-    // Variant styles
+    // Variant styles - using new Creative Light Theme
     switch (variant) {
       case 'secondary':
-        baseStyles += ' bg-snap-gray border border-snap-light-gray';
+        baseStyles += ' bg-surface border border-border';
         break;
       case 'outline':
-        baseStyles += ' bg-transparent border-2 border-snap-yellow';
+        baseStyles += ' bg-transparent border-2 border-primary';
         break;
       case 'danger':
-        baseStyles += ' bg-red-600 border border-red-600';
+        baseStyles += ' bg-error border border-error';
         break;
       default: // primary
-        baseStyles += ' bg-snap-yellow';
+        baseStyles += ' bg-primary';
     }
 
     // Disabled state
@@ -63,22 +66,35 @@ export const Button: React.FC<ButtonProps> = ({
         textStyles += ' text-base';
     }
 
-    // Variant styles
+    // Variant styles - using new Creative Light Theme
     switch (variant) {
       case 'secondary':
-        textStyles += ' text-white';
+        textStyles += ' text-text-primary';
         break;
       case 'outline':
-        textStyles += ' text-snap-yellow';
+        textStyles += ' text-primary';
         break;
       case 'danger':
-        textStyles += ' text-white';
+        textStyles += ' text-text-inverse';
         break;
       default: // primary
-        textStyles += ' text-snap-dark';
+        textStyles += ' text-text-inverse';
     }
 
     return textStyles;
+  };
+
+  const getLoadingColor = () => {
+    switch (variant) {
+      case 'secondary':
+        return colors.textPrimary;
+      case 'outline':
+        return colors.primary;
+      case 'danger':
+        return colors.textInverse;
+      default: // primary
+        return colors.textInverse;
+    }
   };
 
   return (
@@ -92,7 +108,7 @@ export const Button: React.FC<ButtonProps> = ({
         <View className='flex-row items-center'>
           <ActivityIndicator
             size='small'
-            color={variant === 'primary' ? '#1a1a1a' : '#ffffff'}
+            color={getLoadingColor()}
             className='mr-2'
           />
           <Text className={getTextStyles()}>Loading...</Text>

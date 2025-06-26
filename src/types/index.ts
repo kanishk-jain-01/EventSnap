@@ -204,24 +204,56 @@ export interface ModalProps {
   transparent?: boolean;
 }
 
-// Theme Types
+// Theme Types - Creative Light Theme
 export interface Theme {
   colors: {
+    // Primary Colors
     primary: string;
-    secondary: string;
-    background: string;
-    surface: string;
-    text: string;
-    textSecondary: string;
-    border: string;
-    error: string;
+    primaryLight: string;
+    primaryDark: string;
+    
+    // Accent Colors
+    accent: string;
+    accentLight: string;
+    accentDark: string;
+    
+    // Semantic Colors
     success: string;
+    successLight: string;
+    successDark: string;
     warning: string;
-    // Snapchat specific colors
-    snapYellow: string;
-    snapDark: string;
-    snapGray: string;
-    snapLightGray: string;
+    warningLight: string;
+    warningDark: string;
+    error: string;
+    errorLight: string;
+    errorDark: string;
+    
+    // Background & Surface
+    bgPrimary: string;
+    bgSecondary: string;
+    surface: string;
+    surfaceElevated: string;
+    
+    // Text Colors
+    textPrimary: string;
+    textSecondary: string;
+    textTertiary: string;
+    textInverse: string;
+    
+    // Border Colors
+    border: string;
+    borderStrong: string;
+    divider: string;
+    
+    // Interactive States
+    interactiveHover: string;
+    interactivePressed: string;
+    interactiveDisabled: string;
+    
+    // Special Purpose
+    gradientStart: string;
+    gradientEnd: string;
+    shadow: string;
   };
   spacing: {
     xs: number;
@@ -235,6 +267,11 @@ export interface Theme {
     md: number;
     lg: number;
     full: number;
+  };
+  shadows: {
+    soft: string;
+    medium: string;
+    strong: string;
   };
 }
 

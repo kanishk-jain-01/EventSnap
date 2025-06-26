@@ -107,17 +107,50 @@ export const SUCCESS_MESSAGES = {
   PROFILE_UPDATED: 'Profile updated successfully!',
 } as const;
 
-// Theme Colors (matching TailwindCSS config)
+// Theme Colors (matching TailwindCSS config) - Creative Light Theme
 export const COLORS = {
-  SNAP_YELLOW: '#FFFC00',
-  SNAP_DARK: '#000000',
-  SNAP_GRAY: '#1E1E1E',
-  SNAP_LIGHT_GRAY: '#2A2A2A',
-  SNAP_WHITE: '#FFFFFF',
-  SNAP_BLUE: '#0EADFF',
-  SNAP_RED: '#FF0040',
-  SNAP_PURPLE: '#8B5CF6',
-  SNAP_GREEN: '#00D632',
+  // Primary Colors
+  PRIMARY: '#7C3AED',
+  PRIMARY_LIGHT: '#A855F7',
+  PRIMARY_DARK: '#6D28D9',
+  
+  // Accent Colors
+  ACCENT: '#EC4899',
+  ACCENT_LIGHT: '#F472B6',
+  ACCENT_DARK: '#DB2777',
+  
+  // Semantic Colors
+  SUCCESS: '#10B981',
+  SUCCESS_LIGHT: '#34D399',
+  SUCCESS_DARK: '#059669',
+  
+  WARNING: '#F59E0B',
+  WARNING_LIGHT: '#FBBF24',
+  WARNING_DARK: '#D97706',
+  
+  ERROR: '#EF4444',
+  ERROR_LIGHT: '#F87171',
+  ERROR_DARK: '#DC2626',
+  
+  // Background & Surface
+  BG_PRIMARY: '#FAFAFA',
+  BG_SECONDARY: '#F8FAFC',
+  SURFACE: '#FFFFFF',
+  
+  // Text Colors
+  TEXT_PRIMARY: '#1E293B',
+  TEXT_SECONDARY: '#64748B',
+  TEXT_TERTIARY: '#94A3B8',
+  TEXT_INVERSE: '#FFFFFF',
+  
+  // Border Colors
+  BORDER: '#E2E8F0',
+  BORDER_STRONG: '#CBD5E1',
+  
+  // Legacy colors for backward compatibility (will be removed in Task 4.4)
+  SNAP_YELLOW: '#7C3AED', // Mapped to primary for now
+  SNAP_DARK: '#1E293B',   // Mapped to text primary
+  SNAP_WHITE: '#FFFFFF',  // Keep white
 } as const;
 
 // Screen Names for Navigation

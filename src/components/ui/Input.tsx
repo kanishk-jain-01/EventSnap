@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput } from 'react-native';
 import { InputProps } from '../../types';
+import { useThemeColors } from './ThemeProvider';
 
 export const Input: React.FC<InputProps> = ({
   label,
@@ -13,17 +14,19 @@ export const Input: React.FC<InputProps> = ({
   keyboardType = 'default',
   maxLength,
 }) => {
+  const colors = useThemeColors();
+
   return (
     <View className='mb-4'>
       {label && (
-        <Text className='text-white text-sm font-medium mb-2'>{label}</Text>
+        <Text className='text-text-primary text-sm font-medium mb-2'>{label}</Text>
       )}
       <TextInput
-        className={`bg-snap-gray border rounded-lg px-4 py-3 text-white text-base ${
-          error ? 'border-snap-red' : 'border-snap-light-gray'
+        className={`bg-surface border rounded-lg px-4 py-3 text-text-primary text-base ${
+          error ? 'border-error' : 'border-border focus:border-primary'
         }`}
         placeholder={placeholder}
-        placeholderTextColor='#9CA3AF'
+        placeholderTextColor={colors.textTertiary}
         value={value}
         onChangeText={onChangeText}
         secureTextEntry={secureTextEntry}
@@ -32,8 +35,16 @@ export const Input: React.FC<InputProps> = ({
         maxLength={maxLength}
         autoCorrect={false}
         autoComplete='off'
+        style={{
+          // Additional styles for better light theme appearance
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.05,
+          shadowRadius: 2,
+          elevation: 1,
+        }}
       />
-      {error && <Text className='text-snap-red text-sm mt-1'>{error}</Text>}
+      {error && <Text className='text-error text-sm mt-1'>{error}</Text>}
     </View>
   );
 };

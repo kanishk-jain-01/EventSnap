@@ -9,15 +9,10 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useAuth } from '../../hooks/useAuth';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import {
-  validateEmail,
-  validatePassword,
-  validateDisplayName,
-} from '../../utils/validation';
 import { AuthStackParamList } from '../../types';
+import { Input } from '../../components/ui/Input';
+import { Button } from '../../components/ui/Button';
+import { useAuth } from '../../hooks/useAuth';
 
 type RegisterScreenProps = NativeStackScreenProps<
   AuthStackParamList,
@@ -67,37 +62,49 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
   const validateForm = (): boolean => {
     let isValid = true;
 
+    // Reset errors
+    setDisplayNameError('');
+    setEmailError('');
+    setPasswordError('');
+    setConfirmPasswordError('');
+
     // Validate display name
-    const displayNameValidation = validateDisplayName(displayName);
-    if (!displayNameValidation.isValid) {
-      setDisplayNameError(
-        displayNameValidation.error || 'Invalid display name',
-      );
+    if (!displayName.trim()) {
+      setDisplayNameError('Display name is required');
+      isValid = false;
+    } else if (displayName.trim().length < 2) {
+      setDisplayNameError('Display name must be at least 2 characters');
+      isValid = false;
+    } else if (displayName.trim().length > 30) {
+      setDisplayNameError('Display name must be less than 30 characters');
       isValid = false;
     }
 
     // Validate email
-    const emailValidation = validateEmail(email);
-    if (!emailValidation.isValid) {
-      setEmailError(emailValidation.error || 'Invalid email');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email.trim()) {
+      setEmailError('Email is required');
+      isValid = false;
+    } else if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address');
       isValid = false;
     }
 
     // Validate password
-    const passwordValidation = validatePassword(password);
-    if (!passwordValidation.isValid) {
-      setPasswordError(passwordValidation.error || 'Invalid password');
+    if (!password.trim()) {
+      setPasswordError('Password is required');
+      isValid = false;
+    } else if (password.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
       isValid = false;
     }
 
     // Validate password confirmation
-    if (password !== confirmPassword) {
-      setConfirmPasswordError('Passwords do not match');
-      isValid = false;
-    }
-
     if (!confirmPassword.trim()) {
       setConfirmPasswordError('Please confirm your password');
+      isValid = false;
+    } else if (password !== confirmPassword) {
+      setConfirmPasswordError('Passwords do not match');
       isValid = false;
     }
 
@@ -127,10 +134,10 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
 
   return (
     <KeyboardAvoidingView
-      className='flex-1 bg-snap-dark'
+      className='flex-1 bg-bg-primary'
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar style='light' />
+      <StatusBar style='dark' />
       <ScrollView
         className='flex-1'
         contentContainerStyle={{ flexGrow: 1 }}
@@ -139,10 +146,10 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
         <View className='flex-1 px-6 pt-20 pb-8'>
           {/* Header */}
           <View className='items-center mb-8'>
-            <Text className='text-snap-yellow text-4xl font-bold mb-2'>
-              Snapchat
+            <Text className='text-primary text-4xl font-bold mb-2'>
+              EventSnap
             </Text>
-            <Text className='text-white text-lg'>Create your account</Text>
+            <Text className='text-text-primary text-lg'>Create your account</Text>
           </View>
 
           {/* Form */}
@@ -180,7 +187,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
                 className='absolute right-4 top-9'
                 onPress={() => setShowPassword(!showPassword)}
               >
-                <Text className='text-snap-yellow text-sm'>
+                <Text className='text-primary text-sm'>
                   {showPassword ? 'Hide' : 'Show'}
                 </Text>
               </TouchableOpacity>
@@ -199,7 +206,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
                 className='absolute right-4 top-9'
                 onPress={() => setShowConfirmPassword(!showConfirmPassword)}
               >
-                <Text className='text-snap-yellow text-sm'>
+                <Text className='text-primary text-sm'>
                   {showConfirmPassword ? 'Hide' : 'Show'}
                 </Text>
               </TouchableOpacity>
@@ -207,8 +214,8 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
 
             {/* Auth Error */}
             {error && (
-              <View className='bg-snap-red/20 border border-snap-red rounded-lg p-3 mb-4'>
-                <Text className='text-snap-red text-sm text-center'>
+              <View className='bg-error/20 border border-error rounded-lg p-3 mb-4'>
+                <Text className='text-error text-sm text-center'>
                   {error}
                 </Text>
               </View>
@@ -220,12 +227,11 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
               onPress={handleRegister}
               loading={isLoading}
               disabled={!isFormValid()}
-              size='large'
             />
 
             {/* Terms and Privacy */}
             <View className='mt-4 px-4'>
-              <Text className='text-gray-400 text-xs text-center leading-4'>
+              <Text className='text-text-tertiary text-xs text-center leading-4'>
                 By creating an account, you agree to our Terms of Service and
                 Privacy Policy. This is a demo app for internal testing only.
               </Text>
@@ -235,14 +241,14 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
           {/* Footer */}
           <View className='mt-8'>
             <View className='flex-row items-center justify-center'>
-              <Text className='text-white text-base'>
+              <Text className='text-text-secondary text-base'>
                 Already have an account?{' '}
               </Text>
               <TouchableOpacity
                 disabled={isLoading}
                 onPress={() => navigation.navigate('Login')}
               >
-                <Text className='text-snap-yellow text-base font-semibold'>
+                <Text className='text-primary text-base font-semibold'>
                   Sign In
                 </Text>
               </TouchableOpacity>

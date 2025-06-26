@@ -1,145 +1,140 @@
-# System Patterns: Snapchat Clone MVP
+# System Patterns: EventSnap - Event-Driven Networking Platform
 
 ## Architecture Overview
 
 ### High-Level Architecture
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   React Native  │    │    Firebase     │    │   File Storage  │
-│   Frontend App  │◄──►│    Backend      │◄──►│   (Images)      │
-│                 │    │                 │    │                 │
-│ • Components    │    │ • Auth          │    │ • Snaps         │
-│ • Navigation    │    │ • Firestore     │    │ • Stories       │
-│ • State (Zustand│    │ • Realtime DB   │    │ • Avatars       │
-│ • Hooks         │    │ • Storage       │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   React Native  │    │    Firebase     │    │   AI Services   │    │   File Storage  │
+│   Frontend App  │◄──►│    Backend      │◄──►│   (OpenAI +     │◄──►│   (Images +     │
+│                 │    │                 │    │    Pinecone)    │    │    PDFs)        │
+│ • EventSnap UI  │    │ • Auth          │    │ • Embeddings    │    │ • Event Assets  │
+│ • Theme System  │    │ • Firestore     │    │ • RAG Search    │    │ • Stories       │
+│ • State (Zustand│    │ • Cloud Funcs   │    │ • Cleanup       │    │ • Snaps         │
+│ • Navigation    │    │ • Storage       │    │                 │    │ • Avatars       │
+└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
 ### Data Flow Patterns
 
-#### Authentication Flow
+#### Authentication Flow (EventSnap Branding)
 
 1. User inputs credentials → Firebase Auth
 2. Auth state change → Zustand store update
-3. Navigation redirect based on auth status
-4. Protected routes check auth state
+3. EventSnap-branded navigation redirect based on auth status
+4. Protected routes check auth state with Creative Light Theme
 
-#### Event Lifecycle Flow (NEW - EVENT-DRIVEN ARCHITECTURE)
+#### Event Lifecycle Flow (EVENT-DRIVEN ARCHITECTURE)
 
-1. Host creates event → EventSetupScreen validation
-2. Event document creation → Firestore with palette/settings
+1. Host creates event → EventSetupScreen with Creative Light Theme validation
+2. Event document creation → Firestore with role assignments
 3. Asset upload → Firebase Storage + Cloud Function triggers
-4. PDF/Image ingestion → Pinecone embeddings + metadata
-5. Event participation → Host/guest role assignment
-6. Content creation → Event-scoped stories/snaps
+4. PDF/Image ingestion → OpenAI embeddings → Pinecone storage
+5. Event participation → Host/guest role assignment with theme-aware UI
+6. Content creation → Event-scoped stories/snaps with purple/pink theme
 7. Event end → Manual or automatic (24h) cleanup
 8. Comprehensive cleanup → All content + vectors deleted
 
-#### Snap Sending Flow (EVENT-SCOPED)
+#### Theme System Flow (NEW - IMPLEMENTED TODAY)
 
-1. Camera capture → Local image
-2. Image compression → Optimized file
-3. Event validation → Ensure user is participant
-4. Firebase Storage upload → URL returned
+1. App initialization → ThemeProvider wraps entire app
+2. Component render → useThemeColors() hook accesses tokens
+3. Dynamic styling → Theme tokens applied via className
+4. State changes → Memoized context prevents unnecessary re-renders
+5. Consistent branding → EventSnap identity throughout
+
+#### Content Creation Flow (EVENT-SCOPED + THEMED)
+
+1. Camera capture → Local image with Creative Light Theme UI
+2. Image compression → Context-aware optimization
+3. Event validation → Ensure user is participant with role check
+4. Firebase Storage upload → Event-scoped URL returned
 5. Firestore document creation → Metadata stored with eventId
-6. Real-time listener → Event participants notification
-
-#### Story Posting Flow (NEW - IMPLEMENTED TODAY)
-
-1. Camera capture/gallery selection → Local image processing
-2. Image optimization → Context-aware compression
-3. Firebase Storage upload → Public story URL
-4. Firestore document creation → Story metadata with 24-hour expiration
-5. Real-time listeners → Story feed updates
-6. Background cleanup → Expired stories automatically removed
-
-#### Story Feed Display Flow (NEW - IMPLEMENTED TODAY)
-
-1. HomeScreen mount → Subscribe to active stories
-2. Firestore query → Stories within 24-hour window
-3. User data loading → Story owner information
-4. Story ring computation → Visual status indicators
-5. Real-time updates → Live story feed refresh
-
-#### Real-time Messaging Flow
-
-1. Message composition → Local validation
-2. Optimistic UI update → Immediate display
-3. Firebase Realtime DB write → Message persisted
-4. Status update (sending → sent → delivered → read)
-5. Real-time listeners → Recipient receives message
-6. Typing indicators → Real-time status updates
+6. Real-time listener → Event participants notification with purple theme
 
 ## Component Architecture
 
-### Screen-Level Components
+### Screen-Level Components (EventSnap Themed)
 
 ```
 screens/
 ├── auth/
-│   ├── LoginScreen.tsx      # Email/password login
-│   ├── RegisterScreen.tsx   # User registration
-│   └── AuthLoadingScreen.tsx # Auth state check
-└── main/
-    ├── CameraScreen.tsx     # Photo capture + story posting (ENHANCED)
-    ├── HomeScreen.tsx       # Story feed + snaps list (ENHANCED)
-    ├── ChatListScreen.tsx   # Chat conversations
-    ├── ChatScreen.tsx       # Individual chat
-    ├── SnapViewerScreen.tsx # Full-screen snap viewing
-    ├── RecipientSelectionScreen.tsx # Snap recipient selection
-    └── ProfileScreen.tsx    # User profile management
+│   ├── LoginScreen.tsx           # EventSnap login with Creative Light Theme
+│   ├── RegisterScreen.tsx        # EventSnap registration with purple accents
+│   └── AuthLoadingScreen.tsx     # EventSnap branding with purple spinner
+├── main/
+│   ├── CameraScreen.tsx          # Photo capture with light theme UI
+│   ├── HomeScreen.tsx            # Event feed with purple story rings
+│   ├── ChatListScreen.tsx        # Chat conversations (legacy)
+│   ├── ChatScreen.tsx            # Individual chat (legacy)
+│   ├── SnapViewerScreen.tsx      # Full-screen snap viewing
+│   ├── RecipientSelectionScreen.tsx # Snap recipient selection
+│   ├── ProfileScreen.tsx         # User profile management
+│   └── StoryViewerScreen.tsx     # Story viewing interface
+└── organizer/
+    └── EventSetupScreen.tsx      # Event creation with asset upload
 ```
 
-### Reusable Components
+### Reusable Components (Creative Light Theme)
 
 ```
 components/
 ├── ui/
-│   ├── Button.tsx           # Styled button component
-│   ├── Input.tsx            # Form input with validation
-│   ├── LoadingSpinner.tsx   # Loading states
-│   ├── Modal.tsx            # Modal dialogs
-│   └── ErrorBoundary.tsx    # Error handling
+│   ├── Button.tsx                # Purple primary, white secondary, rose danger
+│   ├── Input.tsx                 # White backgrounds, purple focus states
+│   ├── LoadingSpinner.tsx        # Purple spinners throughout
+│   ├── Modal.tsx                 # Clean white modals with shadows
+│   ├── ThemeProvider.tsx         # React Context theme system (NEW)
+│   └── ErrorBoundary.tsx         # Error handling with theme support
 ├── media/
-│   ├── ImageViewer.tsx      # Full-screen image display
-│   ├── ImageEditor.tsx      # Image editing interface
-│   └── CameraControls.tsx   # Camera interface controls
+│   ├── ImageViewer.tsx           # Full-screen image display
+│   ├── ImageEditor.tsx           # Image editing interface
+│   ├── CameraControls.tsx        # Camera interface controls
+│   └── UploadProgress.tsx        # Asset upload progress UI
 └── social/
-    ├── StoryRing.tsx        # Story avatar rings (NEW - IMPLEMENTED)
-    ├── SnapPreview.tsx      # Snap thumbnail
-    └── UserAvatar.tsx       # User profile image
+    ├── StoryRing.tsx             # Purple/pink story rings (REFACTORED)
+    ├── SnapPreview.tsx           # Snap thumbnail
+    └── UserAvatar.tsx            # User profile image
 ```
 
 ## State Management Patterns
 
-### Zustand Store Structure
+### Zustand Store Structure (Event-Centric)
 
 ```typescript
 interface AppState {
-  // Authentication
+  // Authentication (EventSnap)
   user: User | null;
   isAuthenticated: boolean;
   authLoading: boolean;
 
-  // Snaps
-  receivedSnaps: Snap[];
-  sentSnaps: Snap[];
-  sendingSnap: boolean;
+  // Events (PRIMARY ARCHITECTURE)
+  currentEvent: Event | null;
+  userRole: 'host' | 'guest' | null;
+  eventParticipants: User[];
+  eventLoading: boolean;
+  eventError: string | null;
 
-  // Stories (NEW - IMPLEMENTED)
+  // Theme System (NEW)
+  theme: ThemeTokens;
+  isDarkMode: boolean; // Currently false for Creative Light Theme
+
+  // Stories (EVENT-SCOPED)
   stories: Story[];
   storyOwners: { [userId: string]: User };
   postingStory: boolean;
   storyError: string | null;
 
-  // Chat
+  // Snaps (EVENT-SCOPED)
+  receivedSnaps: Snap[];
+  sentSnaps: Snap[];
+  sendingSnap: boolean;
+
+  // Chat (LEGACY - TO BE DEPRECATED)
   conversations: Conversation[];
   messages: { [chatId: string]: Message[] };
   activeChat: string | null;
-  typingUsers: { [chatId: string]: string[] };
-  userPresence: { [userId: string]: UserPresence };
-  isConnected: boolean;
 
   // UI State
   currentScreen: string;
@@ -147,358 +142,366 @@ interface AppState {
 }
 ```
 
-### Hook Patterns
+### Hook Patterns (EventSnap Enhanced)
 
-- **useAuth**: Authentication state and methods
-- **useCamera**: Camera permissions and capture logic
-- **useFirestore**: Firestore CRUD operations
-- **useRealtimeChat**: Real-time message synchronization
-- **useImageUpload**: File upload with progress tracking
+- **useAuth**: Authentication state and methods with EventSnap branding
+- **useCamera**: Camera permissions and capture logic with theme integration
+- **useFirestore**: Firestore CRUD operations with event scoping
+- **useImageUpload**: File upload with progress tracking and theme UI
+- **useTheme**: Theme system access (NEW)
+- **useThemeColors**: Color token access (NEW)
+- **useThemeSpacing**: Spacing system access (NEW)
+
+## Theme System Architecture (NEW - IMPLEMENTED TODAY)
+
+### ThemeProvider Pattern
+
+```typescript
+// Theme Context Architecture
+interface ThemeContextType {
+  colors: ColorTokens;
+  spacing: SpacingTokens;
+  fonts: FontTokens;
+  shadows: ShadowTokens;
+  createThemeStyles: (styles: any) => any;
+}
+
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const theme = useMemo(() => ({
+    colors: colorTokens,
+    spacing: spacingTokens,
+    fonts: fontTokens,
+    shadows: shadowTokens,
+    createThemeStyles: (styles) => ({ ...styles, theme: colorTokens })
+  }), []);
+
+  return (
+    <ThemeContext.Provider value={theme}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+```
+
+### Component Theme Integration Pattern
+
+```typescript
+// Modern EventSnap component with theme
+const EventSnapComponent: React.FC<Props> = ({ variant = 'primary', ...props }) => {
+  const colors = useThemeColors();
+  const spacing = useThemeSpacing();
+
+  const variantClasses = {
+    primary: 'bg-primary text-white',
+    secondary: 'bg-bg-elevated text-text-primary border border-primary',
+    danger: 'bg-error text-white'
+  };
+
+  return (
+    <TouchableOpacity 
+      className={`${variantClasses[variant]} px-md py-sm rounded-lg shadow-md`}
+      style={{ shadowColor: colors.primary[500] }}
+      {...props}
+    />
+  );
+};
+```
 
 ## Firebase Integration Patterns
 
-### Service Layer Architecture
+### Service Layer Architecture (Event-Centric)
 
 ```
 services/
-├── auth.service.ts          # Authentication operations
-├── firestore.service.ts     # Database CRUD + Event operations (ENHANCED)
-├── storage.service.ts       # File upload/download + Event assets
+├── auth.service.ts               # Authentication operations
+├── firestore.service.ts          # Database CRUD + Event operations
+├── storage.service.ts            # File upload/download + Event assets
 ├── ai/
-│   ├── ingestion.service.ts # Cloud Function triggers for embeddings
-│   └── cleanup.service.ts   # Event cleanup Cloud Function calls (NEW)
+│   ├── ingestion.service.ts      # Cloud Function triggers for embeddings
+│   ├── cleanup.service.ts        # Event cleanup Cloud Function calls
+│   └── assistant.service.ts      # AI assistant integration (Phase 3.0)
 ├── realtime/
-│   ├── index.ts             # Main realtime service facade
-│   ├── messaging.service.ts # Enhanced messaging operations
-│   ├── models.ts            # TypeScript interfaces and types
-│   └── database-schema.md   # Database structure documentation
+│   ├── index.ts                  # Main realtime service facade (legacy)
+│   ├── messaging.service.ts      # Enhanced messaging operations (legacy)
+│   ├── models.ts                 # TypeScript interfaces and types
+│   └── database-schema.md        # Database structure documentation
 └── cleanup/
-    ├── snapCleanup.service.ts # Legacy expired content removal
-    └── storyCleanup.service.ts # Legacy story cleanup
+    ├── snapCleanup.service.ts    # Legacy expired content removal
+    └── storyCleanup.service.ts   # Legacy story cleanup
 ```
 
-### Data Models and Relationships
+### Data Models and Relationships (Event-Driven)
 
 ```
-Events Collection (NEW - PRIMARY ARCHITECTURE)
+Events Collection (PRIMARY ARCHITECTURE)
 ├── eventId (document ID)
 ├── name, description, location
 ├── hostId → Users.uid
-├── palette (color scheme)
 ├── visibility (public/private)
 ├── joinCode (for private events)
 ├── startTime, endTime
 ├── createdAt, updatedAt
+├── assets[] (uploaded PDFs/images)
 └── participants/ (subcollection)
     └── {userId}/
         ├── role (host/guest)
         ├── joinedAt
         └── permissions
 
-Users Collection
+Users Collection (EventSnap)
 ├── uid (document ID)
 ├── email, displayName, avatarUrl
-├── createdAt
-└── activeEventId → Events.eventId (current event)
-
-Snaps Collection (EVENT-SCOPED)
-├── snapId (auto-generated)
-├── eventId → Events.eventId (NEW - REQUIRED)
-├── senderId → Users.uid
-├── receiverId → Users.uid
-├── imageUrl, timestamp, viewed
-└── expiresAt (24 hours)
+├── createdAt, lastSeen
+└── profile (EventSnap-specific fields)
 
 Stories Collection (EVENT-SCOPED)
-├── storyId (auto-generated)
-├── eventId → Events.eventId (NEW - REQUIRED)
-├── creator → Users.uid
-├── imageUrl, createdAt
-├── expiresAt (24 hours from creation)
-└── viewedBy: string[] (user IDs who viewed)
+├── storyId (document ID)
+├── eventId (REQUIRED - event scoping)
+├── creatorId → Users.uid
+├── imageUrl → Firebase Storage
+├── createdAt, expiresAt (24h)
+├── viewedBy[] (user IDs)
+└── metadata (device, location, etc.)
 
-Realtime Database (EVENT-SCOPED)
-└── chats/
-    ├── {eventId}-{chatId}/
-    │   ├── messages/
-    │   │   └── {messageId}
-    │   └── typing/
-    │       └── {userId}
-    ├── userChats/
-    │   └── {userId}/
-    │       └── {eventId}-{chatId}
-    └── userPresence/
-        └── {userId}
+Snaps Collection (EVENT-SCOPED)
+├── snapId (document ID)
+├── eventId (REQUIRED - event scoping)
+├── senderId → Users.uid
+├── recipientId → Users.uid
+├── imageUrl → Firebase Storage
+├── sentAt, viewedAt, expiresAt
+└── metadata (viewing duration, etc.)
 ```
 
-### Cloud Functions Architecture (NEW - IMPLEMENTED TODAY)
+## AI Integration Patterns (Phase 2.0 Complete)
 
-```
-functions/
-├── index.ts                    # Barrel exports for all functions
-├── package.json               # Dependencies (OpenAI v4, Pinecone v6)
-├── tsconfig.json              # TypeScript configuration
-├── ingestPDFEmbeddings/
-│   └── index.ts               # PDF processing + Pinecone ingestion
-├── ingestImageEmbeddings/
-│   └── index.ts               # Image processing + Pinecone ingestion
-├── deleteExpiredContent/
-│   └── index.ts               # Event cleanup system (NEW)
-└── types/
-    └── pdf-parse.d.ts         # Type declarations
-```
-
-#### Cloud Function Patterns
-
-**Asset Ingestion Functions:**
-- Triggered by Firebase Storage uploads
-- Process PDFs/images with OpenAI embeddings
-- Store vectors in Pinecone with metadata
-- Event-scoped namespacing for isolation
-
-**Cleanup Functions:**
-- `deleteExpiredContent`: Manual/automatic event cleanup
-- `cleanupExpiredEventsScheduled`: Daily scheduled cleanup (2:00 AM UTC)
-- Comprehensive content removal: Firestore + Storage + Pinecone
-- Host permission validation for manual cleanup
-- Detailed error reporting and logging
-
-### Event Cleanup Architecture (NEW - IMPLEMENTED TODAY)
-
-```
-Cleanup Triggers:
-├── Manual (Host-initiated)
-│   ├── EventSetupScreen "End Event" button
-│   ├── Permission validation (host-only)
-│   ├── Confirmation dialog
-│   └── CleanupService → deleteExpiredContent CF
-└── Automatic (Scheduled)
-    ├── Cloud Scheduler (daily 2:00 AM UTC)
-    ├── cleanupExpiredEventsScheduled CF
-    ├── Query expired events (24h+ past endTime)
-    └── Batch cleanup processing
-
-Cleanup Process:
-1. Event validation & permission checks
-2. Stories deletion (Firestore + Storage)
-3. Snaps deletion (Firestore + Storage)
-4. Event assets deletion (Storage)
-5. Participants removal (Firestore subcollection)
-6. Pinecone vectors deletion (namespace cleanup)
-7. Event document deletion (Firestore)
-8. Cleanup reporting & error handling
-```
-
-### Stories Implementation Patterns (LEGACY - REPLACED BY EVENT ARCHITECTURE)
-
-#### Story Ring Visual Indicators
+### Cloud Functions Architecture
 
 ```typescript
-// Color-coded status system
-const getStoryRingColor = (story: Story, currentUserId: string) => {
-  if (story.creator === currentUserId) return 'border-blue-500'; // Own story
-  if (story.viewedBy.includes(currentUserId)) return 'border-gray-400'; // Viewed
-  return 'border-yellow-400'; // Unviewed
-};
+// PDF Ingestion Pattern
+export const ingestPDFEmbeddings = functions.storage.object().onFinalize(async (object) => {
+  // Event-scoped processing
+  const eventId = extractEventIdFromPath(object.name);
+  if (!eventId) return;
+
+  // PDF text extraction
+  const text = await extractPDFText(object);
+
+  // OpenAI embeddings generation
+  const embeddings = await openai.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: text
+  });
+
+  // Pinecone storage with event metadata
+  await pinecone.index(INDEX_NAME).upsert([{
+    id: `${eventId}-${object.name}`,
+    values: embeddings.data[0].embedding,
+    metadata: { eventId, type: 'pdf', content: text, filename: object.name }
+  }]);
+});
+
+// Cleanup Pattern
+export const deleteExpiredContent = functions.https.onCall(async (data, context) => {
+  const { eventId } = data;
+  
+  // Host permission validation
+  await validateHostPermission(context.auth?.uid, eventId);
+  
+  // Comprehensive cleanup across all services
+  const results = await Promise.allSettled([
+    cleanupFirestore(eventId),
+    cleanupStorage(eventId),
+    cleanupPinecone(eventId)
+  ]);
+  
+  return { success: true, results };
+});
 ```
 
-#### Story Feed Integration
-
-```typescript
-// HomeScreen layout pattern
-<FlatList
-  data={snaps}
-  ListHeaderComponent={
-    <FlatList
-      horizontal
-      data={storyRingData}
-      renderItem={({ item }) => <StoryRing {...item} />}
-    />
-  }
-  renderItem={({ item }) => <SnapItem {...item} />}
-  ListEmptyComponent={EmptyState}
-/>
-```
-
-#### Story Posting Flow
-
-```typescript
-// CameraScreen story posting pattern
-const handlePostStory = async (imageUri: string) => {
-  setPostingStory(true);
-  try {
-    await storyStore.postStory(imageUri);
-    navigation.navigate('MainTabs', { screen: 'Home' });
-  } catch (error) {
-    Alert.alert('Error', 'Failed to post story');
-  } finally {
-    setPostingStory(false);
-  }
-};
-```
-
-## Security Patterns
-
-### Firestore Security Rules
+### Event-Scoped Security Pattern
 
 ```javascript
-// Users can only read/write their own data
-match /users/{userId} {
-  allow read, write: if request.auth != null && request.auth.uid == userId;
-}
-
-// Snaps readable by sender and recipient only
-match /snaps/{snapId} {
-  allow read: if request.auth != null &&
-    (request.auth.uid == resource.data.senderId ||
-     request.auth.uid == resource.data.receiverId);
-}
-
-// Stories readable by all authenticated users (NEW)
-match /stories/{storyId} {
-  allow read: if request.auth != null;
-  allow create: if request.auth != null && request.auth.uid == resource.data.creator;
-  allow update: if request.auth != null; // For view tracking
+// Firestore Security Rules (Event-Centric)
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Event access control
+    function isEventParticipant(eventId) {
+      return exists(/databases/$(database)/documents/events/$(eventId)/participants/$(request.auth.uid));
+    }
+    
+    function isEventHost(eventId) {
+      return get(/databases/$(database)/documents/events/$(eventId)/participants/$(request.auth.uid)).data.role == 'host';
+    }
+    
+    // Event-scoped content
+    match /stories/{storyId} {
+      allow read: if isEventParticipant(resource.data.eventId);
+      allow create: if isEventParticipant(resource.data.eventId);
+      allow update: if resource.data.creatorId == request.auth.uid;
+    }
+    
+    match /snaps/{snapId} {
+      allow read: if resource.data.recipientId == request.auth.uid || 
+                     resource.data.senderId == request.auth.uid;
+      allow create: if isEventParticipant(resource.data.eventId) && 
+                       request.auth.uid == resource.data.senderId;
+    }
+  }
 }
 ```
 
-### Storage Security Rules
+## Navigation Patterns (EventSnap Themed)
 
-```javascript
-// Users can upload to their own folders
-match /snaps/{userId}/{allPaths=**} {
-  allow write: if request.auth != null && request.auth.uid == userId;
-}
+### Navigation Architecture
+
+```typescript
+// App-Level Navigation (EventSnap)
+const AppNavigator = () => {
+  const { isAuthenticated, user } = useAuth();
+  
+  return (
+    <ThemeProvider>
+      <NavigationContainer>
+        {isAuthenticated ? (
+          <MainNavigator />
+        ) : (
+          <AuthNavigator />
+        )}
+      </NavigationContainer>
+    </ThemeProvider>
+  );
+};
+
+// Main Navigation (Event-Aware)
+const MainNavigator = () => {
+  const { currentEvent, userRole } = useEventStore();
+  
+  if (!currentEvent) {
+    return <EventSelectionNavigator />;
+  }
+  
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        tabBarStyle: { backgroundColor: '#ffffff' }, // Light theme
+        tabBarActiveTintColor: '#7c3aed', // Purple active
+        tabBarInactiveTintColor: '#94a3b8' // Light gray inactive
+      }}
+    >
+      <Tab.Screen name="Feed" component={EventFeedScreen} />
+      <Tab.Screen name="Camera" component={CameraScreen} />
+      {userRole === 'host' && (
+        <Tab.Screen name="Manage" component={EventManageScreen} />
+      )}
+      <Tab.Screen name="Profile" component={ProfileScreen} />
+    </Tab.Navigator>
+  );
+};
 ```
 
 ## Performance Optimization Patterns
 
-### Image Handling
-
-- Compress images before upload (max 1MB)
-- Generate thumbnails for story previews
-- Lazy load images in chat and story feeds
-- Cache downloaded images locally
-
-### Database Optimization
-
-- Use Firestore composite indexes for complex queries
-- Implement pagination for chat messages
-- Cache frequently accessed data in Zustand
-- Use real-time listeners only when necessary
-
-### Code Splitting
+### Theme System Performance
 
 ```typescript
-// Lazy load screens for better performance
-const CameraScreen = lazy(() => import('./screens/main/CameraScreen'));
-const ChatScreen = lazy(() => import('./screens/main/ChatScreen'));
+// Memoized theme context to prevent unnecessary re-renders
+const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const theme = useMemo(() => createTheme(), []);
+  
+  // Memoized color access to prevent object recreation
+  const colors = useMemo(() => theme.colors, [theme.colors]);
+  const spacing = useMemo(() => theme.spacing, [theme.spacing]);
+  
+  return (
+    <ThemeContext.Provider value={{ ...theme, colors, spacing }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+// Component-level memoization
+const EventSnapButton = React.memo<ButtonProps>(({ variant, children, ...props }) => {
+  const colors = useThemeColors();
+  
+  const styles = useMemo(() => ({
+    backgroundColor: colors.primary[500],
+    borderColor: colors.primary[600]
+  }), [colors.primary]);
+  
+  return (
+    <TouchableOpacity style={styles} {...props}>
+      {children}
+    </TouchableOpacity>
+  );
+});
 ```
 
-## Error Handling Patterns
-
-### Global Error Boundary
+### Event-Scoped Query Optimization
 
 ```typescript
-// Catch and handle React errors gracefully
-<ErrorBoundary fallback={<ErrorScreen />}>
-  <App />
-</ErrorBoundary>
+// Efficient event-scoped queries
+const useEventStories = (eventId: string) => {
+  return useFirestore(
+    ['stories', eventId],
+    () => firestoreService.getActiveStories(eventId),
+    {
+      enabled: !!eventId,
+      staleTime: 30000, // 30 seconds
+      refetchInterval: 60000 // 1 minute
+    }
+  );
+};
+
+// Batch operations for performance
+const batchUpdateStoryViews = async (storyIds: string[], userId: string) => {
+  const batch = firestore.batch();
+  
+  storyIds.forEach(storyId => {
+    const storyRef = firestore.collection('stories').doc(storyId);
+    batch.update(storyRef, {
+      viewedBy: firestore.FieldValue.arrayUnion(userId)
+    });
+  });
+  
+  await batch.commit();
+};
 ```
 
-### Firebase Error Handling
+## EventSnap Platform Status (2025-01-03)
 
-```typescript
-// Standardized error handling for Firebase operations
-try {
-  await firestoreService.createSnap(snapData);
-} catch (error) {
-  if (error.code === 'permission-denied') {
-    showError('Access denied');
-  } else if (error.code === 'network-error') {
-    showError('Connection failed');
-  }
-}
-```
+### ✅ **Phase 4.0 Complete - Creative Light Theme System**
 
-## Testing Patterns
+#### **Theme Architecture Implemented**
+- **React Context Pattern**: Comprehensive theme provider with memoization
+- **Token System**: Purple/pink color scheme with semantic variants
+- **Component Integration**: All UI components using theme hooks
+- **Performance Optimized**: Memoized contexts prevent unnecessary re-renders
+- **TypeScript Safe**: Full type definitions for theme tokens
 
-### Component Testing
+#### **Brand Identity Transformation**
+- **Visual Consistency**: EventSnap branding throughout navigation and components
+- **Color Migration**: Complete transition from yellow to purple/pink system
+- **Theme Application**: Light backgrounds with dark text for professional appeal
+- **Component Variants**: Primary (purple), secondary (white), danger (rose) buttons
 
-- Unit tests for reusable components
-- Integration tests for screen workflows
-- Mock Firebase services for testing
-- Snapshot testing for UI consistency
+### ✅ **Phase 2.0 Complete - AI Infrastructure**
 
-### Service Testing
+#### **Cloud Functions Deployed**
+- **Asset Ingestion**: PDF and image processing with OpenAI embeddings
+- **Vector Storage**: Pinecone integration for RAG queries
+- **Cleanup System**: Comprehensive content lifecycle management
+- **Event Scoping**: All AI operations respect event boundaries
 
-- Mock Firebase SDK for service layer tests
-- Test error handling scenarios
-- Validate data transformation logic
-- Test real-time listener behavior
+### ✅ **Phase 1.0 Complete - Event Foundation**
 
-## Event Layer Architecture (2025-06-26)
+#### **Event-Centric Architecture**
+- **Role-Based Access**: Host/Guest permissions throughout
+- **Content Scoping**: All stories/snaps tied to specific events
+- **Security Rules**: Firestore rules enforce event participation
+- **State Management**: EventStore with real-time updates
 
-```mermaid
-flowchart TD
-    subgraph "Event Layer"
-        ES[eventStore] --> FSVC(firestore.service)
-        ES --> TP(ThemeProvider)
-        ES --> AIUI(AssistantScreen)
-    end
-
-    subgraph "AI Pipeline"
-        AIUI --> AISVC(assistant.service)
-        AISVC --> CF1(assistantChat Cloud Function)
-        CF1 --> VDB(Vector DB)
-        CF1 --> OPENAI(OpenAI)
-        PDF(Uploaded PDFs) --> INGCF(ingestPDFEmbeddings CF) --> VDB
-    end
-
-    subgraph "Content Flow"
-        Camera --> storyStore
-        storyStore --> FSVC
-        FSVC --> Firestore[(Firestore stories w/ eventId)]
-        DeleteCF(deleteExpiredContent) --> Firestore
-    end
-```
-
-### Key Patterns
-- **Additive Tagging**: All content collections gain an `eventId` field; queries filter accordingly.
-- **Fallback Mode**: If `eventStore.activeEvent` is `null`, app behaves as original Snapchat clone.
-- **Dynamic Theming**: `ThemeProvider` injects Tailwind palette from event document.
-- **RAG Assistant**: Cloud Function performs similarity search over vector DB and streams completion.
-
-## Role-Based Onboarding Patterns (Added 2025-06-27)
-
-### Overview
-The application now differentiates **Hosts** and **Guests** on a per-event basis.  A participant's role is stored in the `/events/{eventId}/participants/{uid}` sub-collection.
-
-### Screens & Flow
-1. **EventSelectionScreen**
-   - Lists `visibility = 'public'` events.
-   - Allows joining a private event via `joinCode`.
-   - "Create Event" FAB routes Hosts to **EventSetupScreen**.
-2. **EventSetupScreen (Host)**
-   - Creates the event document; user is recorded as Host.
-   - Optional PDF asset upload triggers embedding pipeline.
-3. **EventTabNavigator** (after joining/creating)
-   - `EventFeedScreen` (stories + snaps)
-   - `AssistantScreen` (AI chat)
-   - `ProfileScreen`
-
-### UI Gating
-- Only Hosts see buttons to **Post Story/Snap**, **Upload Asset**, and **End Event**.
-- Guests have read-only feed and assistant access.
-- Camera and stores enforce `role === 'host'` before writes.
-
-### Security Rules Pattern
-```javascript
-match /stories/{storyId} {
-  allow read: if participantInEvent(eventId);
-  allow create, update: if participantIsHost(eventId);
-}
-```
-
-### Legacy Removal Pattern
-- Contacts and Chat code paths are under `legacy/` tag for deletion during 8.0 cleanup.
+**Status**: EventSnap platform with Creative Light Theme complete. Ready for AI Assistant integration (Phase 3.0) to complete the Event-Driven Networking Platform vision.

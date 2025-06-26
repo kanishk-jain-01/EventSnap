@@ -1,3 +1,47 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Creative Light Theme - Global Base Styles */
+@layer base {
+  /* Set default text color for better readability on light backgrounds */
+  * {
+    color: theme('colors.text-primary');
+  }
+  
+  /* Default background for the app */
+  body, html {
+    background-color: theme('colors.bg-primary');
+  }
+}
+
+@layer components {
+  /* Common component patterns using our theme */
+  .theme-card {
+    @apply bg-surface border border-border rounded-lg p-4 shadow-soft;
+  }
+  
+  .theme-button-primary {
+    @apply bg-primary text-text-inverse px-4 py-2 rounded-md font-medium;
+  }
+  
+  .theme-button-secondary {
+    @apply bg-surface border border-border text-text-primary px-4 py-2 rounded-md font-medium;
+  }
+  
+  .theme-input {
+    @apply bg-surface border border-border text-text-primary px-3 py-2 rounded-md;
+  }
+  
+  .theme-text-primary {
+    @apply text-text-primary;
+  }
+  
+  .theme-text-secondary {
+    @apply text-text-secondary;
+  }
+  
+  .theme-gradient {
+    background: linear-gradient(135deg, theme('colors.gradient-start'), theme('colors.gradient-end'));
+  }
+}

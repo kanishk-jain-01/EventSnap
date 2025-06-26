@@ -10,59 +10,28 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useAuth } from '../../hooks/useAuth';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import { validateEmail, validatePassword } from '../../utils/validation';
 import { AuthStackParamList } from '../../types';
+import { Input } from '../../components/ui/Input';
+import { Button } from '../../components/ui/Button';
+import { useAuth } from '../../hooks/useAuth';
 
 type LoginScreenProps = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const { login, isLoading, error, clearError } = useAuth();
-
-  // Clear errors when user starts typing
-  useEffect(() => {
-    if (emailError) setEmailError('');
-  }, [email]);
-
-  useEffect(() => {
-    if (passwordError) setPasswordError('');
-  }, [password]);
 
   // Clear auth errors when component mounts
   useEffect(() => {
     clearError();
   }, [clearError]);
 
-  const validateForm = (): boolean => {
-    let isValid = true;
-
-    // Validate email
-    const emailValidation = validateEmail(email);
-    if (!emailValidation.isValid) {
-      setEmailError(emailValidation.error || 'Invalid email');
-      isValid = false;
-    }
-
-    // Validate password
-    const passwordValidation = validatePassword(password);
-    if (!passwordValidation.isValid) {
-      setPasswordError(passwordValidation.error || 'Invalid password');
-      isValid = false;
-    }
-
-    return isValid;
-  };
-
   const handleLogin = async () => {
-    if (!validateForm()) {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Error', 'Please fill in all fields');
       return;
     }
 
@@ -73,40 +42,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }
   };
 
-  const handleForgotPassword = () => {
-    if (!email.trim()) {
-      Alert.alert(
-        'Email Required',
-        'Please enter your email address first, then tap "Forgot Password" again.',
-      );
-      return;
-    }
-
-    Alert.alert(
-      'Reset Password',
-      `Send password reset email to ${email.trim()}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Send',
-          onPress: () => {
-            // TODO: Implement password reset in next task
-            Alert.alert(
-              'Coming Soon',
-              'Password reset will be implemented soon.',
-            );
-          },
-        },
-      ],
-    );
-  };
-
   return (
     <KeyboardAvoidingView
-      className='flex-1 bg-snap-dark'
+      className='flex-1 bg-bg-primary'
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar style='light' />
+      <StatusBar style='dark' />
       <ScrollView
         className='flex-1'
         contentContainerStyle={{ flexGrow: 1 }}
@@ -115,10 +56,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         <View className='flex-1 px-6 pt-20 pb-8'>
           {/* Header */}
           <View className='items-center mb-12'>
-            <Text className='text-snap-yellow text-4xl font-bold mb-2'>
-              Snapchat
+            <Text className='text-primary text-4xl font-bold mb-2'>
+              EventSnap
             </Text>
-            <Text className='text-white text-lg'>Welcome back!</Text>
+            <Text className='text-text-primary text-lg'>Welcome back!</Text>
           </View>
 
           {/* Form */}
@@ -130,7 +71,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               onChangeText={setEmail}
               keyboardType='email-address'
               autoCapitalize='none'
-              error={emailError}
             />
 
             <View className='relative'>
@@ -140,13 +80,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
-                error={passwordError}
               />
               <TouchableOpacity
                 className='absolute right-4 top-9'
                 onPress={() => setShowPassword(!showPassword)}
               >
-                <Text className='text-snap-yellow text-sm'>
+                <Text className='text-primary text-sm'>
                   {showPassword ? 'Hide' : 'Show'}
                 </Text>
               </TouchableOpacity>
@@ -154,8 +93,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
             {/* Auth Error */}
             {error && (
-              <View className='bg-snap-red/20 border border-snap-red rounded-lg p-3 mb-4'>
-                <Text className='text-snap-red text-sm text-center'>
+              <View className='bg-error/20 border border-error rounded-lg p-3 mb-4'>
+                <Text className='text-error text-sm text-center'>
                   {error}
                 </Text>
               </View>
@@ -163,39 +102,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
             {/* Login Button */}
             <Button
-              title='Log In'
+              title='Login'
               onPress={handleLogin}
               loading={isLoading}
-              disabled={!email.trim() || !password.trim()}
-              size='large'
+              disabled={isLoading}
             />
 
-            {/* Forgot Password */}
-            <TouchableOpacity
-              className='mt-4'
-              onPress={handleForgotPassword}
-              disabled={isLoading}
-            >
-              <Text className='text-snap-yellow text-center text-base'>
-                Forgot Password?
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Footer */}
-          <View className='mt-8'>
-            <View className='flex-row items-center justify-center'>
-              <Text className='text-white text-base'>
+            {/* Register Link */}
+            <View className='items-center mt-6'>
+              <Text className='text-text-secondary text-center text-base'>
                 Don't have an account?{' '}
-              </Text>
-              <TouchableOpacity
-                disabled={isLoading}
-                onPress={() => navigation.navigate('Register')}
-              >
-                <Text className='text-snap-yellow text-base font-semibold'>
-                  Sign Up
+                <Text
+                  className='text-primary text-base font-semibold'
+                  onPress={() => navigation.navigate('Register')}
+                >
+                  Sign up
                 </Text>
-              </TouchableOpacity>
+              </Text>
             </View>
           </View>
         </View>

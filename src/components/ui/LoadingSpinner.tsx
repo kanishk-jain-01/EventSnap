@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { LoadingSpinnerProps } from '../../types';
+import { useThemeColors } from './ThemeProvider';
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = 'medium',
@@ -8,6 +9,8 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   text,
   overlay = false,
 }) => {
+  const colors = useThemeColors();
+
   const getSpinnerSize = () => {
     switch (size) {
       case 'small':
@@ -23,7 +26,8 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     let baseStyles = 'flex items-center justify-center';
 
     if (overlay) {
-      baseStyles += ' absolute inset-0 bg-black/50 z-50';
+      // Dark overlay with opacity for modal loading states
+      baseStyles += ' absolute inset-0 bg-text-primary/60 z-50';
     } else {
       baseStyles += ' py-4';
     }
@@ -33,7 +37,8 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 
   const getSpinnerColor = () => {
     if (color) return color;
-    return overlay ? '#FFFC00' : '#FFFC00'; // snap-yellow
+    // Use primary color for spinner - vibrant purple
+    return overlay ? colors.primary : colors.primary;
   };
 
   const getTextStyles = () => {
@@ -50,7 +55,8 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
         textStyles += ' text-base';
     }
 
-    textStyles += overlay ? ' text-white' : ' text-white';
+    // Use appropriate text color based on overlay state
+    textStyles += overlay ? ' text-text-inverse' : ' text-text-primary';
 
     return textStyles;
   };

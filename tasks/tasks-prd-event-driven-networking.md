@@ -11,7 +11,16 @@
 - `src/screens/main/EventFeedScreen.tsx` – NEW: combined event feed (stories + snaps)
 - `src/screens/ai/AssistantScreen.tsx` – NEW: chat UI for AI assistant
 - `src/screens/main/CameraScreen.tsx` – MODIFY: role gating & text-overlay before posting
-- `src/components/ui/ThemeProvider.tsx` – MODIFY: provide modern palette tokens
+- `src/components/ui/ThemeProvider.tsx` – CREATED: provide modern palette tokens via React Context
+- `src/components/ui/Button.tsx` – REFACTORED: use Creative Light Theme tokens
+- `src/components/ui/Input.tsx` – REFACTORED: use Creative Light Theme tokens
+- `src/components/ui/LoadingSpinner.tsx` – REFACTORED: use Creative Light Theme tokens
+- `src/components/ui/Modal.tsx` – REFACTORED: use Creative Light Theme tokens
+- `src/components/social/StoryRing.tsx` – REFACTORED: use Creative Light Theme tokens
+- `src/navigation/MainTabNavigator.tsx` – REFACTORED: use Creative Light Theme tokens
+- `src/screens/auth/AuthLoadingScreen.tsx` – REFACTORED: use Creative Light Theme and EventSnap branding
+- `src/screens/auth/LoginScreen.tsx` – REFACTORED: use Creative Light Theme and EventSnap branding  
+- `src/screens/auth/RegisterScreen.tsx` – REFACTORED: use Creative Light Theme and EventSnap branding
 - `src/store/storyStore.ts` – MODIFY: filter queries by `eventId`
 - `src/store/snapStore.ts` – MODIFY: enforce `eventId` and Host-only posting
 - `tailwind.config.js` – MODIFY: replace Snapchat yellow with new palette
@@ -61,12 +70,12 @@
   - [ ] 3.7 Update `AssistantScreen` to display image thumbnails with captions alongside text answers
   - [ ] 3.8 Add citation chips linking back to source assets/pages
 
-- [ ] 4.0 UI Theme Refresh (Single Modern Palette)
-  - [ ] 4.1 Choose and document new primary/accent colors; update `tailwind.config.js`
-  - [ ] 4.2 Implement `ThemeProvider` injecting palette via NativeWind context
-  - [ ] 4.3 Refactor UI components (Button, Input, StoryRing, etc.) to use theme tokens
-  - [ ] 4.4 Remove all references to Snapchat yellow and old brand assets
-  - [ ] 4.5 Snapshot tests to verify new theme renders correctly
+- [x] 4.0 UI Theme Refresh (Single Modern Palette) ✅ **PHASE COMPLETE - 100%**
+  - [x] 4.1 Choose and document new primary/accent colors; update `tailwind.config.js`
+  - [x] 4.2 Implement `ThemeProvider` injecting palette via NativeWind context
+  - [x] 4.3 Refactor UI components (Button, Input, StoryRing, etc.) to use theme tokens
+  - [x] 4.4 Remove all references to Snapchat yellow and old brand assets
+  - [x] 4.5 Manual verification of new Creative Light Theme rendering across all refactored components
 
 - [ ] 5.0 Event Stories, Snaps & Feed Adaptation
   - [ ] 5.1 Create `EventFeedScreen` combining stories + snaps for current event

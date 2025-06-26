@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MainTabParamList } from '../types';
 import { CameraScreen } from '../screens/main/CameraScreen';
+import { useThemeColors } from '../components/ui/ThemeProvider';
 
 // Import the HomeScreen from the screens directory
 import { HomeScreen } from '../screens/main/HomeScreen';
@@ -11,17 +12,25 @@ import { ProfileScreen } from '../screens/main/ProfileScreen';
 const MainTab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainTabNavigator: React.FC = () => {
+  const colors = useThemeColors();
+
   return (
     <MainTab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#1F1F1F', // snap-gray
-          borderTopColor: '#3A3A3A', // snap-light-gray
+          backgroundColor: colors.surface, // Clean white background
+          borderTopColor: colors.border,  // Subtle border
           borderTopWidth: 1,
+          // Add subtle shadow for depth
+          shadowColor: colors.shadow,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 8,
+          elevation: 8,
         },
-        tabBarActiveTintColor: '#FFFC00', // snap-yellow
-        tabBarInactiveTintColor: '#9CA3AF', // gray-400
+        tabBarActiveTintColor: colors.primary, // Purple for active tabs
+        tabBarInactiveTintColor: colors.textTertiary, // Light gray for inactive
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '600',
