@@ -8,6 +8,7 @@ import {
 } from 'firebase/firestore';
 import { getDatabase } from 'firebase/database';
 import { getStorage } from 'firebase/storage';
+import { getFunctions } from 'firebase/functions';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 // Import APP_CONFIG when needed for emulator configuration
 // import { APP_CONFIG } from '../../utils/constants';
@@ -35,6 +36,9 @@ export const auth = initializeAuth(app, {
 export const firestore = getFirestore(app);
 export const realtimeDb = getDatabase(app);
 export const storage = getStorage(app);
+
+// Initialize Cloud Functions
+export const functions = getFunctions(app, 'us-central1');
 
 // Connect to emulators in development
 // Uncomment and import emulator functions if you want to use Firebase emulators

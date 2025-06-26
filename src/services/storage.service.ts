@@ -41,6 +41,7 @@ export enum StoragePaths {
   AVATARS = 'avatars',
   THUMBNAILS = 'thumbnails',
   TEMP = 'temp',
+  EVENTS = 'events',
 }
 
 // File upload context for different use cases
@@ -50,6 +51,7 @@ export enum UploadContext {
   AVATAR = 'avatar',
   THUMBNAIL = 'thumbnail',
   TEMP = 'temp',
+  EVENT_ASSET = 'eventAsset',
 }
 
 export class StorageService {
@@ -252,6 +254,30 @@ export class StorageService {
   }
 
   /**
+   * Upload an event asset (PDF or image) under `/events/{eventId}/assets/{assetId}`
+   */
+  static async uploadEventAsset(
+    file: Blob | Uint8Array | ArrayBuffer,
+    eventId: string,
+    assetId: string,
+    options: UploadOptions = {},
+  ): Promise<ApiResponse<UploadResult>> {
+    const path = `${StoragePaths.EVENTS}/${eventId}/assets/${assetId}`;
+
+    const metadata = {
+      assetId,
+      eventId,
+      type: 'eventAsset',
+      ...options.customMetadata,
+    };
+
+    return this.uploadImage(file, path, {
+      ...options,
+      customMetadata: metadata,
+    });
+  }
+
+  /**
    * Delete a file from Firebase Storage
    */
   static async deleteFile(path: string): Promise<ApiResponse<void>> {
@@ -416,6 +442,8 @@ export class StorageService {
         return `${StoragePaths.THUMBNAILS}/${userId}/general/${id}`;
       case UploadContext.TEMP:
         return `${StoragePaths.TEMP}/${userId}/${id}`;
+      case UploadContext.EVENT_ASSET:
+        return `${StoragePaths.EVENTS}/${id}/assets/${id}`;
       default:
         return `${StoragePaths.TEMP}/${userId}/${id}`;
     }

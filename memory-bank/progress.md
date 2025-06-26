@@ -12,7 +12,15 @@
   - 1.6 Firestore security rules amended for hosts/guests
   - 1.7 Composite indexes for `events` & `participants` added
 
-Next milestone: **2.0 Event Setup & Asset Ingestion Pipeline**
+### Progress Today – Event Asset Ingestion Pipeline ✅
+- **2.1** EventSetupScreen UI created
+- **2.2** createEvent flow wired (validation + palette)
+- **2.3** StorageService event-asset upload helper added
+- **2.4** IngestionService client helper implemented
+- **2.5** ingestPDFEmbeddings Cloud Function deployed
+- **2.6** ingestImageEmbeddings Cloud Function deployed
+
+Next milestone: **2.7 Asset Upload Progress UI & 2.8 End Event trigger**
 
 ## Current Status: **Phase 6 Stories Feature – COMPLETE (8/8 tasks completed)**
 

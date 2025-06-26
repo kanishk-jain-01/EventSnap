@@ -1,13 +1,13 @@
 ## Relevant Files
 
 - `src/services/firestore.service.ts` – Extend for event CRUD operations (`createEvent`, `joinEvent`, `getActiveEvent`, etc.)
-- `src/services/storage.service.ts` – Add PDF upload helper for event assets
+- `src/services/storage.service.ts` – Add event asset upload helper and EVENT_ASSET path
 - `src/services/ai/assistant.service.ts` – NEW: client helper to call AI assistant Cloud Function and stream responses
-- `src/services/ai/ingestion.service.ts` – NEW: helper to send PDFs to ingestion Cloud Function
+- `src/services/ai/ingestion.service.ts` – Helper to call Cloud Functions for PDF & image embeddings
 - `src/store/eventStore.ts` – NEW: Zustand store for current event, role, and participants
 - `src/navigation/EventTabNavigator.tsx` – NEW: Tab navigator for `EventFeed`, `Assistant`, `Profile`
 - `src/screens/auth/EventSelectionScreen.tsx` – NEW: list public events / join private event
-- `src/screens/organizer/EventSetupScreen.tsx` – NEW: create or edit event (Host only)
+- `src/screens/organizer/EventSetupScreen.tsx` – NEW: event creation form UI (Host only)
 - `src/screens/main/EventFeedScreen.tsx` – NEW: combined event feed (stories + snaps)
 - `src/screens/ai/AssistantScreen.tsx` – NEW: chat UI for AI assistant
 - `src/screens/main/CameraScreen.tsx` – MODIFY: role gating & text-overlay before posting
@@ -19,6 +19,7 @@
 - `functions/assistantChat/index.ts` – NEW: Cloud Function for AI assistant (RAG)
 - `functions/deleteExpiredContent/index.ts` – NEW: scheduled Cloud Function for cleanup
 - `functions/ingestPDFEmbeddings/index.ts` – NEW: Cloud Function for PDF → embeddings pipeline
+- `functions/ingestImageEmbeddings/index.ts` – NEW: Cloud Function for image → OCR/vision embeddings pipeline
 - `src/store/chatStore.ts`, `src/services/realtime/`, `src/screens/main/Chat*` – DELETE: retire 1-to-1 chat
 - `src/screens/main/HomeScreen.tsx` – DELETE: superseded by `EventFeedScreen`
 
@@ -39,13 +40,14 @@
   - [x] 1.7 Add Firestore indexes for event visibility & participant queries
 
 - [ ] 2.0 Event Setup & Asset Ingestion Pipeline (Host only)
-  - [ ] 2.1 Create `EventSetupScreen` form for event details & palette picker
-  - [ ] 2.2 Build client createEvent flow: validation, palette selection, Host assignment
-  - [ ] 2.3 Extend `storage.service.ts` for uploading PDFs to `/events/{eventId}/assets/`
-  - [ ] 2.4 Implement `ingestion.service.ts` to call Cloud Function for PDF embedding
-  - [ ] 2.5 Write Cloud Function `ingestPDFEmbeddings` storing embeddings in Pinecone & asset metadata in Firestore
-  - [ ] 2.6 Show asset upload progress & error handling in UI
-  - [ ] 2.7 Add "End Event" / delete event action for Host; hook into cleanup CF
+  - [x] 2.1 Create `EventSetupScreen` form for event details & palette picker
+  - [x] 2.2 Build client createEvent flow: validation, palette selection, Host assignment
+  - [x] 2.3 Extend `storage.service.ts` for uploading assets (PDFs **and** images) to `/events/{eventId}/assets/`
+  - [x] 2.4 Implement `ingestion.service.ts` to route uploads to the correct Cloud Function (PDF or Image) for embedding
+  - [x] 2.5 Write Cloud Function `ingestPDFEmbeddings` storing text embeddings in Pinecone & asset metadata in Firestore
+  - [x] 2.6 Write Cloud Function `ingestImageEmbeddings` performing OCR +/or Vision embeddings, store vectors & metadata in Pinecone/Firestore
+  - [ ] 2.7 Show asset upload progress & error handling in UI
+  - [ ] 2.8 Add "End Event" / delete event action for Host; hook into cleanup CF
 
 - [ ] 3.0 AI Assistant Integration (RAG Backend + UI)
   - [ ] 3.1 Configure Pinecone/vector DB credentials & environment variables
@@ -53,6 +55,9 @@
   - [ ] 3.3 Implement `assistant.service.ts` for SSE/WebSocket streaming responses
   - [ ] 3.4 Build `AssistantScreen` chat UI with loading & error states
   - [ ] 3.5 Add Assistant entry point in `EventTabNavigator`
+  - [ ] 3.6 Enhance `assistantChat` to return multimodal citations (text chunks + image URLs & alt-text)
+  - [ ] 3.7 Update `AssistantScreen` to display image thumbnails with captions alongside text answers
+  - [ ] 3.8 Add citation chips linking back to source assets/pages
 
 - [ ] 4.0 UI Theme Refresh (Single Modern Palette)
   - [ ] 4.1 Choose and document new primary/accent colors; update `tailwind.config.js`

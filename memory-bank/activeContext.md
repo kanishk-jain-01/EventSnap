@@ -514,3 +514,21 @@ A new PRD (`prd-event-driven-networking.md`) and task list (`tasks-prd-event-dri
 6. Auto-expiry cleanup
 
 Next actionable sub-task: **1.1 Design Firestore `events` collection schema**.
+
+## Update (2025-06-27) – Event Setup & Asset Ingestion Pipeline Progress ✅
+
+**Completed Sub-tasks**
+- **2.1** EventSetupScreen form UI with palette presets and validation
+- **2.2** createEvent client flow hooked to Zustand `eventStore`
+- **2.3** `StorageService.uploadEventAsset` + new `EVENTS` path / `EVENT_ASSET` context
+- **2.4** `IngestionService` client helper (calls callable CFs)
+- **2.5** `ingestPDFEmbeddings` Cloud Function (chunk → OpenAI → Pinecone)
+- **2.6** `ingestImageEmbeddings` Cloud Function (Vision OCR & fallback vision embedding)
+
+All code compiles; TypeScript/lint clean (warnings only).  Firebase Functions code is isolated from the mobile build.
+
+**Next Immediate Focus**:  
+- **2.7** Asset upload progress UI & error handling in EventSetupScreen  
+- **2.8** "End Event" action that triggers cleanup Cloud Function
+
+_Unblocked_: assistant backend now has vectors per-asset; front-end can start calling assistantChat once implemented.
