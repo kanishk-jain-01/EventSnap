@@ -3,7 +3,7 @@ import * as admin from 'firebase-admin';
 import * as fs from 'fs';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { Pinecone } from '@pinecone-database/pinecone';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -15,9 +15,26 @@ const PINECONE_API_KEY = process.env.PINECONE_API_KEY as string;
 const PINECONE_ENVIRONMENT = process.env.PINECONE_ENVIRONMENT ?? 'us-east-1-aws';
 const PINECONE_INDEX = process.env.PINECONE_INDEX ?? 'event-embeddings';
 
-const openai = new OpenAIApi(new Configuration({ apiKey: OPENAI_API_KEY }));
-const pinecone = new Pinecone({ apiKey: PINECONE_API_KEY, environment: PINECONE_ENVIRONMENT });
-const index = pinecone.index(PINECONE_INDEX);
+let _openai: OpenAI | null = null;
+const getOpenAI = () => {
+  if (!_openai) {
+    const key = process.env.OPENAI_API_KEY;
+    if (!key) throw new Error('OPENAI_API_KEY env var not set');
+    _openai = new OpenAI({ apiKey: key });
+  }
+  return _openai;
+};
+
+let _pinecone: Pinecone | null = null;
+const getPineconeIndex = () => {
+  if (!_pinecone) {
+    const key = process.env.PINECONE_API_KEY;
+    if (!key) throw new Error('PINECONE_API_KEY env var not set');
+    _pinecone = new Pinecone({ apiKey: key });
+  }
+  return _pinecone.index(PINECONE_INDEX);
+};
+
 const visionClient = new ImageAnnotatorClient();
 
 const chunkText = (txt: string, size = 3000, overlap = 300) => {
@@ -31,11 +48,11 @@ const chunkText = (txt: string, size = 3000, overlap = 300) => {
   return chunks;
 };
 
-export const ingestImageEmbeddings = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
+export const ingestImageEmbeddings = functions.https.onCall(async (request) => {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
   }
-  const { eventId, storagePath } = data as { eventId?: string; storagePath?: string };
+  const { eventId, storagePath } = request.data as { eventId?: string; storagePath?: string };
   if (!eventId || !storagePath) {
     throw new functions.https.HttpsError('invalid-argument', 'eventId and storagePath required');
   }
@@ -53,12 +70,12 @@ export const ingestImageEmbeddings = functions.https.onCall(async (data, context
     if (!rawText) {
       // even if no text, create a CLIP-style image embedding using base64 encoded image
       const base64 = fs.readFileSync(tempFile, { encoding: 'base64' });
-      const embedResp = await openai.createEmbedding({
+      const embedResp = await getOpenAI().embeddings.create({
         model: 'image-embedding-ada-002',
         input: base64,
       });
-      const vector = embedResp.data.data[0].embedding as number[];
-      await index.namespace(eventId).upsert([
+      const vector = embedResp.data[0].embedding as number[];
+      await getPineconeIndex().namespace(eventId).upsert([
         {
           id: `${storagePath}#0`,
           values: vector,
@@ -83,17 +100,17 @@ export const ingestImageEmbeddings = functions.https.onCall(async (data, context
     const vectors: { id: string; values: number[]; metadata: any }[] = [];
     let idx = 0;
     for (const chunk of chunks) {
-      const emb = await openai.createEmbedding({ model: 'text-embedding-3-small', input: chunk });
+      const emb = await getOpenAI().embeddings.create({ model: 'text-embedding-3-small', input: chunk });
       vectors.push({
         id: `${storagePath}#${idx}`,
-        values: emb.data.data[0].embedding as number[],
+        values: emb.data[0].embedding as number[],
         metadata: { eventId, storagePath, chunkIndex: idx, text: chunk },
       });
       idx += 1;
     }
     const BATCH = 100;
     for (let i = 0; i < vectors.length; i += BATCH) {
-      await index.namespace(eventId).upsert(vectors.slice(i, i + BATCH));
+      await getPineconeIndex().namespace(eventId).upsert(vectors.slice(i, i + BATCH));
     }
 
     await admin

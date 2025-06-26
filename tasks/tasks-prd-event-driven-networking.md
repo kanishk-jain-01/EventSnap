@@ -46,7 +46,7 @@
   - [x] 2.4 Implement `ingestion.service.ts` to route uploads to the correct Cloud Function (PDF or Image) for embedding
   - [x] 2.5 Write Cloud Function `ingestPDFEmbeddings` storing text embeddings in Pinecone & asset metadata in Firestore
   - [x] 2.6 Write Cloud Function `ingestImageEmbeddings` performing OCR +/or Vision embeddings, store vectors & metadata in Pinecone/Firestore
-  - [ ] 2.7 Show asset upload progress & error handling in UI
+  - [x] 2.7 Show asset upload progress & error handling in UI
   - [ ] 2.8 Add "End Event" / delete event action for Host; hook into cleanup CF
 
 - [ ] 3.0 AI Assistant Integration (RAG Backend + UI)

@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions/v2';
 import * as admin from 'firebase-admin';
 import * as fs from 'fs';
 import { Pinecone } from '@pinecone-database/pinecone';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 import * as pdf from 'pdf-parse';
 
 // Initialize Firebase Admin if not already
@@ -17,9 +17,25 @@ const PINECONE_ENVIRONMENT = process.env.PINECONE_ENVIRONMENT ?? 'us-east-1-aws'
 const PINECONE_INDEX = process.env.PINECONE_INDEX ?? 'event-embeddings';
 
 // ****** External Clients ****** //
-const openai = new OpenAIApi(new Configuration({ apiKey: OPENAI_API_KEY }));
-const pinecone = new Pinecone({ apiKey: PINECONE_API_KEY, environment: PINECONE_ENVIRONMENT });
-const index = pinecone.index(PINECONE_INDEX);
+let _openai: OpenAI | null = null;
+const getOpenAI = () => {
+  if (!_openai) {
+    const key = process.env.OPENAI_API_KEY;
+    if (!key) throw new Error('OPENAI_API_KEY env var not set');
+    _openai = new OpenAI({ apiKey: key });
+  }
+  return _openai;
+};
+
+let _pinecone: Pinecone | null = null;
+const getPineconeIndex = () => {
+  if (!_pinecone) {
+    const key = process.env.PINECONE_API_KEY;
+    if (!key) throw new Error('PINECONE_API_KEY env var not set');
+    _pinecone = new Pinecone({ apiKey: key });
+  }
+  return _pinecone.index(PINECONE_INDEX);
+};
 
 // Token-friendly chunk size (approx 800 tokens ≈ 3k chars)
 const MAX_CHARS = 3000;
@@ -38,13 +54,13 @@ const chunkText = (text: string): string[] => {
 };
 
 /** Cloud Function: ingestPDFEmbeddings */
-export const ingestPDFEmbeddings = functions.https.onCall(async (data, context) => {
+export const ingestPDFEmbeddings = functions.https.onCall(async (request) => {
   // Authentication (require host role handled via security rules on callable path)
-  if (!context.auth) {
+  if (!request.auth) {
     throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
   }
 
-  const { eventId, storagePath } = data as { eventId?: string; storagePath?: string };
+  const { eventId, storagePath } = request.data as { eventId?: string; storagePath?: string };
   if (!eventId || !storagePath) {
     throw new functions.https.HttpsError('invalid-argument', 'eventId and storagePath are required');
   }
@@ -71,11 +87,11 @@ export const ingestPDFEmbeddings = functions.https.onCall(async (data, context) 
     const vectors = [] as { id: string; values: number[]; metadata: any }[];
     let chunkIndex = 0;
     for (const chunk of chunks) {
-      const embeddingResponse = await openai.createEmbedding({
+      const embeddingResponse = await getOpenAI().embeddings.create({
         model: 'text-embedding-3-small',
         input: chunk,
       });
-      const vector = embeddingResponse.data.data[0].embedding as number[];
+      const vector = embeddingResponse.data[0].embedding as number[];
       vectors.push({
         id: `${storagePath}#${chunkIndex}`,
         values: vector,
@@ -95,7 +111,7 @@ export const ingestPDFEmbeddings = functions.https.onCall(async (data, context) 
     const BATCH_SIZE = 100;
     for (let i = 0; i < vectors.length; i += BATCH_SIZE) {
       const batch = vectors.slice(i, i + BATCH_SIZE);
-      await index.namespace(namespace).upsert(batch);
+      await getPineconeIndex().namespace(namespace).upsert(batch);
     }
 
     // 6. Write back to Firestore assets sub-collection

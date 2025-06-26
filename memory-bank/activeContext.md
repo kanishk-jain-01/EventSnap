@@ -515,20 +515,28 @@ A new PRD (`prd-event-driven-networking.md`) and task list (`tasks-prd-event-dri
 
 Next actionable sub-task: **1.1 Design Firestore `events` collection schema**.
 
-## Update (2025-06-27) – Event Setup & Asset Ingestion Pipeline Progress ✅
+## Update (2025-06-26) – Asset Upload UI & Cloud Functions Deployed ✅
 
-**Completed Sub-tasks**
-- **2.1** EventSetupScreen form UI with palette presets and validation
-- **2.2** createEvent client flow hooked to Zustand `eventStore`
-- **2.3** `StorageService.uploadEventAsset` + new `EVENTS` path / `EVENT_ASSET` context
-- **2.4** `IngestionService` client helper (calls callable CFs)
-- **2.5** `ingestPDFEmbeddings` Cloud Function (chunk → OpenAI → Pinecone)
-- **2.6** `ingestImageEmbeddings` Cloud Function (Vision OCR & fallback vision embedding)
+**Completed Today**: **Task 2.7 – Show asset upload progress & error handling**  
+and end-to-end deployment of PDF/Image ingestion Cloud Functions.
 
-All code compiles; TypeScript/lint clean (warnings only).  Firebase Functions code is isolated from the mobile build.
+Highlights
+• Added `expo-document-picker` dependency (root `package.json`).  
+• Created reusable `UploadProgress` UI component.  
+• Extended `EventSetupScreen` with file-picker, progressive upload list, retry logic, and "Done" navigation.  
+• Implemented `StorageService.uploadEventAsset` progress callbacks.  
+• Cloud Functions folder scaffolded with its own `package.json`, `tsconfig.json`, and two TypeScript functions:
+  – `ingestImageEmbeddings` (Vision OCR → OpenAI embeddings → Pinecone).  
+  – `ingestPDFEmbeddings` (pdf-parse → OpenAI embeddings → Pinecone).  
+• Added barrel `functions/index.ts` so Firebase sees a single entry-point.  
+• Updated functions code to OpenAI v4 + Pinecone v6 SDKs with **lazy-init** singleton helpers to avoid env-var errors at deploy time.  
+• Upgraded `@pinecone-database/pinecone` → `^6.1.1` and `@google-cloud/vision` → `^5.2.0`.  
+• Created ambient type declaration `functions/types/pdf-parse.d.ts`.  
+• Added `functions` block to `firebase.json` (with predeploy build).  
+• Successful `firebase deploy --only functions` after enabling required GCP APIs.
 
-**Next Immediate Focus**:  
-- **2.7** Asset upload progress UI & error handling in EventSetupScreen  
-- **2.8** "End Event" action that triggers cleanup Cloud Function
-
-_Unblocked_: assistant backend now has vectors per-asset; front-end can start calling assistantChat once implemented.
+**Next Immediate Focus**
+1. Task 2.8 – "End Event" trigger (schedule cleanup or callable).  
+2. QA session for asset ingestion speed and error cases.  
+3. Upgrade `firebase-functions` SDK ≥ 5.x (breaking, do in a separate PR).  
+4. Hook assistant chat front-end to Pinecone search once embeddings are live.

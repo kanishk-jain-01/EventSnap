@@ -9,6 +9,11 @@ import { useAuth } from '../../hooks/useAuth';
 import { useNavigation } from '@react-navigation/native';
 import type { MainStackParamList } from '../../navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import * as DocumentPicker from 'expo-document-picker';
+import { UploadProgress } from '../../components/ui/UploadProgress';
+import { StorageService } from '../../services/storage.service';
+import { IngestionService } from '../../services/ai/ingestion.service';
+import { UploadStatus } from '../../components/ui/UploadProgress';
 
 interface ColorOption {
   label: string;
@@ -53,9 +58,22 @@ export const EventSetupScreen: React.FC = () => {
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // Upload state management
+  interface UploadItem {
+    id: string;
+    fileName: string;
+    progress: number;
+    status: UploadStatus;
+    error?: string;
+  }
+
+  const [uploads, setUploads] = useState<UploadItem[]>([]);
+  const [eventCreated, setEventCreated] = useState(false);
+
   const { userId } = useAuth();
   const createEvent = useEventStore(state => state.createEvent);
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+  const activeEvent = useEventStore(state => state.activeEvent);
 
   const handleStartChange = (_event: any, selectedDate?: Date) => {
     setShowStartPicker(Platform.OS === 'ios');
@@ -106,10 +124,104 @@ export const EventSetupScreen: React.FC = () => {
     setSubmitting(false);
 
     if (success) {
-      // Navigate to main tabs (will be replaced with EventFeed after implementation)
-      navigation.navigate('MainTabs', { screen: 'Home' });
+      // Mark event as created; enable asset upload section
+      setEventCreated(true);
+      Alert.alert('Success', 'Event created! You can now upload assets.');
     } else {
       Alert.alert('Error', 'Failed to create event. Please try again.');
+    }
+  };
+
+  /** Pick a PDF or image file and upload it as an event asset */
+  const handlePickAsset = async () => {
+    if (!activeEvent?.id) {
+      Alert.alert('Error', 'Event not found. Please create the event first.');
+      return;
+    }
+
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ['application/pdf', 'image/*'],
+      copyToCacheDirectory: true,
+    });
+
+    if (result.type !== 'success') return;
+
+    const file = (result as any).assets ? (result as any).assets[0] : result; // compatibility
+    const { uri, name, mimeType } = file;
+
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      // Generate unique asset ID
+      const assetId = `${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+
+      // Add to uploads list
+      setUploads(prev => [
+        ...prev,
+        {
+          id: assetId,
+          fileName: name,
+          progress: 0,
+          status: 'uploading',
+        },
+      ]);
+
+      const updateProgress = (progress: number) => {
+        setUploads(prev =>
+          prev.map(u => (u.id === assetId ? { ...u, progress } : u)),
+        );
+      };
+
+      const uploadRes = await StorageService.uploadEventAsset(
+        blob,
+        activeEvent.id,
+        assetId,
+        {
+          contentType: mimeType || (name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
+          onProgress: updateProgress,
+        },
+      );
+
+      if (!uploadRes.success || !uploadRes.data) {
+        setUploads(prev =>
+          prev.map(u =>
+            u.id === assetId
+              ? { ...u, status: 'error', error: uploadRes.error || 'Upload failed' }
+              : u,
+          ),
+        );
+        return;
+      }
+
+      // Trigger ingestion based on file type
+      const ingestRes = name.toLowerCase().endsWith('.pdf')
+        ? await IngestionService.ingestPdf(activeEvent.id, uploadRes.data.fullPath)
+        : await IngestionService.ingestImage(activeEvent.id, uploadRes.data.fullPath);
+
+      if (!ingestRes.success) {
+        setUploads(prev =>
+          prev.map(u =>
+            u.id === assetId
+              ? { ...u, status: 'error', error: ingestRes.error || 'Ingestion failed' }
+              : u,
+          ),
+        );
+        return;
+      }
+
+      // Success
+      setUploads(prev =>
+        prev.map(u => (u.id === assetId ? { ...u, progress: 100, status: 'success' } : u)),
+      );
+    } catch (err) {
+      setUploads(prev =>
+        prev.map(u =>
+          u.fileName === name ? { ...u, status: 'error', error: 'Unknown error' } : u,
+        ),
+      );
     }
   };
 
@@ -222,11 +334,39 @@ export const EventSetupScreen: React.FC = () => {
 
         {/* Submit Button */}
         <Button
-          title='Create Event'
+          title={eventCreated ? 'Event Created' : 'Create Event'}
           onPress={handleSubmit}
-          disabled={!isFormValid() || submitting}
+          disabled={!isFormValid() || submitting || eventCreated}
           loading={submitting}
         />
+
+        {/* Asset Upload Section */}
+        {eventCreated && (
+          <View className='mt-10'>
+            <Text className='text-white text-lg font-semibold mb-4'>Event Assets</Text>
+            <Button title='Add Asset' onPress={handlePickAsset} />
+
+            {/* Upload list */}
+            <View className='mt-6'>
+              {uploads.map(u => (
+                <UploadProgress
+                  key={u.id}
+                  fileName={u.fileName}
+                  progress={u.progress}
+                  status={u.status}
+                  error={u.error}
+                />
+              ))}
+            </View>
+
+            {/* Done button */}
+            <Button
+              title='Done'
+              className='mt-6'
+              onPress={() => navigation.navigate('MainTabs', { screen: 'Home' })}
+            />
+          </View>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );

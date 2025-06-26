@@ -20,7 +20,14 @@
 - **2.5** ingestPDFEmbeddings Cloud Function deployed
 - **2.6** ingestImageEmbeddings Cloud Function deployed
 
-Next milestone: **2.7 Asset Upload Progress UI & 2.8 End Event trigger**
+### Progress Today – Asset Upload Progress UI & Cloud Functions Deployment ✅
+- **2.7** Asset upload progress UI with error handling implemented (UploadProgress component, EventSetupScreen integration)
+- Functions folder scaffolded (`package.json`, `tsconfig.json`, type declarations)
+- `ingestImageEmbeddings` & `ingestPDFEmbeddings` functions compiled with OpenAI v4 + Pinecone v6
+- Barrel `functions/index.ts` added; `firebase.json` updated with `functions` block
+- Successful `firebase deploy --only functions` (required APIs auto-enabled)
+
+Next milestone: **2.8 End Event trigger & assistant retrieval flow**
 
 ## Current Status: **Phase 6 Stories Feature – COMPLETE (8/8 tasks completed)**
 
