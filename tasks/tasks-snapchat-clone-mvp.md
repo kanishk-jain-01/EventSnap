@@ -154,13 +154,13 @@
   - [x] 7.7 Implement Zustand store for chat state management
   - [x] 7.8 Test real-time messaging functionality across multiple devices
 
-- [ ] 8.0 User Management & Social Features
+- [x] 8.0 User Management & Social Features
   - [x] 8.1 Firestore user schema & service enhancements (search + contacts sub-collection stubs)
   - [x] 8.2 Create Zustand **userStore** (current profile, other users cache, contacts list)
   - [x] 8.3 Implement avatar upload flow & profile update action
   - [x] 8.4 Build **ProfileScreen** (view / edit own profile)
   - [x] 8.5 Build **UserSearchScreen** (search & view other profiles)
-  - [ ] 8.6 Implement basic **Contacts/Friends** management (add / remove, auto-accepted)
+  - [x] 8.6 Implement basic **Contacts/Friends** management (add / remove, auto-accepted)
     - [x] 8.6.1 Extend `FirestoreService` to support contacts add/remove/subscribe operations
     - [x] 8.6.2 Integrate contacts actions & state in `userStore`
     - [x] 8.6.3 Update `firestore.rules` for contacts sub-collection security
@@ -170,7 +170,7 @@
     - [x] 8.7.1 Restrict snap recipient selection to contacts list
     - [x] 8.7.2 Filter story feed to show only contacts' stories (plus own)
     - [x] 8.7.3 Update chat creation flow to start chats with contacts only
-  - [ ] 8.8 End-to-end QA & polish for all user-management features
+  - [x] 8.8 End-to-end QA & polish for all user-management features
 
 - [ ] 9.0 Security & Performance Optimization
   - [ ] 9.1 Implement comprehensive Firestore security rules

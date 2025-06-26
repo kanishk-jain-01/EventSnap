@@ -2,7 +2,7 @@
 
 ## Current Status: **Phase 6 Stories Feature – COMPLETE (8/8 tasks completed)**
 
-## Current Status: **Phase 8 User Management & Social Features – IN PROGRESS (7/8 tasks completed)**
+## Current Status: **Phase 8 User Management & Social Features – COMPLETE (8/8 tasks completed)**
 
 ### Completed ✅
 
@@ -556,15 +556,4 @@ _None accumulated - professional code quality standards maintained throughout_
 
 - Fixed UI hit-area issue for "New" chat button (SafeAreaView). ✅
 - Removed verbose debugging logs across chat modules. ✅
-- Implemented automatic `userChats`
-
-- [x] 8.6 Implement basic **Contacts/Friends** management (add / remove, auto-accepted)
-  - [x] 8.6.1 Extend `FirestoreService` to support contacts add/remove/subscribe operations
-  - [x] 8.6.2 Integrate contacts actions & state in `userStore`
-  - [x] 8.6.3 Update `firestore.rules` for contacts sub-collection security
-  - [x] 8.6.4 Add **Add / Remove Friend** button to `UserProfileScreen`
-  - [x] 8.6.5 Display contacts list on `ProfileScreen`
-- [x] 8.7 Integrate contacts with Snaps, Stories & Chat recipient pickers
-  - [x] 8.7.1 Restrict snap recipient selection to contacts list
-  - [x] 8.7.2 Filter story feed to show only contacts' stories (plus own)
-  - [x] 8.7.3 Update chat creation flow to start chats with contacts only
+- Implemented automatic `

@@ -125,7 +125,12 @@ export const useUserStore = create<UserStoreState>()(
 
     // Search users by displayName (prefix)
     async searchUsers(query: string) {
-      const response = await FirestoreService.searchUsers(query);
+      const { currentUser } = get();
+      const response = await FirestoreService.searchUsers(
+        query,
+        20,
+        currentUser?.uid,
+      );
       if (response.success && response.data) {
         set({ allUsers: response.data });
         return response.data;

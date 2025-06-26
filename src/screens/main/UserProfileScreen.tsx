@@ -14,22 +14,13 @@ export const UserProfileScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Contacts state from userStore
-  const {
-    currentUser,
-    contacts,
-    fetchContacts,
-    subscribeToContacts,
-    addContact,
-    removeContact,
-  } = useUserStore(state => ({
-    currentUser: state.currentUser,
-    contacts: state.contacts,
-    fetchContacts: state.fetchContacts,
-    subscribeToContacts: state.subscribeToContacts,
-    addContact: state.addContact,
-    removeContact: state.removeContact,
-  }));
+  // Pull each slice individually to maintain stable references and avoid infinite render loops
+  const currentUser = useUserStore(state => state.currentUser);
+  const contacts = useUserStore(state => state.contacts);
+  const fetchContacts = useUserStore(state => state.fetchContacts);
+  const subscribeToContacts = useUserStore(state => state.subscribeToContacts);
+  const addContact = useUserStore(state => state.addContact);
+  const removeContact = useUserStore(state => state.removeContact);
 
   const [actionLoading, setActionLoading] = useState(false);
 

@@ -697,47 +697,37 @@ export class FirestoreService {
   static async searchUsers(
     searchText: string,
     limitCount: number = 20,
+    excludeUserId?: string,
   ): Promise<ApiResponse<User[]>> {
     try {
-      if (!searchText) {
-        // fall back to all users when no query provided
-        return this.getAllUsers(undefined, limitCount);
+      // Always fetch a reasonable number of users client-side then filter. For the small MVP dataset this
+      // is acceptable and avoids Firestore case-sensitivity limitations.
+      const allRes = await this.getAllUsers(excludeUserId, 500);
+      if (!allRes.success || !allRes.data) {
+        return { success: false, error: allRes.error || 'Failed to fetch users' };
       }
 
       const normalized = searchText.trim().toLowerCase();
+      let users = allRes.data;
 
-      const q = query(
-        collection(firestore, COLLECTIONS.USERS),
-        orderBy('displayName'),
-        where('displayName', '>=', normalized),
-        where('displayName', '<=', normalized + '\uf8ff'),
-        limit(limitCount),
-      );
+      // Filter by query (case-insensitive displayName prefix match)
+      if (normalized) {
+        users = users.filter(u =>
+          u.displayName.toLowerCase().startsWith(normalized),
+        );
+      }
 
-      const querySnapshot = await getDocs(q);
-      const users: User[] = [];
+      // Optionally exclude a specific user (e.g. current user)
+      if (excludeUserId) {
+        users = users.filter(u => u.uid !== excludeUserId);
+      }
 
-      querySnapshot.forEach(doc => {
-        const data = doc.data() as UserDocument;
-        users.push({
-          uid: doc.id,
-          email: data.email,
-          displayName: data.displayName,
-          avatarUrl: data.avatarUrl,
-          createdAt: data.createdAt.toDate(),
-          lastSeen: data.lastSeen.toDate(),
-        });
-      });
+      // Limit the returned array
+      users = users.slice(0, limitCount);
 
-      return {
-        success: true,
-        data: users,
-      };
+      return { success: true, data: users };
     } catch (_error) {
-      return {
-        success: false,
-        error: 'Failed to search users',
-      };
+      return { success: false, error: 'Failed to search users' };
     }
   }
 
@@ -771,8 +761,8 @@ export class FirestoreService {
       } as ContactDocument);
 
       return { success: true };
-    } catch (_error) {
-      return { success: false, error: 'Failed to add contact' };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to add contact' };
     }
   }
 
@@ -798,8 +788,8 @@ export class FirestoreService {
 
       await deleteDoc(contactRef);
       return { success: true };
-    } catch (_error) {
-      return { success: false, error: 'Failed to remove contact' };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to remove contact' };
     }
   }
 
