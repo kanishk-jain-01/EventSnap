@@ -99,3 +99,28 @@ src/
 - Image upload optimization and storage management
 - Proper state management for offline scenarios
 - TailwindCSS integration with React Native styling
+
+## Pivot Tech Additions (2025-06-26)
+
+### New Backend Components
+- **Vector Database**: Supabase Vector or Pinecone for embedding storage.
+- **Cloud Functions**:
+  - `assistantChat` – RAG inference endpoint
+  - `ingestPDFEmbeddings` – PDF → embeddings pipeline
+  - `deleteExpiredContent` – scheduled cleanup 24 h post-event
+
+### New Frontend Modules
+- **AI Assistant Service**: Streams chat responses via SSE/WebSockets.
+- **Event Store**: Holds active event, palette, role.
+- **ThemeProvider**: Injects event colours into NativeWind.
+
+### Dependencies
+```json
+{
+  "@supabase/supabase-js": "^2.x" // if Supabase Vector chosen
+}
+```
+
+### Security Considerations
+- Event membership enforced via Firestore rules.
+- Asset PDFs uploaded to Storage under `/events/{eventId}/assets/` bucket.

@@ -112,3 +112,24 @@ Creating a mobile social media application that replicates core Snapchat functio
 - **Goal**: Experience Snapchat-like functionality
 - **Behavior**: Photo sharing, story viewing, casual chatting
 - **Needs**: Intuitive interface and reliable performance
+
+## Pivot Update (2025-06-26): Event-Driven Networking Context
+
+### New Problem Statement
+Event attendees struggle to capture real-time moments and locate context (session times, exhibitor decks) within sprawling agendas. Existing social photo apps lack event-specific expiration and contextual AI search.
+
+### Updated User Experience Goals
+1. **Event Onboarding**: Choose or create an event before landing on the main feed.
+2. **Photo Capture + Annotate**: Snap a photo, add ≤ 200-char text overlay, post to the event feed.
+3. **AI Assistant Tap**: Users can query "When is this session?" or "Show me the sponsor deck" and receive PDF snippets instantly.
+4. **Dynamic Theme**: App colours match event branding automatically.
+5. **Automatic Cleanup**: All content removed 24 h post-event.
+
+### Added User Personas
+* **Organizer** – Needs rapid broadcast and asset ingestion.
+* **Exhibitor** – Wants booth traffic via annotated snaps.
+
+### Success Metrics (proposed)
+- ≥ 40 % attendees post at least one snap
+- AI assistant median response ≤ 3 s
+- 100 % content deletion ≤ 25 h post-event

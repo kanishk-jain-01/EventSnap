@@ -467,3 +467,15 @@ FireStore rule for `/stories/{storyId}` updated: any authenticated user can appe
   - New chat creation limited to contacts
 - Firestore security rule `/users/{uid}/contacts/{contactId}` added
 - Lint passes with no errors
+
+### 🔄 Pivot Focus (2025-06-26)
+
+A new PRD (`prd-event-driven-networking.md`) and task list (`tasks-prd-event-driven-networking.md`) have been created to guide the shift to an **Event-Driven Networking** MVP. High-level tasks:
+1. Event data model & access control
+2. Event setup & PDF asset ingestion
+3. AI assistant (RAG) integration
+4. UI rebranding via dynamic palette
+5. Event-scoped stories & feed
+6. Auto-expiry cleanup
+
+Next actionable sub-task: **1.1 Design Firestore `events` collection schema**.

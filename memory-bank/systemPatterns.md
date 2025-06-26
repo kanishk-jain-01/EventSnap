@@ -344,3 +344,35 @@ try {
 - Test error handling scenarios
 - Validate data transformation logic
 - Test real-time listener behavior
+
+## Event Layer Architecture (2025-06-26)
+
+```mermaid
+flowchart TD
+    subgraph "Event Layer"
+        ES[eventStore] --> FSVC(firestore.service)
+        ES --> TP(ThemeProvider)
+        ES --> AIUI(AssistantScreen)
+    end
+
+    subgraph "AI Pipeline"
+        AIUI --> AISVC(assistant.service)
+        AISVC --> CF1(assistantChat Cloud Function)
+        CF1 --> VDB(Vector DB)
+        CF1 --> OPENAI(OpenAI)
+        PDF(Uploaded PDFs) --> INGCF(ingestPDFEmbeddings CF) --> VDB
+    end
+
+    subgraph "Content Flow"
+        Camera --> storyStore
+        storyStore --> FSVC
+        FSVC --> Firestore[(Firestore stories w/ eventId)]
+        DeleteCF(deleteExpiredContent) --> Firestore
+    end
+```
+
+### Key Patterns
+- **Additive Tagging**: All content collections gain an `eventId` field; queries filter accordingly.
+- **Fallback Mode**: If `eventStore.activeEvent` is `null`, app behaves as original Snapchat clone.
+- **Dynamic Theming**: `ThemeProvider` injects Tailwind palette from event document.
+- **RAG Assistant**: Cloud Function performs similarity search over vector DB and streams completion.

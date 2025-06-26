@@ -43,3 +43,15 @@ Building a Snapchat clone mobile application for internal testing and validation
 - Developer (primary implementer)
 - Internal testing team
 - Project reviewer/mentor (if applicable)
+
+## Pivot Update (2025-06-26): Event-Driven Networking
+
+The project is evolving from a general Snapchat-style social app to a niche **Event-Driven Networking** platform for conferences, festivals, and single-day gatherings.
+
+Key points
+- Single-day events: All user-generated content expires 24 h after the event ends.
+- Roles: attendees, speakers, exhibitors, organizers – all authenticated participants can post.
+- Ephemeral photos with text annotations only (no video in MVP).
+- AI assistant powered by Retrieval-Augmented Generation (RAG) surfaces event PDFs (agenda, exhibitor list, sponsor decks, etc.).
+- UI palette rebrands dynamically per-event while retaining existing UX patterns.
+- Core Snapchat functionality remains; event layer is additive via `eventId` tagging and an `eventStore`.

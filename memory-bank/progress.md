@@ -557,3 +557,20 @@ _None accumulated - professional code quality standards maintained throughout_
 - Fixed UI hit-area issue for "New" chat button (SafeAreaView). ✅
 - Removed verbose debugging logs across chat modules. ✅
 - Implemented automatic `
+
+## New Phase: Event-Driven Networking (2025-06-26)
+
+### Status: PRD & High-Level Tasks Created
+- `prd-event-driven-networking.md` saved
+- `tasks-prd-event-driven-networking.md` saved with 6 parent tasks and detailed sub-tasks
+
+### Next Steps
+- Begin Task 1.1: Design Firestore `events` schema
+- Update Firestore rules and service accordingly
+
+### Success Metrics for Pivot
+- ≥ 40 % attendees post at least one snap per event
+- AI assistant median response ≤ 3 s
+- 100 % content deletion ≤ 25 h post-event
+
+_No other sections altered – core MVP features remain functional._
