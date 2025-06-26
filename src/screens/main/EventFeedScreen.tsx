@@ -24,7 +24,8 @@ import { useThemeColors } from '../../components/ui/ThemeProvider';
 import { MainStackParamList } from '../../navigation/types';
 import { FirestoreService } from '../../services/firestore.service';
 
-type EventFeedScreenNavigationProp = NativeStackNavigationProp<MainStackParamList>;
+type EventFeedScreenNavigationProp =
+  NativeStackNavigationProp<MainStackParamList>;
 
 interface SnapItemProps {
   snap: Snap;
@@ -72,10 +73,16 @@ const SnapItem: React.FC<SnapItemProps> = ({ snap, sender, onPress }) => {
       }}
       activeOpacity={0.7}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
         {/* Sender Info */}
         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-          <View 
+          <View
             style={{
               width: 48,
               height: 48,
@@ -95,14 +102,26 @@ const SnapItem: React.FC<SnapItemProps> = ({ snap, sender, onPress }) => {
                 resizeMode='cover'
               />
             ) : (
-              <Text style={{ color: colors.primary, fontWeight: 'bold', fontSize: 18 }}>
+              <Text
+                style={{
+                  color: colors.primary,
+                  fontWeight: 'bold',
+                  fontSize: 18,
+                }}
+              >
                 {sender?.displayName.charAt(0).toUpperCase() || '?'}
               </Text>
             )}
           </View>
 
           <View style={{ flex: 1 }}>
-            <Text style={{ color: colors.textPrimary, fontWeight: '600', fontSize: 16 }}>
+            <Text
+              style={{
+                color: colors.textPrimary,
+                fontWeight: '600',
+                fontSize: 16,
+              }}
+            >
               {sender?.displayName || 'Unknown User'}
             </Text>
             <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
@@ -123,7 +142,9 @@ const SnapItem: React.FC<SnapItemProps> = ({ snap, sender, onPress }) => {
               paddingVertical: 4,
               borderRadius: 20,
               marginBottom: 4,
-              backgroundColor: snap.viewed ? colors.bgSecondary : colors.primary,
+              backgroundColor: snap.viewed
+                ? colors.bgSecondary
+                : colors.primary,
             }}
           >
             <Text
@@ -144,8 +165,10 @@ const SnapItem: React.FC<SnapItemProps> = ({ snap, sender, onPress }) => {
       </View>
 
       {/* Preview indicator */}
-      <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
-        <View 
+      <View
+        style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center' }}
+      >
+        <View
           style={{
             width: 32,
             height: 32,
@@ -183,11 +206,11 @@ export const EventFeedScreen: React.FC = () => {
     clearError: clearSnapsError,
   } = useSnapStore();
 
-  const { 
-    stories, 
+  const {
+    stories,
     isLoading: storiesLoading,
     error: storiesError,
-    loadStoriesForEvent, 
+    loadStoriesForEvent,
     subscribeToStoriesForEvent,
     clearError: clearStoriesError,
   } = useStoryStore();
@@ -211,7 +234,10 @@ export const EventFeedScreen: React.FC = () => {
         fetchContacts();
 
         // Set up real-time subscriptions
-        const unsubscribeSnaps = subscribeToReceivedSnapsForEvent(user.uid, activeEvent.id);
+        const unsubscribeSnaps = subscribeToReceivedSnapsForEvent(
+          user.uid,
+          activeEvent.id,
+        );
         const unsubscribeStories = subscribeToStoriesForEvent(activeEvent.id);
 
         return () => {
@@ -241,7 +267,7 @@ export const EventFeedScreen: React.FC = () => {
     try {
       const senderPromises = senderIds.map(id => FirestoreService.getUser(id));
       const results = await Promise.all(senderPromises);
-      
+
       results.forEach((result, index) => {
         if (result.success && result.data) {
           senderMap.set(senderIds[index], result.data);
@@ -263,7 +289,7 @@ export const EventFeedScreen: React.FC = () => {
     try {
       const ownerPromises = ownerIds.map(id => FirestoreService.getUser(id));
       const results = await Promise.all(ownerPromises);
-      
+
       results.forEach((result, index) => {
         if (result.success && result.data) {
           ownerMap.set(ownerIds[index], result.data);
@@ -298,9 +324,9 @@ export const EventFeedScreen: React.FC = () => {
   };
 
   const handleStoryPress = (story: Story, index: number) => {
-    navigation.navigate('StoryViewer', { 
-      stories: eventStories, 
-      initialIndex: index, 
+    navigation.navigate('StoryViewer', {
+      stories: eventStories,
+      initialIndex: index,
     });
   };
 
@@ -316,12 +342,32 @@ export const EventFeedScreen: React.FC = () => {
   if (!activeEvent) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
-        <StatusBar style="dark" />
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
-          <Text style={{ color: colors.textPrimary, fontSize: 18, fontWeight: '600', marginBottom: 8 }}>
+        <StatusBar style='dark' />
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 24,
+          }}
+        >
+          <Text
+            style={{
+              color: colors.textPrimary,
+              fontSize: 18,
+              fontWeight: '600',
+              marginBottom: 8,
+            }}
+          >
             No Active Event
           </Text>
-          <Text style={{ color: colors.textSecondary, fontSize: 16, textAlign: 'center' }}>
+          <Text
+            style={{
+              color: colors.textSecondary,
+              fontSize: 16,
+              textAlign: 'center',
+            }}
+          >
             Join or create an event to see the event feed
           </Text>
         </View>
@@ -333,9 +379,15 @@ export const EventFeedScreen: React.FC = () => {
   if (snapsLoading || storiesLoading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
-        <StatusBar style="dark" />
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <LoadingSpinner size="large" color={colors.primary} text="Loading event feed..." />
+        <StatusBar style='dark' />
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <LoadingSpinner
+            size='large'
+            color={colors.primary}
+            text='Loading event feed...'
+          />
         </View>
       </SafeAreaView>
     );
@@ -345,12 +397,33 @@ export const EventFeedScreen: React.FC = () => {
   if (snapsError || storiesError) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
-        <StatusBar style="dark" />
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
-          <Text style={{ color: colors.error, fontSize: 18, fontWeight: '600', marginBottom: 8 }}>
+        <StatusBar style='dark' />
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 24,
+          }}
+        >
+          <Text
+            style={{
+              color: colors.error,
+              fontSize: 18,
+              fontWeight: '600',
+              marginBottom: 8,
+            }}
+          >
             Something went wrong
           </Text>
-          <Text style={{ color: colors.textSecondary, fontSize: 16, textAlign: 'center', marginBottom: 16 }}>
+          <Text
+            style={{
+              color: colors.textSecondary,
+              fontSize: 16,
+              textAlign: 'center',
+              marginBottom: 16,
+            }}
+          >
             {snapsError || storiesError}
           </Text>
           <TouchableOpacity
@@ -378,16 +451,18 @@ export const EventFeedScreen: React.FC = () => {
   // Stories header component
   const renderStoriesHeader = () => (
     <View style={{ marginBottom: 24 }}>
-      <Text style={{ 
-        color: colors.textPrimary, 
-        fontSize: 18, 
-        fontWeight: '600', 
-        marginBottom: 16,
-        paddingHorizontal: 16,
-      }}>
+      <Text
+        style={{
+          color: colors.textPrimary,
+          fontSize: 18,
+          fontWeight: '600',
+          marginBottom: 16,
+          paddingHorizontal: 16,
+        }}
+      >
         Event Stories
       </Text>
-      
+
       {eventStories.length > 0 ? (
         <ScrollView
           horizontal
@@ -413,24 +488,37 @@ export const EventFeedScreen: React.FC = () => {
           })}
         </ScrollView>
       ) : (
-        <View style={{ 
-          alignItems: 'center', 
-          paddingVertical: 32,
-          backgroundColor: colors.surface,
-          marginHorizontal: 16,
-          borderRadius: 12,
-          borderWidth: 1,
-          borderColor: colors.border,
-          borderStyle: 'dashed',
-        }}>
-          <Text style={{ color: colors.textSecondary, fontSize: 16, marginBottom: 4 }}>
+        <View
+          style={{
+            alignItems: 'center',
+            paddingVertical: 32,
+            backgroundColor: colors.surface,
+            marginHorizontal: 16,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: colors.border,
+            borderStyle: 'dashed',
+          }}
+        >
+          <Text
+            style={{
+              color: colors.textSecondary,
+              fontSize: 16,
+              marginBottom: 4,
+            }}
+          >
             No stories yet
           </Text>
-          <Text style={{ color: colors.textTertiary, fontSize: 14, textAlign: 'center' }}>
-            {role === 'host' 
+          <Text
+            style={{
+              color: colors.textTertiary,
+              fontSize: 14,
+              textAlign: 'center',
+            }}
+          >
+            {role === 'host'
               ? 'Share the first story for this event!'
-              : 'Stories from event participants will appear here'
-            }
+              : 'Stories from event participants will appear here'}
           </Text>
         </View>
       )}
@@ -439,72 +527,90 @@ export const EventFeedScreen: React.FC = () => {
 
   // Empty state for snaps
   const renderEmptySnaps = () => (
-    <View style={{ 
-      alignItems: 'center', 
-      paddingVertical: 32,
-      backgroundColor: colors.surface,
-      marginHorizontal: 16,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderStyle: 'dashed',
-    }}>
-      <Text style={{ color: colors.textSecondary, fontSize: 16, marginBottom: 4 }}>
+    <View
+      style={{
+        alignItems: 'center',
+        paddingVertical: 32,
+        backgroundColor: colors.surface,
+        marginHorizontal: 16,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderStyle: 'dashed',
+      }}
+    >
+      <Text
+        style={{ color: colors.textSecondary, fontSize: 16, marginBottom: 4 }}
+      >
         No snaps yet
       </Text>
-      <Text style={{ color: colors.textTertiary, fontSize: 14, textAlign: 'center' }}>
-        {role === 'host' 
+      <Text
+        style={{
+          color: colors.textTertiary,
+          fontSize: 14,
+          textAlign: 'center',
+        }}
+      >
+        {role === 'host'
           ? 'Send the first snap to event participants!'
-          : 'Snaps from other participants will appear here'
-        }
+          : 'Snaps from other participants will appear here'}
       </Text>
     </View>
   );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
-      <StatusBar style="dark" />
-      
+      <StatusBar style='dark' />
+
       {/* Header */}
-      <View style={{ 
-        paddingHorizontal: 16, 
-        paddingVertical: 12,
-        backgroundColor: colors.surface,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-      }}>
-        <Text style={{ 
-          color: colors.textPrimary, 
-          fontSize: 20, 
-          fontWeight: '700',
-          marginBottom: 4,
-        }}>
+      <View
+        style={{
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          backgroundColor: colors.surface,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        }}
+      >
+        <Text
+          style={{
+            color: colors.textPrimary,
+            fontSize: 20,
+            fontWeight: '700',
+            marginBottom: 4,
+          }}
+        >
           {activeEvent.name}
         </Text>
         <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
-          {role === 'host' ? 'Event Host' : 'Event Participant'} • {eventSnaps.length} snaps, {eventStories.length} stories
+          {role === 'host' ? 'Event Host' : 'Event Participant'} •{' '}
+          {eventSnaps.length} snaps, {eventStories.length} stories
         </Text>
       </View>
 
       {/* Role-based Permissions Banner for Task 5.5 */}
       {role && (
-        <View style={{
-          backgroundColor: role === 'host' ? colors.primary + '10' : colors.accent + '10',
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
-          paddingHorizontal: 16,
-          paddingVertical: 8,
-        }}>
-          <Text style={{
-            color: role === 'host' ? colors.primary : colors.accent,
-            fontSize: 12,
-            fontWeight: '600',
-            textAlign: 'center',
-          }}>
-            {role === 'host' 
+        <View
+          style={{
+            backgroundColor:
+              role === 'host' ? colors.primary + '10' : colors.accent + '10',
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+          }}
+        >
+          <Text
+            style={{
+              color: role === 'host' ? colors.primary : colors.accent,
+              fontSize: 12,
+              fontWeight: '600',
+              textAlign: 'center',
+            }}
+          >
+            {role === 'host'
               ? '👑 Host: You can post stories and send snaps to all participants'
-              : '👥 Guest: You can post stories and view content from other participants'
-            }
+              : '👥 Guest: You can post stories and view content from other participants'}
           </Text>
         </View>
       )}
@@ -528,4 +634,4 @@ export const EventFeedScreen: React.FC = () => {
       />
     </SafeAreaView>
   );
-}; 
+};

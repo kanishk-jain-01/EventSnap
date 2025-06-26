@@ -49,14 +49,20 @@ Building a Snapchat clone mobile application for internal testing and validation
 The project has evolved from a general Snapchat-style social app to a professional **EventSnap - Event-Driven Networking Platform** for conferences, festivals, and professional gatherings.
 
 ### Current Implementation Status (2025-01-03)
-- **Phase 5.0 COMPLETE**: Event-scoped content system with role-based permissions
+
+- **Phase 6.0 IN PROGRESS**: Role-Aware Onboarding & Permissions (50% complete - 3/6 tasks)
 - **EventSnap Branding**: Complete transformation to Creative Light Theme (purple/pink professional design)
-- **Text Overlays**: 200-character text annotations on photos with real-time validation
-- **Role-Based UI Gating**: Host vs Guest permissions with clear UI messaging
+- **Event Discovery System**: Professional public event listing with startTime ordering and status indicators
+- **Private Event Access**: Complete 6-digit join code system with database validation
+- **Role-Based Permissions**: Host vs Guest permissions with comprehensive UI gating
+- **Event Content System**: Complete event-scoped stories and snaps with text overlays
 - **Modern Navigation**: EventTabNavigator with AI Assistant placeholder for Phase 3.0
 - **Production Ready**: TypeScript clean, ESLint compliant, comprehensive architecture
 
 ### Key Features Implemented
+
+- **Professional Event Discovery**: Public event listing with status indicators and chronological ordering
+- **Private Event Joining**: 6-digit join code system with real-time validation and participant management
 - **Event-Scoped Content**: All stories and snaps filtered by eventId with database-level scoping
 - **Role-Based Permissions**: Host can send event snaps to all participants, guests receive-only
 - **Text Overlay System**: Optional ≤200-character text annotations with character validation
@@ -64,11 +70,15 @@ The project has evolved from a general Snapchat-style social app to a profession
 - **Professional UI**: EventSnap Creative Light Theme throughout with purple/pink color scheme
 - **AI-Ready Backend**: Complete asset ingestion pipeline with Pinecone integration (Phase 2.0)
 - **Content Lifecycle**: Automatic cleanup 24 hours after event ends
+- **EventSelectionScreen**: Professional event discovery and joining interface with EventSnap branding
 
 ### Architecture
+
 - Single-day events: All user-generated content expires 24h after the event ends
 - Roles: Host (full permissions) and Guest (limited permissions) with clear UI differentiation
 - Ephemeral photos with optional text overlays (no video in MVP)
+- Professional event onboarding with public/private event discovery
 - AI assistant infrastructure complete, ready for Phase 3.0 implementation
 - EventSnap professional branding appropriate for business conferences
 - Event layer fully integrated with existing UX patterns via `eventId` scoping and `eventStore`
+- Complete participant management with role assignment and database validation

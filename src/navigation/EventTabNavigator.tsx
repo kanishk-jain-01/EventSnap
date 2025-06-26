@@ -15,37 +15,45 @@ const EventTab = createBottomTabNavigator<EventTabParamList>();
 // Placeholder Assistant Screen for now
 const PlaceholderAssistantScreen: React.FC = () => {
   const colors = useThemeColors();
-  
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
-      <StatusBar style="dark" />
-      <View style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 24,
-      }}>
+      <StatusBar style='dark' />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 24,
+        }}
+      >
         <View style={{ alignItems: 'center' }}>
-          <Text style={{ 
-            fontSize: 48,
-            marginBottom: 16,
-          }}>
+          <Text
+            style={{
+              fontSize: 48,
+              marginBottom: 16,
+            }}
+          >
             🤖
           </Text>
-          <Text style={{
-            color: colors.textPrimary,
-            fontSize: 18,
-            fontWeight: '600',
-            marginBottom: 8,
-          }}>
+          <Text
+            style={{
+              color: colors.textPrimary,
+              fontSize: 18,
+              fontWeight: '600',
+              marginBottom: 8,
+            }}
+          >
             AI Assistant
           </Text>
-          <Text style={{
-            color: colors.textSecondary,
-            fontSize: 16,
-            textAlign: 'center',
-            lineHeight: 24,
-          }}>
+          <Text
+            style={{
+              color: colors.textSecondary,
+              fontSize: 16,
+              textAlign: 'center',
+              lineHeight: 24,
+            }}
+          >
             Coming in Phase 3.0!{'\n'}
             Ask questions about event documents and get instant answers.
           </Text>
@@ -64,7 +72,7 @@ export const EventTabNavigator: React.FC = () => {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: colors.surface, // Clean white background
-          borderTopColor: colors.border,  // Subtle border
+          borderTopColor: colors.border, // Subtle border
           borderTopWidth: 1,
           // Add subtle shadow for depth
           shadowColor: colors.shadow,
@@ -87,10 +95,12 @@ export const EventTabNavigator: React.FC = () => {
         options={{
           tabBarLabel: 'Feed',
           tabBarIcon: ({ focused, color }) => (
-            <Text style={{
-              fontSize: 20,
-              color: color,
-            }}>
+            <Text
+              style={{
+                fontSize: 20,
+                color: color,
+              }}
+            >
               {focused ? '📱' : '📱'}
             </Text>
           ),
@@ -102,10 +112,12 @@ export const EventTabNavigator: React.FC = () => {
         options={{
           tabBarLabel: 'Assistant',
           tabBarIcon: ({ focused, color }) => (
-            <Text style={{
-              fontSize: 20,
-              color: color,
-            }}>
+            <Text
+              style={{
+                fontSize: 20,
+                color: color,
+              }}
+            >
               {focused ? '🤖' : '🤖'}
             </Text>
           ),
@@ -117,10 +129,12 @@ export const EventTabNavigator: React.FC = () => {
         options={{
           tabBarLabel: 'Profile',
           tabBarIcon: ({ focused, color }) => (
-            <Text style={{
-              fontSize: 20,
-              color: color,
-            }}>
+            <Text
+              style={{
+                fontSize: 20,
+                color: color,
+              }}
+            >
               {focused ? '👤' : '👤'}
             </Text>
           ),
@@ -128,4 +142,4 @@ export const EventTabNavigator: React.FC = () => {
       />
     </EventTab.Navigator>
   );
-}; 
+};

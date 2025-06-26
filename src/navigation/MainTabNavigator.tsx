@@ -20,7 +20,7 @@ export const MainTabNavigator: React.FC = () => {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: colors.surface, // Clean white background
-          borderTopColor: colors.border,  // Subtle border
+          borderTopColor: colors.border, // Subtle border
           borderTopWidth: 1,
           // Add subtle shadow for depth
           shadowColor: colors.shadow,

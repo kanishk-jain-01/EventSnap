@@ -41,16 +41,16 @@ type CameraScreenNavigationProp = NativeStackNavigationProp<
 export const CameraScreen: React.FC = () => {
   const navigation = useNavigation<CameraScreenNavigationProp>();
   const colors = useThemeColors();
-  
+
   // Import event store for role-based permissions
   const { role, activeEvent } = useEventStore();
-  
+
   // Import snap store for event snap sending
   const { sendEventSnap } = useSnapStore();
-  
+
   // Import auth store for user info
   const { user } = useAuthStore();
-  
+
   // Permission and loading states
   const [permissions, setPermissions] = useState<CameraPermissions | null>(
     null,
@@ -95,7 +95,10 @@ export const CameraScreen: React.FC = () => {
   // Text overlay states for Task 5.4
   const [showTextOverlay, setShowTextOverlay] = useState(false);
   const [overlayText, setOverlayText] = useState('');
-  const [textPosition, _setTextPosition] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
+  const [textPosition, _setTextPosition] = useState<{ x: number; y: number }>({
+    x: 50,
+    y: 50,
+  });
 
   // Event snap sending states for Task 5.5
   const [isSendingEventSnap, setIsSendingEventSnap] = useState(false);
@@ -503,7 +506,10 @@ export const CameraScreen: React.FC = () => {
   // Event snap sending for Task 5.5
   const handleSendEventSnap = async () => {
     if (!capturedPhoto || !user?.uid || !activeEvent?.id || role !== 'host') {
-      Alert.alert('Error', 'Unable to send event snap. Please check your permissions.');
+      Alert.alert(
+        'Error',
+        'Unable to send event snap. Please check your permissions.',
+      );
       return;
     }
 
@@ -511,11 +517,15 @@ export const CameraScreen: React.FC = () => {
     setEventSnapProgress(0);
 
     try {
-      const success = await sendEventSnap(capturedPhoto, user.uid, activeEvent.id);
-      
+      const success = await sendEventSnap(
+        capturedPhoto,
+        user.uid,
+        activeEvent.id,
+      );
+
       if (success) {
         Alert.alert(
-          'Event Snap Sent!', 
+          'Event Snap Sent!',
           'Your snap has been sent to all event participants.',
           [
             {
@@ -551,8 +561,8 @@ export const CameraScreen: React.FC = () => {
     // In a future enhancement, we could render the text overlay onto the image
     const success = await postStory(capturedPhoto);
     if (success) {
-      const message = overlayText 
-        ? 'Story posted with text overlay!' 
+      const message = overlayText
+        ? 'Story posted with text overlay!'
         : 'Story posted successfully!';
       Alert.alert('Story Posted!', message);
       // Navigate back to Home tab to view your story
@@ -793,10 +803,10 @@ export const CameraScreen: React.FC = () => {
             }}
             resizeMode='contain'
           />
-          
+
           {/* Text Overlay Display for Task 5.4 */}
           {overlayText && (
-            <View 
+            <View
               style={{
                 position: 'absolute',
                 left: `${textPosition.x}%`,
@@ -868,14 +878,17 @@ export const CameraScreen: React.FC = () => {
               <View className='flex-row justify-center items-center mt-3 mb-2'>
                 <View className='bg-purple-500/20 px-3 py-2 rounded-full flex-1 mr-2'>
                   <Text className='text-purple-300 text-xs text-center'>
-                    Text: "{overlayText.substring(0, 30)}{overlayText.length > 30 ? '...' : ''}"
+                    Text: "{overlayText.substring(0, 30)}
+                    {overlayText.length > 30 ? '...' : ''}"
                   </Text>
                 </View>
                 <TouchableOpacity
                   onPress={clearTextOverlay}
                   className='bg-red-500/80 px-3 py-2 rounded-full'
                 >
-                  <Text className='text-white text-xs font-semibold'>Clear</Text>
+                  <Text className='text-white text-xs font-semibold'>
+                    Clear
+                  </Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -924,10 +937,9 @@ export const CameraScreen: React.FC = () => {
                   disabled={isSendingEventSnap}
                 >
                   <Text className='text-white font-semibold text-center text-sm'>
-                    {isSendingEventSnap 
+                    {isSendingEventSnap
                       ? `📤 ${Math.round(eventSnapProgress)}%`
-                      : '📤 Event Snap'
-                    }
+                      : '📤 Event Snap'}
                   </Text>
                 </TouchableOpacity>
               ) : role === 'guest' ? (
@@ -1204,17 +1216,23 @@ export const CameraScreen: React.FC = () => {
       <Modal
         visible={showTextOverlay}
         onClose={handleTextOverlayCancel}
-        title="Add Text Overlay"
+        title='Add Text Overlay'
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1 }}
         >
           <View style={{ padding: 20 }}>
-            <Text style={{ color: colors.textSecondary, marginBottom: 12, fontSize: 14 }}>
+            <Text
+              style={{
+                color: colors.textSecondary,
+                marginBottom: 12,
+                fontSize: 14,
+              }}
+            >
               Add text to overlay on your photo (max 200 characters)
             </Text>
-            
+
             <View
               style={{
                 borderWidth: 1,
@@ -1227,7 +1245,7 @@ export const CameraScreen: React.FC = () => {
               <TextInput
                 value={overlayText}
                 onChangeText={setOverlayText}
-                placeholder="Enter your text here..."
+                placeholder='Enter your text here...'
                 placeholderTextColor={colors.textTertiary}
                 style={{
                   color: colors.textPrimary,
@@ -1242,11 +1260,18 @@ export const CameraScreen: React.FC = () => {
               />
             </View>
 
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 20,
+              }}
+            >
               <Text style={{ color: colors.textTertiary, fontSize: 12 }}>
                 {overlayText.length}/200 characters
               </Text>
-              
+
               {overlayText.length >= 180 && (
                 <Text style={{ color: colors.error, fontSize: 12 }}>
                   {200 - overlayText.length} characters remaining

@@ -13,7 +13,10 @@ export class IngestionService {
    * @param eventId Firestore event document ID
    * @param storagePath Full storage path of the uploaded PDF asset
    */
-  static async ingestPdf(eventId: string, storagePath: string): Promise<ApiResponse<void>> {
+  static async ingestPdf(
+    eventId: string,
+    storagePath: string,
+  ): Promise<ApiResponse<void>> {
     try {
       const callable = httpsCallable(functions, 'ingestPDFEmbeddings');
       await callable({ eventId, storagePath });
@@ -30,7 +33,10 @@ export class IngestionService {
    * @param eventId Firestore event document ID
    * @param storagePath Full storage path of the uploaded image asset
    */
-  static async ingestImage(eventId: string, storagePath: string): Promise<ApiResponse<void>> {
+  static async ingestImage(
+    eventId: string,
+    storagePath: string,
+  ): Promise<ApiResponse<void>> {
     try {
       const callable = httpsCallable(functions, 'ingestImageEmbeddings');
       await callable({ eventId, storagePath });
@@ -41,4 +47,4 @@ export class IngestionService {
       return { success: false, error: 'Failed to ingest image asset' };
     }
   }
-} 
+}

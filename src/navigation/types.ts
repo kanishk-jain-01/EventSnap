@@ -12,6 +12,8 @@ export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   AuthLoading: undefined;
+  EventSelection: undefined;
+  EventSetup: undefined;
 };
 
 // Main Stack Navigator (contains tabs and modal screens)

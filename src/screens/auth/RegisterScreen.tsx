@@ -149,7 +149,9 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
             <Text className='text-primary text-4xl font-bold mb-2'>
               EventSnap
             </Text>
-            <Text className='text-text-primary text-lg'>Create your account</Text>
+            <Text className='text-text-primary text-lg'>
+              Create your account
+            </Text>
           </View>
 
           {/* Form */}
@@ -215,9 +217,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
             {/* Auth Error */}
             {error && (
               <View className='bg-error/20 border border-error rounded-lg p-3 mb-4'>
-                <Text className='text-error text-sm text-center'>
-                  {error}
-                </Text>
+                <Text className='text-error text-sm text-center'>{error}</Text>
               </View>
             )}
 

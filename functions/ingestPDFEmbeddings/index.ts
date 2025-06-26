@@ -51,15 +51,24 @@ const chunkText = (text: string): string[] => {
 };
 
 /** Cloud Function: ingestPDFEmbeddings */
-export const ingestPDFEmbeddings = functions.https.onCall(async (request) => {
+export const ingestPDFEmbeddings = functions.https.onCall(async request => {
   // Authentication (require host role handled via security rules on callable path)
   if (!request.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'User must be authenticated',
+    );
   }
 
-  const { eventId, storagePath } = request.data as { eventId?: string; storagePath?: string };
+  const { eventId, storagePath } = request.data as {
+    eventId?: string;
+    storagePath?: string;
+  };
   if (!eventId || !storagePath) {
-    throw new functions.https.HttpsError('invalid-argument', 'eventId and storagePath are required');
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'eventId and storagePath are required',
+    );
   }
 
   try {
@@ -131,6 +140,9 @@ export const ingestPDFEmbeddings = functions.https.onCall(async (request) => {
     return { success: true, chunks: vectors.length };
   } catch (error: any) {
     console.error('Embedding ingestion failed', error);
-    throw new functions.https.HttpsError('internal', error.message ?? 'Processing failed');
+    throw new functions.https.HttpsError(
+      'internal',
+      error.message ?? 'Processing failed',
+    );
   }
-}); 
+});

@@ -1,13 +1,13 @@
 ## Relevant Files
 
-- `src/services/firestore.service.ts` – MODIFIED: added event-scoped story methods (getActiveStoriesForEvent, subscribeToStoriesForEvent), updated createStory to accept eventId, added event-scoped snap methods (getReceivedSnapsForEvent, subscribeToReceivedSnapsForEvent, createEventSnap with host-only validation)
+- `src/services/firestore.service.ts` – MODIFIED: added event-scoped story methods (getActiveStoriesForEvent, subscribeToStoriesForEvent), updated createStory to accept eventId, added event-scoped snap methods (getReceivedSnapsForEvent, subscribeToReceivedSnapsForEvent, createEventSnap with host-only validation), added getPublicEvents() with startTime ordering, added getEventByJoinCode() for private event discovery
 - `src/services/storage.service.ts` – Add event asset upload helper and EVENT_ASSET path
 - `src/services/ai/assistant.service.ts` – NEW: client helper to call AI assistant Cloud Function and stream responses
 - `src/services/ai/ingestion.service.ts` – Helper to call Cloud Functions for PDF & image embeddings
-- `src/store/eventStore.ts` – NEW: Zustand store for current event, role, and participants
+- `src/store/eventStore.ts` – MODIFIED: Zustand store for current event, role, participants, added publicEvents state with loadPublicEvents() method, and added joinEventByCode() for private event joining
 - `src/navigation/EventTabNavigator.tsx` – NEW: Tab navigator for `EventFeed`, `Assistant` (placeholder), `Profile` with Creative Light Theme styling
 - `src/navigation/types.ts` – MODIFIED: added EventTabParamList type definition
-- `src/screens/auth/EventSelectionScreen.tsx` – NEW: list public events / join private event
+- `src/screens/auth/EventSelectionScreen.tsx` – CREATED: list public events / join private event with EventSnap branding, integrated joinEventByCode() for private event joining
 - `src/screens/organizer/EventSetupScreen.tsx` – NEW: event creation form UI (Host only)
 - `src/screens/main/EventFeedScreen.tsx` – MODIFIED: combined event feed (stories + snaps) with Creative Light Theme and role-based permissions banner (host vs guest messaging)
 - `src/screens/ai/AssistantScreen.tsx` – NEW: chat UI for AI assistant
@@ -20,7 +20,7 @@
 - `src/components/social/StoryRing.tsx` – REFACTORED: use Creative Light Theme tokens
 - `src/navigation/MainTabNavigator.tsx` – MODIFIED: replaced HomeScreen with EventFeedScreen, updated tab label from "Stories" to "Feed"
 - `src/screens/auth/AuthLoadingScreen.tsx` – REFACTORED: use Creative Light Theme and EventSnap branding
-- `src/screens/auth/LoginScreen.tsx` – REFACTORED: use Creative Light Theme and EventSnap branding  
+- `src/screens/auth/LoginScreen.tsx` – REFACTORED: use Creative Light Theme and EventSnap branding
 - `src/screens/auth/RegisterScreen.tsx` – REFACTORED: use Creative Light Theme and EventSnap branding
 - `src/store/storyStore.ts` – MODIFIED: added event-scoped story methods (loadStoriesForEvent, subscribeToStoriesForEvent)
 - `src/store/snapStore.ts` – MODIFIED: added event-scoped snap methods (loadReceivedSnapsForEvent, subscribeToReceivedSnapsForEvent, sendEventSnap with host-only validation)
@@ -36,6 +36,7 @@
 - `src/screens/main/HomeScreen.tsx` – DELETED: superseded by `EventFeedScreen` in main navigation
 
 ### Notes
+
 - Place AI-related service files under `src/services/ai/`.
 - Cloud Functions live in the root `functions/` directory.
 - Delete files marked **DELETE** once removal tasks are complete.
@@ -87,9 +88,9 @@
   - [x] 5.6 Update navigation: add `EventTabNavigator` (Feed, Assistant, Profile) and remove `HomeScreen`
 
 - [ ] 6.0 Role-Aware Onboarding & Permissions
-  - [ ] 6.1 Build `EventSelectionScreen` with Public Events list (paginated) & Private join-code form
-  - [ ] 6.2 Implement Firestore query for public events; ordering by `startTime`
-  - [ ] 6.3 Implement `joinEvent` via `joinCode`; update `eventStore` & participants sub-collection
+  - [x] 6.1 Build `EventSelectionScreen` with Public Events list (paginated) & Private join-code form
+  - [x] 6.2 Implement Firestore query for public events; ordering by `startTime`
+  - [x] 6.3 Implement `joinEvent` via `joinCode`; update `eventStore` & participants sub-collection
   - [ ] 6.4 Integrate selection screen into auth flow (redirect when `activeEvent` null)
   - [ ] 6.5 Persist last `activeEvent` in AsyncStorage; auto-rejoin on app launch
   - [ ] 6.6 Conditional navigation/screens based on role (Host vs Guest)

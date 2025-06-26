@@ -514,10 +514,10 @@ export class FirestoreService {
       const participantsQuery = query(
         collection(firestore, COLLECTIONS.EVENTS, eventId, 'participants'),
       );
-      
+
       const participantsSnapshot = await getDocs(participantsQuery);
       const participants: string[] = [];
-      
+
       participantsSnapshot.forEach(doc => {
         participants.push(doc.id); // doc.id is the participant's uid
       });
@@ -532,14 +532,14 @@ export class FirestoreService {
       // Create snaps for all participants except the sender
       const recipientIds = participants.filter(uid => uid !== senderId);
       const createdSnaps: Snap[] = [];
-      
+
       // Calculate expiration time (24 hours from now)
       const now = new Date();
       const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
       // Use batch write for efficiency
       const batch = writeBatch(firestore);
-      
+
       for (const recipientId of recipientIds) {
         const snapData: SnapDocument = {
           senderId,
@@ -1015,7 +1015,10 @@ export class FirestoreService {
       // is acceptable and avoids Firestore case-sensitivity limitations.
       const allRes = await this.getAllUsers(excludeUserId, 500);
       if (!allRes.success || !allRes.data) {
-        return { success: false, error: allRes.error || 'Failed to fetch users' };
+        return {
+          success: false,
+          error: allRes.error || 'Failed to fetch users',
+        };
       }
 
       const normalized = searchText.trim().toLowerCase();
@@ -1100,7 +1103,10 @@ export class FirestoreService {
       await deleteDoc(contactRef);
       return { success: true };
     } catch (err: any) {
-      return { success: false, error: err?.message || 'Failed to remove contact' };
+      return {
+        success: false,
+        error: err?.message || 'Failed to remove contact',
+      };
     }
   }
 
@@ -1321,13 +1327,7 @@ export class FirestoreService {
 
       // Add host participant sub-doc
       await setDoc(
-        doc(
-          firestore,
-          COLLECTIONS.EVENTS,
-          docRef.id,
-          'participants',
-          hostUid,
-        ),
+        doc(firestore, COLLECTIONS.EVENTS, docRef.id, 'participants', hostUid),
         {
           role: 'host',
           joinedAt: serverTimestamp(),
@@ -1373,20 +1373,16 @@ export class FirestoreService {
 
       if (
         data.visibility === 'private' &&
-        ((data.joinCode === null || data.joinCode === undefined) || data.joinCode !== joinCodeInput)
+        (data.joinCode === null ||
+          data.joinCode === undefined ||
+          data.joinCode !== joinCodeInput)
       ) {
         return { success: false, error: 'Invalid join code' };
       }
 
       // Add participant document
       await setDoc(
-        doc(
-          firestore,
-          COLLECTIONS.EVENTS,
-          eventId,
-          'participants',
-          userId,
-        ),
+        doc(firestore, COLLECTIONS.EVENTS, eventId, 'participants', userId),
         {
           role: userId === data.hostUid ? 'host' : 'guest',
           joinedAt: serverTimestamp(),
@@ -1439,13 +1435,7 @@ export class FirestoreService {
   ): Promise<ApiResponse<void>> {
     try {
       await setDoc(
-        doc(
-          firestore,
-          COLLECTIONS.EVENTS,
-          eventId,
-          'participants',
-          userId,
-        ),
+        doc(firestore, COLLECTIONS.EVENTS, eventId, 'participants', userId),
         {
           role,
           joinedAt: serverTimestamp(),
@@ -1466,18 +1456,90 @@ export class FirestoreService {
   ): Promise<ApiResponse<void>> {
     try {
       await deleteDoc(
-        doc(
-          firestore,
-          COLLECTIONS.EVENTS,
-          eventId,
-          'participants',
-          userId,
-        ),
+        doc(firestore, COLLECTIONS.EVENTS, eventId, 'participants', userId),
       );
 
       return { success: true };
     } catch (_error) {
       return { success: false, error: 'Failed to remove participant' };
+    }
+  }
+
+  /** Get public events ordered by start time */
+  static async getPublicEvents(
+    limitCount: number = 20,
+  ): Promise<ApiResponse<AppEvent[]>> {
+    try {
+      const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
+      const q = query(
+        eventsRef,
+        where('visibility', '==', 'public'),
+        orderBy('startTime', 'asc'),
+        limit(limitCount),
+      );
+
+      const snapshot = await getDocs(q);
+
+      const events: AppEvent[] = snapshot.docs.map(doc => {
+        const data = doc.data() as EventDocument;
+        return {
+          id: doc.id,
+          name: data.name,
+          visibility: data.visibility,
+          joinCode: data.joinCode ?? null,
+          startTime: data.startTime.toDate(),
+          endTime: data.endTime.toDate(),
+          hostUid: data.hostUid,
+          palette: data.palette,
+          assets: data.assets,
+          createdAt: data.createdAt.toDate(),
+        };
+      });
+
+      return { success: true, data: events };
+    } catch (_error) {
+      return { success: false, error: 'Failed to fetch public events' };
+    }
+  }
+
+  /** Find event by join code */
+  static async getEventByJoinCode(
+    joinCode: string,
+  ): Promise<ApiResponse<AppEvent>> {
+    try {
+      const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
+      const q = query(
+        eventsRef,
+        where('joinCode', '==', joinCode),
+        where('visibility', '==', 'private'),
+        limit(1),
+      );
+
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        return { success: false, error: 'Invalid join code' };
+      }
+
+      const doc = snapshot.docs[0];
+      const data = doc.data() as EventDocument;
+
+      const event: AppEvent = {
+        id: doc.id,
+        name: data.name,
+        visibility: data.visibility,
+        joinCode: data.joinCode ?? null,
+        startTime: data.startTime.toDate(),
+        endTime: data.endTime.toDate(),
+        hostUid: data.hostUid,
+        palette: data.palette,
+        assets: data.assets,
+        createdAt: data.createdAt.toDate(),
+      };
+
+      return { success: true, data: event };
+    } catch (_error) {
+      return { success: false, error: 'Failed to find event' };
     }
   }
 }

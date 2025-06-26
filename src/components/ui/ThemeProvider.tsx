@@ -5,54 +5,54 @@ import { Theme } from '../../types';
 const CREATIVE_LIGHT_THEME: Theme = {
   colors: {
     // Primary Colors
-    primary: '#7C3AED',        // Rich Purple
-    primaryLight: '#A855F7',   // Lighter purple for hover states
-    primaryDark: '#6D28D9',    // Darker purple for pressed states
-    
+    primary: '#7C3AED', // Rich Purple
+    primaryLight: '#A855F7', // Lighter purple for hover states
+    primaryDark: '#6D28D9', // Darker purple for pressed states
+
     // Accent Colors
-    accent: '#EC4899',         // Hot Pink
-    accentLight: '#F472B6',    // Lighter pink for hover states
-    accentDark: '#DB2777',     // Darker pink for pressed states
-    
+    accent: '#EC4899', // Hot Pink
+    accentLight: '#F472B6', // Lighter pink for hover states
+    accentDark: '#DB2777', // Darker pink for pressed states
+
     // Semantic Colors
-    success: '#10B981',        // Emerald
-    successLight: '#34D399',   // Light emerald
-    successDark: '#059669',    // Dark emerald
-    
-    warning: '#F59E0B',        // Amber
-    warningLight: '#FBBF24',   // Light amber
-    warningDark: '#D97706',    // Dark amber
-    
-    error: '#EF4444',          // Rose
-    errorLight: '#F87171',     // Light rose
-    errorDark: '#DC2626',      // Dark rose
-    
+    success: '#10B981', // Emerald
+    successLight: '#34D399', // Light emerald
+    successDark: '#059669', // Dark emerald
+
+    warning: '#F59E0B', // Amber
+    warningLight: '#FBBF24', // Light amber
+    warningDark: '#D97706', // Dark amber
+
+    error: '#EF4444', // Rose
+    errorLight: '#F87171', // Light rose
+    errorDark: '#DC2626', // Dark rose
+
     // Background & Surface Colors
-    bgPrimary: '#FAFAFA',      // Main background - clean light
-    bgSecondary: '#F8FAFC',    // Secondary background - slightly cooler
-    surface: '#FFFFFF',        // Cards, modals, elevated surfaces
+    bgPrimary: '#FAFAFA', // Main background - clean light
+    bgSecondary: '#F8FAFC', // Secondary background - slightly cooler
+    surface: '#FFFFFF', // Cards, modals, elevated surfaces
     surfaceElevated: '#FFFFFF', // Higher elevation surfaces
-    
+
     // Text Colors
-    textPrimary: '#1E293B',    // Main text - dark slate
-    textSecondary: '#64748B',  // Secondary text - medium slate
-    textTertiary: '#94A3B8',   // Tertiary text - light slate
-    textInverse: '#FFFFFF',    // Text on dark backgrounds
-    
+    textPrimary: '#1E293B', // Main text - dark slate
+    textSecondary: '#64748B', // Secondary text - medium slate
+    textTertiary: '#94A3B8', // Tertiary text - light slate
+    textInverse: '#FFFFFF', // Text on dark backgrounds
+
     // Border Colors
-    border: '#E2E8F0',         // Subtle borders
-    borderStrong: '#CBD5E1',   // More visible borders
-    divider: '#F1F5F9',        // Very subtle dividers
-    
+    border: '#E2E8F0', // Subtle borders
+    borderStrong: '#CBD5E1', // More visible borders
+    divider: '#F1F5F9', // Very subtle dividers
+
     // Interactive States
-    interactiveHover: '#F8FAFC',    // Hover state background
-    interactivePressed: '#F1F5F9',  // Pressed state background
+    interactiveHover: '#F8FAFC', // Hover state background
+    interactivePressed: '#F1F5F9', // Pressed state background
     interactiveDisabled: '#F8FAFC', // Disabled state background
-    
+
     // Special Purpose
-    gradientStart: '#7C3AED',  // Gradient start (primary)
-    gradientEnd: '#EC4899',    // Gradient end (accent)
-    shadow: '#1E293B',         // Shadow color
+    gradientStart: '#7C3AED', // Gradient start (primary)
+    gradientEnd: '#EC4899', // Gradient end (accent)
+    shadow: '#1E293B', // Shadow color
   },
   spacing: {
     xs: 4,
@@ -87,14 +87,12 @@ interface ThemeProviderProps {
  * ThemeProvider component that provides theme context throughout the app
  * Uses the Creative Light Theme by default, with support for custom theme overrides
  */
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ 
-  children, 
-  theme = CREATIVE_LIGHT_THEME, 
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({
+  children,
+  theme = CREATIVE_LIGHT_THEME,
 }) => {
   return (
-    <ThemeContext.Provider value={theme}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>
   );
 };
 
@@ -104,11 +102,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
  */
 export const useTheme = (): Theme => {
   const context = useContext(ThemeContext);
-  
+
   if (context === undefined) {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
-  
+
   return context;
 };
 
@@ -209,4 +207,4 @@ export const withTheme = <P extends object>(
     const theme = useTheme();
     return <Component {...props} theme={theme} />;
   };
-}; 
+};

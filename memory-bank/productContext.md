@@ -86,7 +86,7 @@ Event attendees at conferences, festivals, and professional gatherings struggle 
 
 ### Creative Light Theme System
 
-- **Color Palette**: 
+- **Color Palette**:
   - Primary: Rich Purple (#7C3AED) with light/dark variants
   - Accent: Hot Pink (#EC4899) for interactive elements
   - Semantic: Emerald (success), Amber (warning), Rose (error)
@@ -101,7 +101,7 @@ Event attendees at conferences, festivals, and professional gatherings struggle 
 
 - **General Social Networking**: No permanent friend/follower systems
 - **Video Content**: Focus on photo-only sharing for MVP
-- **Cross-Event Content**: No content sharing between different events  
+- **Cross-Event Content**: No content sharing between different events
 - **Advanced AR/Filters**: Simple photo capture without camera effects
 - **Push Notifications**: Manual refresh for content updates initially
 - **Multi-Event Participation**: Users participate in one event at a time

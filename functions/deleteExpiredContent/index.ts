@@ -33,24 +33,30 @@ interface CleanupResult {
  * Delete all content for an event that has ended (event.endTime + 24h < now)
  * or when manually triggered by the host
  */
-export const deleteExpiredContent = functions.https.onCall(async (request) => {
+export const deleteExpiredContent = functions.https.onCall(async request => {
   if (!request.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'User must be authenticated',
+    );
   }
 
-  const { eventId, forceDelete } = request.data as { 
-    eventId?: string; 
-    forceDelete?: boolean; 
+  const { eventId, forceDelete } = request.data as {
+    eventId?: string;
+    forceDelete?: boolean;
   };
 
   if (!eventId) {
-    throw new functions.https.HttpsError('invalid-argument', 'eventId is required');
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'eventId is required',
+    );
   }
 
   try {
     const firestore = admin.firestore();
     const storage = admin.storage().bucket();
-    
+
     // Get event details
     const eventDoc = await firestore.collection('events').doc(eventId).get();
     if (!eventDoc.exists) {
@@ -68,7 +74,7 @@ export const deleteExpiredContent = functions.https.onCall(async (request) => {
 
     if (!forceDelete && !isHost && !isExpired) {
       throw new functions.https.HttpsError(
-        'permission-denied', 
+        'permission-denied',
         'Only the host can manually end an event, or content expires 24h after event end',
       );
     }
@@ -113,8 +119,8 @@ export const deleteExpiredContent = functions.https.onCall(async (request) => {
           result.errors.push(`Failed to delete story image: ${path}`);
         }
       }
-          } catch (_err) {
-        result.errors.push(`Story cleanup failed: ${_err}`);
+    } catch (_err) {
+      result.errors.push(`Story cleanup failed: ${_err}`);
     }
 
     // 2. Delete Snaps
@@ -148,8 +154,8 @@ export const deleteExpiredContent = functions.https.onCall(async (request) => {
           result.errors.push(`Failed to delete snap image: ${path}`);
         }
       }
-          } catch (_err) {
-        result.errors.push(`Snap cleanup failed: ${_err}`);
+    } catch (_err) {
+      result.errors.push(`Snap cleanup failed: ${_err}`);
     }
 
     // 3. Delete Event Assets and Embeddings
@@ -192,8 +198,8 @@ export const deleteExpiredContent = functions.https.onCall(async (request) => {
       } catch (err) {
         result.errors.push(`Failed to delete Pinecone vectors: ${err}`);
       }
-          } catch (_err) {
-        result.errors.push(`Asset cleanup failed: ${_err}`);
+    } catch (_err) {
+      result.errors.push(`Asset cleanup failed: ${_err}`);
     }
 
     // 4. Delete Event Participants
@@ -212,8 +218,8 @@ export const deleteExpiredContent = functions.https.onCall(async (request) => {
       if (participantsQuery.size > 0) {
         await participantBatch.commit();
       }
-          } catch (_err) {
-        result.errors.push(`Participant cleanup failed: ${_err}`);
+    } catch (_err) {
+      result.errors.push(`Participant cleanup failed: ${_err}`);
     }
 
     // 5. Finally, delete the event document itself
@@ -225,10 +231,12 @@ export const deleteExpiredContent = functions.https.onCall(async (request) => {
 
     console.log('Cleanup completed:', result);
     return { success: true, result };
-
   } catch (error: any) {
     console.error('Cleanup failed:', error);
-    throw new functions.https.HttpsError('internal', error.message ?? 'Cleanup failed');
+    throw new functions.https.HttpsError(
+      'internal',
+      error.message ?? 'Cleanup failed',
+    );
   }
 });
 
@@ -252,7 +260,9 @@ export const cleanupExpiredEventsScheduled = functions.scheduler.onSchedule(
         .where('endTime', '<=', cutoffTime)
         .get();
 
-      console.log(`Found ${expiredEventsQuery.size} expired events to clean up`);
+      console.log(
+        `Found ${expiredEventsQuery.size} expired events to clean up`,
+      );
 
       for (const eventDoc of expiredEventsQuery.docs) {
         try {
@@ -261,7 +271,7 @@ export const cleanupExpiredEventsScheduled = functions.scheduler.onSchedule(
             data: { eventId: eventDoc.id, forceDelete: true },
             auth: { uid: 'system' } as any,
           } as any);
-          
+
           console.log(`Cleaned up expired event: ${eventDoc.id}`);
         } catch (err) {
           console.error(`Failed to clean up event ${eventDoc.id}:`, err);
@@ -273,4 +283,4 @@ export const cleanupExpiredEventsScheduled = functions.scheduler.onSchedule(
       console.error('Scheduled cleanup failed:', error);
     }
   },
-); 
+);

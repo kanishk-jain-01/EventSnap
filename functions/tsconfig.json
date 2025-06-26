@@ -9,4 +9,4 @@
     "outDir": "lib"
   },
   "include": ["**/*.ts"]
-} 
+}

@@ -45,13 +45,22 @@ const chunkText = (txt: string, size = 3000, overlap = 300) => {
   return chunks;
 };
 
-export const ingestImageEmbeddings = functions.https.onCall(async (request) => {
+export const ingestImageEmbeddings = functions.https.onCall(async request => {
   if (!request.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Must be authenticated');
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'Must be authenticated',
+    );
   }
-  const { eventId, storagePath } = request.data as { eventId?: string; storagePath?: string };
+  const { eventId, storagePath } = request.data as {
+    eventId?: string;
+    storagePath?: string;
+  };
   if (!eventId || !storagePath) {
-    throw new functions.https.HttpsError('invalid-argument', 'eventId and storagePath required');
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'eventId and storagePath required',
+    );
   }
   try {
     // Download image to tmp
@@ -72,13 +81,15 @@ export const ingestImageEmbeddings = functions.https.onCall(async (request) => {
         input: base64,
       });
       const vector = embedResp.data[0].embedding as number[];
-      await getPineconeIndex().namespace(eventId).upsert([
-        {
-          id: `${storagePath}#0`,
-          values: vector,
-          metadata: { eventId, storagePath, chunkIndex: 0, text: '' },
-        },
-      ]);
+      await getPineconeIndex()
+        .namespace(eventId)
+        .upsert([
+          {
+            id: `${storagePath}#0`,
+            values: vector,
+            metadata: { eventId, storagePath, chunkIndex: 0, text: '' },
+          },
+        ]);
       await admin
         .firestore()
         .collection('events')
@@ -86,7 +97,12 @@ export const ingestImageEmbeddings = functions.https.onCall(async (request) => {
         .collection('assets')
         .doc(storagePath.split('/').pop()!)
         .set(
-          { storagePath, embedded: true, chunks: 1, updatedAt: admin.firestore.FieldValue.serverTimestamp() },
+          {
+            storagePath,
+            embedded: true,
+            chunks: 1,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
           { merge: true },
         );
       return { success: true, chunks: 1 };
@@ -97,7 +113,10 @@ export const ingestImageEmbeddings = functions.https.onCall(async (request) => {
     const vectors: { id: string; values: number[]; metadata: any }[] = [];
     let idx = 0;
     for (const chunk of chunks) {
-      const emb = await getOpenAI().embeddings.create({ model: 'text-embedding-3-small', input: chunk });
+      const emb = await getOpenAI().embeddings.create({
+        model: 'text-embedding-3-small',
+        input: chunk,
+      });
       vectors.push({
         id: `${storagePath}#${idx}`,
         values: emb.data[0].embedding as number[],
@@ -107,7 +126,9 @@ export const ingestImageEmbeddings = functions.https.onCall(async (request) => {
     }
     const BATCH = 100;
     for (let i = 0; i < vectors.length; i += BATCH) {
-      await getPineconeIndex().namespace(eventId).upsert(vectors.slice(i, i + BATCH));
+      await getPineconeIndex()
+        .namespace(eventId)
+        .upsert(vectors.slice(i, i + BATCH));
     }
 
     await admin
@@ -117,13 +138,21 @@ export const ingestImageEmbeddings = functions.https.onCall(async (request) => {
       .collection('assets')
       .doc(storagePath.split('/').pop()!)
       .set(
-        { storagePath, embedded: true, chunks: vectors.length, updatedAt: admin.firestore.FieldValue.serverTimestamp() },
+        {
+          storagePath,
+          embedded: true,
+          chunks: vectors.length,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
         { merge: true },
       );
 
     return { success: true, chunks: vectors.length };
   } catch (err: any) {
     console.error('Image embedding error', err);
-    throw new functions.https.HttpsError('internal', err.message ?? 'Processing failed');
+    throw new functions.https.HttpsError(
+      'internal',
+      err.message ?? 'Processing failed',
+    );
   }
-}); 
+});

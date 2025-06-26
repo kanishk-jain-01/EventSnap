@@ -211,12 +211,12 @@ export interface Theme {
     primary: string;
     primaryLight: string;
     primaryDark: string;
-    
+
     // Accent Colors
     accent: string;
     accentLight: string;
     accentDark: string;
-    
+
     // Semantic Colors
     success: string;
     successLight: string;
@@ -227,29 +227,29 @@ export interface Theme {
     error: string;
     errorLight: string;
     errorDark: string;
-    
+
     // Background & Surface
     bgPrimary: string;
     bgSecondary: string;
     surface: string;
     surfaceElevated: string;
-    
+
     // Text Colors
     textPrimary: string;
     textSecondary: string;
     textTertiary: string;
     textInverse: string;
-    
+
     // Border Colors
     border: string;
     borderStrong: string;
     divider: string;
-    
+
     // Interactive States
     interactiveHover: string;
     interactivePressed: string;
     interactiveDisabled: string;
-    
+
     // Special Purpose
     gradientStart: string;
     gradientEnd: string;

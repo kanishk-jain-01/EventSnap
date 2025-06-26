@@ -6,6 +6,7 @@ interface EventStoreState {
   activeEvent: AppEvent | null;
   role: 'host' | 'guest' | null;
   participants: Record<string, EventParticipant>; // keyed by uid
+  publicEvents: AppEvent[];
   isLoading: boolean;
   error: string | null;
 
@@ -16,7 +17,9 @@ interface EventStoreState {
     _userId: string,
     _joinCode?: string | null,
   ) => Promise<boolean>;
+  joinEventByCode: (_joinCode: string, _userId: string) => Promise<boolean>;
   fetchEvent: (_eventId: string) => Promise<void>;
+  loadPublicEvents: () => Promise<void>;
   addParticipant: (
     _eventId: string,
     _userId: string,
@@ -32,6 +35,7 @@ export const useEventStore = create<EventStoreState>((set, _get) => ({
   activeEvent: null,
   role: null,
   participants: {},
+  publicEvents: [],
   isLoading: false,
   error: null,
 
@@ -78,6 +82,45 @@ export const useEventStore = create<EventStoreState>((set, _get) => ({
     }
   },
 
+  /** Join an event by join code */
+  joinEventByCode: async (joinCode, userId) => {
+    set({ isLoading: true, error: null });
+    try {
+      // First, find the event by join code
+      const eventRes = await FirestoreService.getEventByJoinCode(joinCode);
+      if (!eventRes.success || !eventRes.data) {
+        set({
+          error: eventRes.error || 'Invalid join code',
+          isLoading: false,
+        });
+        return false;
+      }
+
+      // Then join the event
+      const joinRes = await FirestoreService.joinEvent(
+        eventRes.data.id,
+        userId,
+        joinCode,
+      );
+      if (!joinRes.success) {
+        set({
+          error: joinRes.error || 'Failed to join event',
+          isLoading: false,
+        });
+        return false;
+      }
+
+      // Determine role and set active event
+      const role: 'host' | 'guest' =
+        eventRes.data.hostUid === userId ? 'host' : 'guest';
+      set({ activeEvent: eventRes.data, role, isLoading: false });
+      return true;
+    } catch (_err) {
+      set({ error: 'Failed to join event', isLoading: false });
+      return false;
+    }
+  },
+
   /** Fetch event by ID and update state */
   fetchEvent: async eventId => {
     set({ isLoading: true, error: null });
@@ -90,6 +133,24 @@ export const useEventStore = create<EventStoreState>((set, _get) => ({
       }
     } catch (_err) {
       set({ error: 'Failed to fetch event', isLoading: false });
+    }
+  },
+
+  /** Load public events */
+  loadPublicEvents: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await FirestoreService.getPublicEvents();
+      if (res.success && res.data) {
+        set({ publicEvents: res.data, isLoading: false });
+      } else {
+        set({
+          error: res.error || 'Failed to load public events',
+          isLoading: false,
+        });
+      }
+    } catch (_err) {
+      set({ error: 'Failed to load public events', isLoading: false });
     }
   },
 
@@ -106,5 +167,11 @@ export const useEventStore = create<EventStoreState>((set, _get) => ({
   clearError: () => set({ error: null }),
 
   clearState: () =>
-    set({ activeEvent: null, role: null, participants: {}, error: null }),
-})); 
+    set({
+      activeEvent: null,
+      role: null,
+      participants: {},
+      publicEvents: [],
+      error: null,
+    }),
+}));

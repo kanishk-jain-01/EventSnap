@@ -110,7 +110,8 @@ screens/
 ├── auth/
 │   ├── LoginScreen.tsx           # EventSnap login with Creative Light Theme
 │   ├── RegisterScreen.tsx        # EventSnap registration with purple accents
-│   └── AuthLoadingScreen.tsx     # EventSnap branding with purple spinner
+│   ├── AuthLoadingScreen.tsx     # EventSnap branding with purple spinner
+│   └── EventSelectionScreen.tsx  # Professional event discovery and joining with EventSnap branding
 ├── main/
 │   ├── CameraScreen.tsx          # Photo capture with text overlay and role-based UI gating
 │   ├── EventFeedScreen.tsx       # Unified event content feed with role permissions banner
@@ -157,10 +158,11 @@ interface AppState {
   isAuthenticated: boolean;
   authLoading: boolean;
 
-  // Events (PRIMARY ARCHITECTURE)
+  // Events (PRIMARY ARCHITECTURE - ENHANCED PHASE 6.0)
   currentEvent: Event | null;
   userRole: 'host' | 'guest' | null;
   eventParticipants: User[];
+  publicEvents: AppEvent[]; // NEW: Public event discovery
   eventLoading: boolean;
   eventError: string | null;
 
@@ -210,22 +212,22 @@ interface AppState {
 // Modern event-scoped navigation
 interface EventTabNavigator {
   structure: {
-    feed: 'EventFeedScreen with role-based permissions banner'
-    assistant: 'Placeholder for Phase 3.0 AI Assistant'
-    profile: 'ProfileScreen with EventSnap theme'
-  }
-  
+    feed: 'EventFeedScreen with role-based permissions banner';
+    assistant: 'Placeholder for Phase 3.0 AI Assistant';
+    profile: 'ProfileScreen with EventSnap theme';
+  };
+
   theme: {
-    tabBarStyle: 'Creative Light Theme with purple accents'
-    icons: 'Emoji-based icons with proper React Native Text components'
-    activeStates: 'Purple focus states for active tabs'
-  }
-  
+    tabBarStyle: 'Creative Light Theme with purple accents';
+    icons: 'Emoji-based icons with proper React Native Text components';
+    activeStates: 'Purple focus states for active tabs';
+  };
+
   integration: {
-    typeSystem: 'EventTabParamList in navigation types'
-    components: 'SafeAreaView, StatusBar, proper React Native architecture'
-    placeholder: 'Professional AI Assistant coming soon screen'
-  }
+    typeSystem: 'EventTabParamList in navigation types';
+    components: 'SafeAreaView, StatusBar, proper React Native architecture';
+    placeholder: 'Professional AI Assistant coming soon screen';
+  };
 }
 ```
 
@@ -235,16 +237,16 @@ interface EventTabNavigator {
 // Navigation structure evolution
 interface NavigationEvolution {
   legacy: {
-    homeScreen: 'Removed - replaced with EventFeedScreen'
-    mainTabs: 'Updated to use EventFeedScreen instead of HomeScreen'
-    tabLabel: 'Changed from "Stories" to "Feed"'
-  }
-  
+    homeScreen: 'Removed - replaced with EventFeedScreen';
+    mainTabs: 'Updated to use EventFeedScreen instead of HomeScreen';
+    tabLabel: 'Changed from "Stories" to "Feed"';
+  };
+
   modern: {
-    eventTabs: 'New EventTabNavigator for event-scoped navigation'
-    integration: 'Seamless theme consistency throughout'
-    future: 'Ready for AI Assistant implementation in Phase 3.0'
-  }
+    eventTabs: 'New EventTabNavigator for event-scoped navigation';
+    integration: 'Seamless theme consistency throughout';
+    future: 'Ready for AI Assistant implementation in Phase 3.0';
+  };
 }
 ```
 
@@ -256,23 +258,23 @@ interface NavigationEvolution {
 // Text overlay system implementation
 interface TextOverlaySystem {
   modal: {
-    characterLimit: 200
-    validation: 'Real-time character counting with visual feedback'
-    keyboard: 'KeyboardAvoidingView for iOS/Android compatibility'
-    integration: 'Seamless camera workflow integration'
-  }
-  
+    characterLimit: 200;
+    validation: 'Real-time character counting with visual feedback';
+    keyboard: 'KeyboardAvoidingView for iOS/Android compatibility';
+    integration: 'Seamless camera workflow integration';
+  };
+
   display: {
-    preview: 'Semi-transparent overlay on photo previews'
-    positioning: 'Configurable text position (future enhancement)'
-    styling: 'Clean, readable text with background overlay'
-  }
-  
+    preview: 'Semi-transparent overlay on photo previews';
+    positioning: 'Configurable text position (future enhancement)';
+    styling: 'Clean, readable text with background overlay';
+  };
+
   workflow: {
-    capture: 'Photo capture → Optional text overlay → Story posting'
-    editing: 'Add, edit, clear text functionality'
-    validation: 'Character limit enforcement with clear feedback'
-  }
+    capture: 'Photo capture → Optional text overlay → Story posting';
+    editing: 'Add, edit, clear text functionality';
+    validation: 'Character limit enforcement with clear feedback';
+  };
 }
 ```
 
@@ -283,30 +285,30 @@ interface TextOverlaySystem {
 interface RoleBasedUIGating {
   cameraScreen: {
     host: {
-      eventSnap: 'Enabled "Event Snap" button with progress tracking'
-      functionality: 'Full event snap sending capabilities'
-      feedback: 'Progress indicators and success/error states'
-    }
-    
+      eventSnap: 'Enabled "Event Snap" button with progress tracking';
+      functionality: 'Full event snap sending capabilities';
+      feedback: 'Progress indicators and success/error states';
+    };
+
     guest: {
-      eventSnap: 'Disabled "Host Only" button with clear messaging'
-      functionality: 'Receive-only for event snaps'
-      feedback: 'Clear role restriction messaging'
-    }
-    
+      eventSnap: 'Disabled "Host Only" button with clear messaging';
+      functionality: 'Receive-only for event snaps';
+      feedback: 'Clear role restriction messaging';
+    };
+
     nonEvent: {
-      functionality: 'Regular snap functionality preserved'
-      interface: 'Standard camera interface without role restrictions'
-    }
-  }
-  
+      functionality: 'Regular snap functionality preserved';
+      interface: 'Standard camera interface without role restrictions';
+    };
+  };
+
   eventFeed: {
     permissionsBanner: {
-      host: 'Host-specific messaging about event management'
-      guest: 'Guest-appropriate messaging about participation'
-      styling: 'Consistent with Creative Light Theme'
-    }
-  }
+      host: 'Host-specific messaging about event management';
+      guest: 'Guest-appropriate messaging about participation';
+      styling: 'Consistent with Creative Light Theme';
+    };
+  };
 }
 ```
 
@@ -318,16 +320,19 @@ interface RoleBasedUIGating {
 // Service-level event filtering
 class FirestoreService {
   // Enhanced story creation with event scoping
-  async createStory(storyData: Partial<Story>, eventId?: string): Promise<string> {
+  async createStory(
+    storyData: Partial<Story>,
+    eventId?: string,
+  ): Promise<string> {
     const story = {
       ...storyData,
       eventId: eventId || null, // Optional event scoping
       createdAt: new Date(),
-      expiresAt: eventId 
+      expiresAt: eventId
         ? getEventExpirationTime(eventId) // Event-based expiration
-        : new Date(Date.now() + 24 * 60 * 60 * 1000) // Standard 24h
+        : new Date(Date.now() + 24 * 60 * 60 * 1000), // Standard 24h
     };
-    
+
     return await this.db.collection('stories').add(story);
   }
 
@@ -340,12 +345,15 @@ class FirestoreService {
       .orderBy('expiresAt')
       .orderBy('createdAt', 'desc')
       .get();
-    
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Story));
+
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Story);
   }
 
   // Real-time event story subscriptions
-  subscribeToStoriesForEvent(eventId: string, callback: (stories: Story[]) => void): () => void {
+  subscribeToStoriesForEvent(
+    eventId: string,
+    callback: (stories: Story[]) => void,
+  ): () => void {
     return this.db
       .collection('stories')
       .where('eventId', '==', eventId)
@@ -353,7 +361,9 @@ class FirestoreService {
       .orderBy('expiresAt')
       .orderBy('createdAt', 'desc')
       .onSnapshot(snapshot => {
-        const stories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Story));
+        const stories = snapshot.docs.map(
+          doc => ({ id: doc.id, ...doc.data() }) as Story,
+        );
         callback(stories);
       });
   }
@@ -373,10 +383,10 @@ async createEventSnap(snapData: Partial<Snap>, eventId: string): Promise<void> {
 
   // 2. Get all event participants
   const participants = await this.getEventParticipants(eventId);
-  
+
   // 3. Create batch writes for all participants
   const batch = this.db.batch();
-  
+
   participants.forEach(participant => {
     const snapRef = this.db.collection('snaps').doc();
     batch.set(snapRef, {
@@ -401,10 +411,14 @@ async createEventSnap(snapData: Partial<Snap>, eventId: string): Promise<void> {
 // StoryStore with event scoping
 interface StoryStore {
   // Enhanced methods with event support
-  postStory: (content: string, imageUrl: string, eventId?: string) => Promise<void>;
+  postStory: (
+    content: string,
+    imageUrl: string,
+    eventId?: string,
+  ) => Promise<void>;
   loadStoriesForEvent: (eventId: string) => Promise<void>;
   subscribeToStoriesForEvent: (eventId: string) => () => void;
-  
+
   // Event-scoped state
   eventStories: { [eventId: string]: Story[] };
   currentEventStories: Story[]; // Computed from currentEvent
@@ -413,10 +427,14 @@ interface StoryStore {
 // SnapStore with role-based permissions
 interface SnapStore {
   // Host-only event snap sending
-  sendEventSnap: (imageUrl: string, eventId: string, text?: string) => Promise<void>;
+  sendEventSnap: (
+    imageUrl: string,
+    eventId: string,
+    text?: string,
+  ) => Promise<void>;
   loadReceivedSnapsForEvent: (eventId: string) => Promise<void>;
   subscribeToReceivedSnapsForEvent: (eventId: string) => () => void;
-  
+
   // Event-scoped state
   eventSnaps: { [eventId: string]: Snap[] };
   currentEventSnaps: Snap[]; // Computed from currentEvent
@@ -464,17 +482,17 @@ const EventFeedScreen: React.FC = () => {
   const colors = useThemeColors();
   const spacing = useThemeSpacing();
   const { currentEvent, userRole } = useEventStore();
-  
+
   // Event-scoped content loading
   const { stories, snaps, loading } = useEventContent(currentEvent?.id);
-  
+
   // Role-aware UI rendering
   const renderHostMessage = () => (
     <Text className="text-text-secondary text-center px-lg">
       As the event host, your content will be visible to all participants
     </Text>
   );
-  
+
   const renderGuestMessage = () => (
     <Text className="text-text-secondary text-center px-lg">
       Welcome to the event! View stories and snaps from other participants
@@ -489,10 +507,10 @@ const EventFeedScreen: React.FC = () => {
           <StoryRing key={story.id} story={story} />
         ))}
       </ScrollView>
-      
+
       {/* Role-aware messaging */}
       {userRole === 'host' ? renderHostMessage() : renderGuestMessage()}
-      
+
       {/* Event-scoped snaps */}
       <FlatList
         data={snaps}
@@ -521,10 +539,10 @@ const EventFeedScreen: React.FC = () => {
   ]
 }
 
-// snaps collection  
+// snaps collection
 {
   "collectionGroup": "snaps",
-  "queryScope": "COLLECTION", 
+  "queryScope": "COLLECTION",
   "fields": [
     { "fieldPath": "eventId", "order": "ASCENDING" },
     { "fieldPath": "recipientId", "order": "ASCENDING" },
@@ -539,28 +557,28 @@ const EventFeedScreen: React.FC = () => {
 // Efficient subscription lifecycle management
 class EventContentManager {
   private subscriptions: Map<string, () => void> = new Map();
-  
+
   subscribeToEventContent(eventId: string) {
     // Cleanup existing subscriptions
     this.cleanup();
-    
+
     // Story subscription
     const storyUnsub = firestoreService.subscribeToStoriesForEvent(
-      eventId, 
-      (stories) => storyStore.setEventStories(eventId, stories)
+      eventId,
+      stories => storyStore.setEventStories(eventId, stories),
     );
-    
-    // Snap subscription  
+
+    // Snap subscription
     const snapUnsub = firestoreService.subscribeToReceivedSnapsForEvent(
       eventId,
-      (snaps) => snapStore.setEventSnaps(eventId, snaps)
+      snaps => snapStore.setEventSnaps(eventId, snaps),
     );
-    
+
     // Store cleanup functions
     this.subscriptions.set('stories', storyUnsub);
     this.subscriptions.set('snaps', snapUnsub);
   }
-  
+
   cleanup() {
     this.subscriptions.forEach(unsub => unsub());
     this.subscriptions.clear();
@@ -580,22 +598,22 @@ service cloud.firestore {
     // Event-scoped stories
     match /stories/{storyId} {
       allow read: if isEventParticipant(resource.data.eventId);
-      allow create: if isEventParticipant(request.resource.data.eventId) 
+      allow create: if isEventParticipant(request.resource.data.eventId)
                     && request.auth.uid == request.resource.data.userId;
     }
-    
+
     // Event-scoped snaps with role validation
     match /snaps/{snapId} {
       allow read: if request.auth.uid == resource.data.recipientId;
-      allow create: if isEventHost(request.resource.data.eventId) 
+      allow create: if isEventHost(request.resource.data.eventId)
                     && request.auth.uid == request.resource.data.senderId;
     }
-    
+
     // Helper functions
     function isEventParticipant(eventId) {
       return exists(/databases/$(database)/documents/events/$(eventId)/participants/$(request.auth.uid));
     }
-    
+
     function isEventHost(eventId) {
       return get(/databases/$(database)/documents/events/$(eventId)).data.hostId == request.auth.uid;
     }
@@ -613,3 +631,42 @@ This comprehensive system architecture now supports:
 6. **Security**: Comprehensive access control with event-based permissions
 
 **Status**: Event content system architecture complete and operational.
+
+#### Event Discovery & Joining Flow (NEW - PHASE 6.0 ENHANCED)
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│ Event Discovery │    │  Join Validation│    │  Database Query │    │   State Update  │
+│                 │    │                 │    │                 │    │                 │
+│ • Public Events │───►│ • Status Check  │───►│ • Event Filter  │───►│ • activeEvent   │
+│ • Private Codes │    │ • Code Validate │    │ • Role Assign   │    │ • role Update   │
+│ • Host Creation │    │ • Permission    │    │ • Participant   │    │ • Navigation    │
+│ • Status Filter │    │ • Error Handle  │    │ • Sub-collection│    │ • Professional  │
+└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+1. **Event Discovery**: User browses public events or enters private join code
+2. **Status Validation**: Real-time validation with professional error messaging
+3. **Database Operations**: Optimized queries with compound indexes for performance
+4. **Role Assignment**: Automatic host/guest determination based on event ownership
+5. **State Management**: EventStore updates with activeEvent and role information
+6. **Navigation**: Seamless transition to main app with professional UX
+7. **Participant Management**: Sub-collection updates with proper timestamps
+
+#### Database Query Optimization Patterns (NEW - PHASE 6.0)
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│  Public Events  │    │ Private Events  │    │  Participants   │
+│                 │    │                 │    │                 │
+│ • visibility    │───►│ • joinCode      │───►│ • role          │
+│ • startTime     │    │ • visibility    │    │ • joinedAt      │
+│ • limit(20)     │    │ • limit(1)      │    │ • serverTime    │
+│ • compound idx  │    │ • validation    │    │ • merge: true   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+**Query Patterns:**
+- **Public Events**: `where('visibility', '==', 'public').orderBy('startTime', 'asc').limit(20)`
+- **Private Discovery**: `where('joinCode', '==', code).where('visibility', '==', 'private').limit(1)`
+- **Participant Creation**: `doc('events/{eventId}/participants/{uid}').set({role, joinedAt})`

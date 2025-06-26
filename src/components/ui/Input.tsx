@@ -19,7 +19,9 @@ export const Input: React.FC<InputProps> = ({
   return (
     <View className='mb-4'>
       {label && (
-        <Text className='text-text-primary text-sm font-medium mb-2'>{label}</Text>
+        <Text className='text-text-primary text-sm font-medium mb-2'>
+          {label}
+        </Text>
       )}
       <TextInput
         className={`bg-surface border rounded-lg px-4 py-3 text-text-primary text-base ${

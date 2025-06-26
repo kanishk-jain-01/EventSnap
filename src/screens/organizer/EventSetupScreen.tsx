@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
@@ -53,7 +61,9 @@ export const EventSetupScreen: React.FC = () => {
   const [visibility, setVisibility] = useState<EventVisibility>('public');
   const [joinCode, setJoinCode] = useState('');
   const [startTime, setStartTime] = useState<Date>(new Date());
-  const [endTime, setEndTime] = useState<Date>(new Date(Date.now() + 3 * 60 * 60 * 1000));
+  const [endTime, setEndTime] = useState<Date>(
+    new Date(Date.now() + 3 * 60 * 60 * 1000),
+  );
   const [paletteIndex, setPaletteIndex] = useState(0);
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
@@ -74,7 +84,8 @@ export const EventSetupScreen: React.FC = () => {
 
   const { userId } = useAuth();
   const createEvent = useEventStore(state => state.createEvent);
-  const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const activeEvent = useEventStore(state => state.activeEvent);
 
   const handleStartChange = (_event: any, selectedDate?: Date) => {
@@ -182,7 +193,9 @@ export const EventSetupScreen: React.FC = () => {
         activeEvent.id,
         assetId,
         {
-          contentType: mimeType || (name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
+          contentType:
+            mimeType ||
+            (name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
           onProgress: updateProgress,
         },
       );
@@ -191,7 +204,11 @@ export const EventSetupScreen: React.FC = () => {
         setUploads(prev =>
           prev.map(u =>
             u.id === assetId
-              ? { ...u, status: 'error', error: uploadRes.error || 'Upload failed' }
+              ? {
+                  ...u,
+                  status: 'error',
+                  error: uploadRes.error || 'Upload failed',
+                }
               : u,
           ),
         );
@@ -200,14 +217,24 @@ export const EventSetupScreen: React.FC = () => {
 
       // Trigger ingestion based on file type
       const ingestRes = name.toLowerCase().endsWith('.pdf')
-        ? await IngestionService.ingestPdf(activeEvent.id, uploadRes.data.fullPath)
-        : await IngestionService.ingestImage(activeEvent.id, uploadRes.data.fullPath);
+        ? await IngestionService.ingestPdf(
+            activeEvent.id,
+            uploadRes.data.fullPath,
+          )
+        : await IngestionService.ingestImage(
+            activeEvent.id,
+            uploadRes.data.fullPath,
+          );
 
       if (!ingestRes.success) {
         setUploads(prev =>
           prev.map(u =>
             u.id === assetId
-              ? { ...u, status: 'error', error: ingestRes.error || 'Ingestion failed' }
+              ? {
+                  ...u,
+                  status: 'error',
+                  error: ingestRes.error || 'Ingestion failed',
+                }
               : u,
           ),
         );
@@ -216,12 +243,16 @@ export const EventSetupScreen: React.FC = () => {
 
       // Success
       setUploads(prev =>
-        prev.map(u => (u.id === assetId ? { ...u, progress: 100, status: 'success' } : u)),
+        prev.map(u =>
+          u.id === assetId ? { ...u, progress: 100, status: 'success' } : u,
+        ),
       );
     } catch (_err) {
       setUploads(prev =>
         prev.map(u =>
-          u.fileName === name ? { ...u, status: 'error', error: 'Unknown error' } : u,
+          u.fileName === name
+            ? { ...u, status: 'error', error: 'Unknown error' }
+            : u,
         ),
       );
     }
@@ -244,11 +275,11 @@ export const EventSetupScreen: React.FC = () => {
           style: 'destructive',
           onPress: async () => {
             setEndingEvent(true);
-            
+
             const result = await CleanupService.endEvent(activeEvent.id, true);
-            
+
             setEndingEvent(false);
-            
+
             if (result.success) {
               Alert.alert(
                 'Event Ended',
@@ -283,7 +314,9 @@ export const EventSetupScreen: React.FC = () => {
       className='flex-1 bg-black'
     >
       <ScrollView contentContainerStyle={{ padding: 20 }}>
-        <Text className='text-2xl font-bold text-white mb-6'>Create New Event</Text>
+        <Text className='text-2xl font-bold text-white mb-6'>
+          Create New Event
+        </Text>
 
         {/* Event Name */}
         <Input
@@ -296,7 +329,7 @@ export const EventSetupScreen: React.FC = () => {
         {/* Visibility Toggle */}
         <Text className='text-white font-medium mb-2'>Visibility</Text>
         <View className='flex-row mb-4'>
-          {(['public', 'private'] as EventVisibility[]).map((option) => (
+          {(['public', 'private'] as EventVisibility[]).map(option => (
             <TouchableOpacity
               key={option}
               onPress={() => setVisibility(option)}
@@ -371,7 +404,9 @@ export const EventSetupScreen: React.FC = () => {
             >
               <View
                 className={`rounded-lg border-2 p-4 ${
-                  paletteIndex === index ? 'border-snap-yellow' : 'border-transparent'
+                  paletteIndex === index
+                    ? 'border-snap-yellow'
+                    : 'border-transparent'
                 }`}
                 style={{ backgroundColor: preset.palette.primary }}
               >
@@ -395,7 +430,9 @@ export const EventSetupScreen: React.FC = () => {
         {/* Asset Upload Section */}
         {eventCreated && (
           <View className='mt-10'>
-            <Text className='text-white text-lg font-semibold mb-4'>Event Assets</Text>
+            <Text className='text-white text-lg font-semibold mb-4'>
+              Event Assets
+            </Text>
             <Button title='Add Asset' onPress={handlePickAsset} />
 
             {/* Upload list */}
@@ -415,9 +452,11 @@ export const EventSetupScreen: React.FC = () => {
             <View className='mt-6 space-y-3'>
               <Button
                 title='Done'
-                onPress={() => navigation.navigate('MainTabs', { screen: 'Home' })}
+                onPress={() =>
+                  navigation.navigate('MainTabs', { screen: 'Home' })
+                }
               />
-              
+
               <Button
                 title='End Event'
                 onPress={handleEndEvent}
@@ -433,4 +472,4 @@ export const EventSetupScreen: React.FC = () => {
   );
 };
 
-export default EventSetupScreen; 
+export default EventSetupScreen;

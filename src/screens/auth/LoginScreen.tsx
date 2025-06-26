@@ -94,9 +94,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             {/* Auth Error */}
             {error && (
               <View className='bg-error/20 border border-error rounded-lg p-3 mb-4'>
-                <Text className='text-error text-sm text-center'>
-                  {error}
-                </Text>
+                <Text className='text-error text-sm text-center'>{error}</Text>
               </View>
             )}
 

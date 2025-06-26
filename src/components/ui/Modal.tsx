@@ -28,10 +28,14 @@ export const Modal: React.FC<ModalProps> = ({
       onRequestClose={onClose}
     >
       <TouchableWithoutFeedback onPress={onClose}>
-        <View className='flex-1 items-center justify-center px-4' 
-              style={{ backgroundColor: colors.textPrimary + '80' }}> {/* Semi-transparent overlay */}
+        <View
+          className='flex-1 items-center justify-center px-4'
+          style={{ backgroundColor: colors.textPrimary + '80' }}
+        >
+          {' '}
+          {/* Semi-transparent overlay */}
           <TouchableWithoutFeedback onPress={() => {}}>
-            <View 
+            <View
               className='bg-surface rounded-xl w-full max-w-sm p-6 border border-border'
               style={{
                 // Add beautiful shadow for depth
@@ -56,7 +60,7 @@ export const Modal: React.FC<ModalProps> = ({
                     activeOpacity={0.7}
                     style={{ backgroundColor: colors.interactiveHover }}
                   >
-                    <Text 
+                    <Text
                       className='text-xl font-bold'
                       style={{ color: colors.textSecondary }}
                     >

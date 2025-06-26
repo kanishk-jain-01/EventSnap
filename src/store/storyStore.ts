@@ -141,7 +141,9 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
     } catch (error) {
       set({
         error:
-          error instanceof Error ? error.message : 'Failed to load event stories',
+          error instanceof Error
+            ? error.message
+            : 'Failed to load event stories',
         isLoading: false,
       });
     }

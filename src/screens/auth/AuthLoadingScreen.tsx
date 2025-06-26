@@ -14,9 +14,7 @@ export const AuthLoadingScreen: React.FC = () => {
 
       {/* App Logo/Brand */}
       <View className='items-center mb-12'>
-        <Text className='text-primary text-5xl font-bold mb-4'>
-          EventSnap
-        </Text>
+        <Text className='text-primary text-5xl font-bold mb-4'>EventSnap</Text>
         <Text className='text-text-secondary text-lg opacity-80'>
           Loading your experience...
         </Text>
@@ -52,7 +50,9 @@ export const AuthLoadingScreen: React.FC = () => {
 
       {/* Footer */}
       <View className='absolute bottom-12 items-center'>
-        <Text className='text-text-tertiary text-xs'>Event-Driven Networking Platform</Text>
+        <Text className='text-text-tertiary text-xs'>
+          Event-Driven Networking Platform
+        </Text>
         <Text className='text-text-tertiary text-xs mt-1 opacity-60'>
           Internal Testing Version
         </Text>

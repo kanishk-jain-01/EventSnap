@@ -22,13 +22,23 @@ interface SnapStoreState extends SnapState {
   deselectRecipient: (_recipientId: string) => void;
   clearSelectedRecipients: () => void;
   sendSnap: (_imageUri: string, _senderId: string) => Promise<boolean>;
-  sendEventSnap: (_imageUri: string, _senderId: string, _eventId: string) => Promise<boolean>;
+  sendEventSnap: (
+    _imageUri: string,
+    _senderId: string,
+    _eventId: string,
+  ) => Promise<boolean>;
   loadReceivedSnaps: (_userId: string) => Promise<void>;
-  loadReceivedSnapsForEvent: (_userId: string, _eventId: string) => Promise<void>;
+  loadReceivedSnapsForEvent: (
+    _userId: string,
+    _eventId: string,
+  ) => Promise<void>;
   loadSentSnaps: (_userId: string) => Promise<void>;
   markSnapAsViewed: (_snapId: string) => Promise<void>;
   subscribeToReceivedSnaps: (_userId: string) => () => void;
-  subscribeToReceivedSnapsForEvent: (_userId: string, _eventId: string) => () => void;
+  subscribeToReceivedSnapsForEvent: (
+    _userId: string,
+    _eventId: string,
+  ) => () => void;
   clearError: () => void;
   resetSendingState: () => void;
 }
@@ -316,7 +326,11 @@ export const useSnapStore = create<SnapStoreState>((set, get) => ({
   },
 
   // Send event snap (host-only)
-  sendEventSnap: async (imageUri: string, senderId: string, eventId: string) => {
+  sendEventSnap: async (
+    imageUri: string,
+    senderId: string,
+    eventId: string,
+  ) => {
     set({
       isSending: true,
       sendingProgress: 0,
@@ -396,7 +410,10 @@ export const useSnapStore = create<SnapStoreState>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await FirestoreService.getReceivedSnapsForEvent(userId, eventId);
+      const response = await FirestoreService.getReceivedSnapsForEvent(
+        userId,
+        eventId,
+      );
 
       if (response.success && response.data) {
         set({

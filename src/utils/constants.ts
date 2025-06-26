@@ -113,44 +113,44 @@ export const COLORS = {
   PRIMARY: '#7C3AED',
   PRIMARY_LIGHT: '#A855F7',
   PRIMARY_DARK: '#6D28D9',
-  
+
   // Accent Colors
   ACCENT: '#EC4899',
   ACCENT_LIGHT: '#F472B6',
   ACCENT_DARK: '#DB2777',
-  
+
   // Semantic Colors
   SUCCESS: '#10B981',
   SUCCESS_LIGHT: '#34D399',
   SUCCESS_DARK: '#059669',
-  
+
   WARNING: '#F59E0B',
   WARNING_LIGHT: '#FBBF24',
   WARNING_DARK: '#D97706',
-  
+
   ERROR: '#EF4444',
   ERROR_LIGHT: '#F87171',
   ERROR_DARK: '#DC2626',
-  
+
   // Background & Surface
   BG_PRIMARY: '#FAFAFA',
   BG_SECONDARY: '#F8FAFC',
   SURFACE: '#FFFFFF',
-  
+
   // Text Colors
   TEXT_PRIMARY: '#1E293B',
   TEXT_SECONDARY: '#64748B',
   TEXT_TERTIARY: '#94A3B8',
   TEXT_INVERSE: '#FFFFFF',
-  
+
   // Border Colors
   BORDER: '#E2E8F0',
   BORDER_STRONG: '#CBD5E1',
-  
+
   // Legacy colors for backward compatibility (will be removed in Task 4.4)
   SNAP_YELLOW: '#7C3AED', // Mapped to primary for now
-  SNAP_DARK: '#1E293B',   // Mapped to text primary
-  SNAP_WHITE: '#FFFFFF',  // Keep white
+  SNAP_DARK: '#1E293B', // Mapped to text primary
+  SNAP_WHITE: '#FFFFFF', // Keep white
 } as const;
 
 // Screen Names for Navigation

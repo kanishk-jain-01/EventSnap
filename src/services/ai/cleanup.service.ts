@@ -22,30 +22,30 @@ export class CleanupService {
    * @param forceDelete Whether to force deletion even if not expired
    */
   static async endEvent(
-    eventId: string, 
+    eventId: string,
     forceDelete: boolean = true,
   ): Promise<ApiResponse<CleanupResult>> {
     try {
       const callable = httpsCallable(functions, 'deleteExpiredContent');
       const result = await callable({ eventId, forceDelete });
-      
+
       const data = result.data as { success: boolean; result: CleanupResult };
-      
+
       if (data.success) {
-        return { 
-          success: true, 
+        return {
+          success: true,
           data: data.result,
         };
       } else {
-        return { 
-          success: false, 
+        return {
+          success: false,
           error: 'Failed to end event',
         };
       }
     } catch (error: any) {
       // eslint-disable-next-line no-console
       console.error('Event cleanup error:', error);
-      
+
       // Extract meaningful error message
       let errorMessage = 'Failed to end event';
       if (error.code === 'functions/permission-denied') {
@@ -55,11 +55,11 @@ export class CleanupService {
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
-      return { 
-        success: false, 
+
+      return {
+        success: false,
         error: errorMessage,
       };
     }
   }
-} 
+}

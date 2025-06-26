@@ -91,10 +91,10 @@ export const StoryRing: React.FC<StoryRingProps> = ({
             }}
           >
             <Text
-              style={{ 
-                color: getInitialTextColor(), 
-                fontWeight: 'bold', 
-                fontSize: 18, 
+              style={{
+                color: getInitialTextColor(),
+                fontWeight: 'bold',
+                fontSize: 18,
               }}
             >
               {user.displayName.charAt(0).toUpperCase()}
@@ -104,10 +104,10 @@ export const StoryRing: React.FC<StoryRingProps> = ({
       </View>
       <Text
         numberOfLines={1}
-        style={{ 
-          color: colors.textPrimary, 
-          fontSize: 12, 
-          marginTop: 4, 
+        style={{
+          color: colors.textPrimary,
+          fontSize: 12,
+          marginTop: 4,
           maxWidth: size,
           fontWeight: '500',
         }}
