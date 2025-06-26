@@ -14,14 +14,15 @@
 
 ### Backend (Firebase Services + AI Infrastructure)
 
-- **Authentication**: Firebase Auth (Email/Password)
+- **Authentication**: Firebase Auth (Email/Password) with EventSnap branding
 - **Database**:
-  - Firestore (structured data: events, users, stories, snap metadata)
-  - Realtime Database (real-time chat messages - legacy)
+  - Firestore (structured data: events, users, event-scoped stories/snaps)
+  - Event-scoped queries with compound indexes for performance
+  - Role-based permissions (host/guest) enforced at service level
 - **Storage**: Firebase Storage (event assets, images)
-- **Cloud Functions**: Node.js functions for AI processing and cleanup
-- **AI Integration**: OpenAI API + Pinecone vector database for RAG
-- **Hosting**: Firebase Hosting (if web version needed)
+- **Cloud Functions**: Node.js functions for AI processing, cleanup, and content validation
+- **AI Integration**: OpenAI API + Pinecone vector database for RAG (Phase 2.0 complete)
+- **Real-time**: Event-scoped content subscriptions with automatic cleanup
 
 ## Development Environment
 
@@ -150,12 +151,48 @@ const EventSnapButton: React.FC<ButtonProps> = ({ variant = 'primary', ...props 
 
 ### Required Services
 
-1. **Authentication**: Email/Password provider enabled
-2. **Firestore**: Database with event-centric security rules
-3. **Realtime Database**: Legacy chat functionality (to be deprecated)
-4. **Storage**: Event assets and image uploads with security rules
-5. **Cloud Functions**: AI processing and cleanup functions
+1. **Authentication**: Email/Password provider enabled with EventSnap integration
+2. **Firestore**: Database with event-centric security rules and compound indexes
+3. **Storage**: Event assets and image uploads with security rules
+4. **Cloud Functions**: AI processing, cleanup, and event-scoped content validation
+5. **Real-time Subscriptions**: Event-scoped content updates with automatic lifecycle management
 6. **Hosting**: Optional for web deployment
+
+### Event-Scoped Database Architecture (NEW - Phase 5.0)
+
+```typescript
+// Enhanced Firestore collections with event scoping
+interface EventScopedCollections {
+  stories: {
+    eventId: string;           // REQUIRED - event filtering
+    creatorId: string;
+    imageUrl: string;
+    createdAt: Date;
+    expiresAt: Date;           // Event-based expiration
+    viewedBy: string[];
+  };
+  
+  snaps: {
+    eventId: string;           // REQUIRED - event filtering  
+    senderId: string;
+    recipientId: string;
+    imageUrl: string;
+    sentAt: Date;
+    expiresAt: Date;           // Event-based expiration
+    viewed: boolean;
+  };
+  
+  events: {
+    hostId: string;
+    participants: {            // Subcollection for role management
+      [userId: string]: {
+        role: 'host' | 'guest';
+        joinedAt: Date;
+      }
+    }
+  };
+}
+```
 
 ### Event-Driven Security Model
 
@@ -388,4 +425,31 @@ export class AIService {
 - ✅ Component library ready for chat interfaces
 - ✅ Navigation system ready for assistant integration
 
-**Status**: EventSnap platform with Creative Light Theme complete and ready for AI Assistant integration to fulfill the core Event-Driven Networking Platform vision.
+## Current Technical Capabilities (Phase 5.0 Status - UPDATED TODAY)
+
+### ✅ **Event-Scoped Content System - OPERATIONAL**
+
+#### **Database Architecture**
+- **Event Filtering**: All content queries scoped to specific events at database level
+- **Compound Indexes**: Optimized queries for `eventId + expiresAt + createdAt` patterns
+- **Role Validation**: Host vs Guest permissions enforced in service layer
+- **Real-time Subscriptions**: Live content updates scoped to event participants
+
+#### **Content Management**
+- **Stories**: Event participants can post stories visible to all event members
+- **Snaps**: Host-only broadcasting to all event participants via batch writes
+- **Expiration**: Content automatically expires 24 hours after event ends
+- **Performance**: Database-level filtering eliminates client-side processing
+
+#### **Frontend Integration**  
+- **EventFeedScreen**: Unified stories (horizontal) + snaps (vertical) display
+- **Creative Light Theme**: Professional purple/pink branding throughout
+- **Role-Aware UI**: Different interface elements for Host vs Guest users
+- **Real-time Updates**: Live content feeds with pull-to-refresh functionality
+
+### **Next Development Priority**
+- **Task 5.4**: Text overlay workflow in CameraScreen (≤200 characters)
+- **Task 5.5**: Content filtering verification and testing
+- **Task 5.6**: End-to-end event content lifecycle testing
+
+**Status**: Event-scoped content system operational and ready for text overlay integration. AI Assistant integration (Phase 3.0) ready to begin after Phase 5.0 completion.

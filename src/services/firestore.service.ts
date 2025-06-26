@@ -126,6 +126,7 @@ export class FirestoreService {
     imageUrl: string,
     imagePath: string,
     metadata?: SnapDocument['metadata'],
+    eventId?: string,
   ): Promise<ApiResponse<Snap>> {
     try {
       // Calculate expiration time (24 hours from now)
@@ -141,6 +142,7 @@ export class FirestoreService {
         expiresAt: Timestamp.fromDate(expiresAt),
         viewed: false,
         metadata,
+        eventId,
       };
 
       const docRef = await addDoc(
@@ -157,6 +159,7 @@ export class FirestoreService {
         timestamp: now,
         expiresAt,
         viewed: false,
+        eventId,
       };
 
       return {
@@ -196,6 +199,7 @@ export class FirestoreService {
         expiresAt: data.expiresAt.toDate(),
         viewed: data.viewed,
         viewedAt: data.viewedAt?.toDate(),
+        eventId: data.eventId,
       };
 
       return {
@@ -241,6 +245,7 @@ export class FirestoreService {
           expiresAt: data.expiresAt.toDate(),
           viewed: data.viewed,
           viewedAt: data.viewedAt?.toDate(),
+          eventId: data.eventId,
         });
       });
 
@@ -285,6 +290,7 @@ export class FirestoreService {
           expiresAt: data.expiresAt.toDate(),
           viewed: data.viewed,
           viewedAt: data.viewedAt?.toDate(),
+          eventId: data.eventId,
         });
       });
 
@@ -372,6 +378,7 @@ export class FirestoreService {
             expiresAt: data.expiresAt.toDate(),
             viewed: data.viewed,
             viewedAt: data.viewedAt?.toDate(),
+            eventId: data.eventId,
           });
         });
         callback(snaps);
@@ -380,6 +387,200 @@ export class FirestoreService {
         onError?.(error.message);
       },
     );
+  }
+
+  /**
+   * Get received snaps for a user in a specific event
+   */
+  static async getReceivedSnapsForEvent(
+    userId: string,
+    eventId: string,
+    limitCount: number = 50,
+  ): Promise<ApiResponse<Snap[]>> {
+    try {
+      const q = query(
+        collection(firestore, COLLECTIONS.SNAPS),
+        where('receiverId', '==', userId),
+        where('eventId', '==', eventId),
+        where('expiresAt', '>', new Date()),
+        orderBy('expiresAt'),
+        orderBy('timestamp', 'desc'),
+        limit(limitCount),
+      );
+
+      const querySnapshot = await getDocs(q);
+      const snaps: Snap[] = [];
+
+      querySnapshot.forEach(doc => {
+        const data = doc.data() as SnapDocument;
+        snaps.push({
+          id: doc.id,
+          senderId: data.senderId,
+          receiverId: data.receiverId,
+          imageUrl: data.imageUrl,
+          timestamp: data.timestamp.toDate(),
+          expiresAt: data.expiresAt.toDate(),
+          viewed: data.viewed,
+          viewedAt: data.viewedAt?.toDate(),
+          eventId: data.eventId,
+        });
+      });
+
+      return {
+        success: true,
+        data: snaps,
+      };
+    } catch (_error) {
+      return {
+        success: false,
+        error: 'Failed to get event snaps',
+      };
+    }
+  }
+
+  /**
+   * Listen to received snaps for a specific event in real-time
+   */
+  static subscribeToReceivedSnapsForEvent(
+    userId: string,
+    eventId: string,
+    callback: (_snaps: Snap[]) => void,
+    onError?: (_error: string) => void,
+  ): Unsubscribe {
+    const q = query(
+      collection(firestore, COLLECTIONS.SNAPS),
+      where('receiverId', '==', userId),
+      where('eventId', '==', eventId),
+      where('expiresAt', '>', new Date()),
+      orderBy('expiresAt'),
+      orderBy('timestamp', 'desc'),
+    );
+
+    return onSnapshot(
+      q,
+      querySnapshot => {
+        const snaps: Snap[] = [];
+        querySnapshot.forEach(doc => {
+          const data = doc.data() as SnapDocument;
+          snaps.push({
+            id: doc.id,
+            senderId: data.senderId,
+            receiverId: data.receiverId,
+            imageUrl: data.imageUrl,
+            timestamp: data.timestamp.toDate(),
+            expiresAt: data.expiresAt.toDate(),
+            viewed: data.viewed,
+            viewedAt: data.viewedAt?.toDate(),
+            eventId: data.eventId,
+          });
+        });
+        callback(snaps);
+      },
+      error => {
+        onError?.(error.message);
+      },
+    );
+  }
+
+  /**
+   * Create a snap with host-only validation for events
+   * For event snaps, only hosts can send snaps to all participants
+   */
+  static async createEventSnap(
+    senderId: string,
+    eventId: string,
+    imageUrl: string,
+    imagePath: string,
+    metadata?: SnapDocument['metadata'],
+  ): Promise<ApiResponse<Snap[]>> {
+    try {
+      // Verify sender is host of the event
+      const eventRes = await this.getActiveEvent(eventId);
+      if (!eventRes.success || !eventRes.data) {
+        return {
+          success: false,
+          error: 'Event not found',
+        };
+      }
+
+      if (eventRes.data.hostUid !== senderId) {
+        return {
+          success: false,
+          error: 'Only event hosts can send snaps to participants',
+        };
+      }
+
+      // Get all event participants
+      const participantsQuery = query(
+        collection(firestore, COLLECTIONS.EVENTS, eventId, 'participants'),
+      );
+      
+      const participantsSnapshot = await getDocs(participantsQuery);
+      const participants: string[] = [];
+      
+      participantsSnapshot.forEach(doc => {
+        participants.push(doc.id); // doc.id is the participant's uid
+      });
+
+      if (participants.length === 0) {
+        return {
+          success: false,
+          error: 'No participants found in event',
+        };
+      }
+
+      // Create snaps for all participants except the sender
+      const recipientIds = participants.filter(uid => uid !== senderId);
+      const createdSnaps: Snap[] = [];
+      
+      // Calculate expiration time (24 hours from now)
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+      // Use batch write for efficiency
+      const batch = writeBatch(firestore);
+      
+      for (const recipientId of recipientIds) {
+        const snapData: SnapDocument = {
+          senderId,
+          receiverId: recipientId,
+          imageUrl,
+          imagePath,
+          timestamp: serverTimestamp() as Timestamp,
+          expiresAt: Timestamp.fromDate(expiresAt),
+          viewed: false,
+          metadata,
+          eventId,
+        };
+
+        const docRef = doc(collection(firestore, COLLECTIONS.SNAPS));
+        batch.set(docRef, snapData);
+
+        // Add to return array
+        createdSnaps.push({
+          id: docRef.id,
+          senderId,
+          receiverId: recipientId,
+          imageUrl,
+          timestamp: now,
+          expiresAt,
+          viewed: false,
+          eventId,
+        });
+      }
+
+      await batch.commit();
+
+      return {
+        success: true,
+        data: createdSnaps,
+      };
+    } catch (_error) {
+      return {
+        success: false,
+        error: 'Failed to create event snap',
+      };
+    }
   }
 
   /**
@@ -394,6 +595,7 @@ export class FirestoreService {
     imageUrl: string,
     imagePath: string,
     metadata?: StoryDocument['metadata'],
+    eventId?: string,
   ): Promise<ApiResponse<Story>> {
     try {
       const now = new Date();
@@ -407,6 +609,7 @@ export class FirestoreService {
         expiresAt: Timestamp.fromDate(expiresAt),
         viewedBy: [],
         metadata,
+        eventId,
       };
 
       const docRef = await addDoc(
@@ -421,6 +624,7 @@ export class FirestoreService {
         timestamp: now,
         expiresAt,
         viewedBy: [],
+        eventId,
       };
 
       return { success: true, data: story };
@@ -455,12 +659,51 @@ export class FirestoreService {
           timestamp: data.timestamp.toDate(),
           expiresAt: data.expiresAt.toDate(),
           viewedBy: data.viewedBy,
+          eventId: data.eventId,
         });
       });
 
       return { success: true, data: stories };
     } catch (_error) {
       return { success: false, error: 'Failed to get stories' };
+    }
+  }
+
+  /**
+   * Get active stories for a specific event (non-expired)
+   */
+  static async getActiveStoriesForEvent(
+    eventId: string,
+    limitCount: number = 100,
+  ): Promise<ApiResponse<Story[]>> {
+    try {
+      const q = query(
+        collection(firestore, COLLECTIONS.STORIES),
+        where('eventId', '==', eventId),
+        where('expiresAt', '>', new Date()),
+        orderBy('expiresAt', 'asc'),
+        orderBy('timestamp', 'desc'),
+        limit(limitCount),
+      );
+
+      const querySnapshot = await getDocs(q);
+      const stories: Story[] = [];
+      querySnapshot.forEach(docSnap => {
+        const data = docSnap.data() as StoryDocument;
+        stories.push({
+          id: docSnap.id,
+          userId: data.userId,
+          imageUrl: data.imageUrl,
+          timestamp: data.timestamp.toDate(),
+          expiresAt: data.expiresAt.toDate(),
+          viewedBy: data.viewedBy,
+          eventId: data.eventId,
+        });
+      });
+
+      return { success: true, data: stories };
+    } catch (_error) {
+      return { success: false, error: 'Failed to get event stories' };
     }
   }
 
@@ -491,6 +734,45 @@ export class FirestoreService {
             timestamp: data.timestamp.toDate(),
             expiresAt: data.expiresAt.toDate(),
             viewedBy: data.viewedBy,
+            eventId: data.eventId,
+          });
+        });
+        callback(stories);
+      },
+      error => onError?.(error.message),
+    );
+  }
+
+  /**
+   * Listen to active stories for a specific event in real-time
+   */
+  static subscribeToStoriesForEvent(
+    eventId: string,
+    callback: (_stories: Story[]) => void,
+    onError?: (_error: string) => void,
+  ): Unsubscribe {
+    const q = query(
+      collection(firestore, COLLECTIONS.STORIES),
+      where('eventId', '==', eventId),
+      where('expiresAt', '>', new Date()),
+      orderBy('expiresAt', 'asc'),
+      orderBy('timestamp', 'desc'),
+    );
+
+    return onSnapshot(
+      q,
+      snapshot => {
+        const stories: Story[] = [];
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data() as StoryDocument;
+          stories.push({
+            id: docSnap.id,
+            userId: data.userId,
+            imageUrl: data.imageUrl,
+            timestamp: data.timestamp.toDate(),
+            expiresAt: data.expiresAt.toDate(),
+            viewedBy: data.viewedBy,
+            eventId: data.eventId,
           });
         });
         callback(stories);

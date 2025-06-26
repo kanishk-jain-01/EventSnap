@@ -10,9 +10,11 @@ interface StoryStoreState extends StoryState {
   postingError: string | null;
 
   // Actions
-  postStory: (_imageUri: string) => Promise<boolean>;
+  postStory: (_imageUri: string, _eventId?: string) => Promise<boolean>;
   loadStories: () => Promise<void>;
+  loadStoriesForEvent: (_eventId: string) => Promise<void>;
   subscribeToStories: () => () => void;
+  subscribeToStoriesForEvent: (_eventId: string) => () => void;
   clearError: () => void;
   markStoryViewed: (_storyId: string) => Promise<void>;
 }
@@ -31,7 +33,7 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
   postingError: null,
 
   // Post a story
-  postStory: async (imageUri: string): Promise<boolean> => {
+  postStory: async (imageUri: string, eventId?: string): Promise<boolean> => {
     const { user } = useAuthStore.getState();
     if (!user) {
       set({ postingError: 'User not authenticated' });
@@ -65,7 +67,7 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
 
       set({ postingProgress: 90 });
 
-      // Create Firestore document
+      // Create Firestore document with eventId
       const createRes = await FirestoreService.createStory(
         user.uid,
         uploadRes.data.downloadURL,
@@ -75,6 +77,7 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
           contentType: uploadRes.data.contentType,
           compressed: true,
         },
+        eventId,
       );
 
       if (!createRes.success || !createRes.data) {
@@ -121,10 +124,53 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
     }
   },
 
+  // Load active stories for a specific event
+  loadStoriesForEvent: async (eventId: string): Promise<void> => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await FirestoreService.getActiveStoriesForEvent(eventId);
+      if (res.success && res.data) {
+        const { user } = useAuthStore.getState();
+        const myStories = user
+          ? res.data.filter(s => s.userId === user.uid)
+          : [];
+        set({ stories: res.data, myStories, isLoading: false });
+      } else {
+        throw new Error(res.error || 'Failed to load event stories');
+      }
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error ? error.message : 'Failed to load event stories',
+        isLoading: false,
+      });
+    }
+  },
+
   subscribeToStories: (): (() => void) => {
     set({ isLoading: true, error: null });
 
     const unsubscribe = FirestoreService.subscribeToStories(
+      stories => {
+        const { user } = useAuthStore.getState();
+        const myStories = user
+          ? stories.filter(s => s.userId === user.uid)
+          : [];
+        set({ stories, myStories, isLoading: false });
+      },
+      err => {
+        set({ error: err, isLoading: false });
+      },
+    );
+
+    return unsubscribe;
+  },
+
+  subscribeToStoriesForEvent: (eventId: string): (() => void) => {
+    set({ isLoading: true, error: null });
+
+    const unsubscribe = FirestoreService.subscribeToStoriesForEvent(
+      eventId,
       stories => {
         const { user } = useAuthStore.getState();
         const myStories = user

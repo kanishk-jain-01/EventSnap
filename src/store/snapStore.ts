@@ -22,10 +22,13 @@ interface SnapStoreState extends SnapState {
   deselectRecipient: (_recipientId: string) => void;
   clearSelectedRecipients: () => void;
   sendSnap: (_imageUri: string, _senderId: string) => Promise<boolean>;
+  sendEventSnap: (_imageUri: string, _senderId: string, _eventId: string) => Promise<boolean>;
   loadReceivedSnaps: (_userId: string) => Promise<void>;
+  loadReceivedSnapsForEvent: (_userId: string, _eventId: string) => Promise<void>;
   loadSentSnaps: (_userId: string) => Promise<void>;
   markSnapAsViewed: (_snapId: string) => Promise<void>;
   subscribeToReceivedSnaps: (_userId: string) => () => void;
+  subscribeToReceivedSnapsForEvent: (_userId: string, _eventId: string) => () => void;
   clearError: () => void;
   resetSendingState: () => void;
 }
@@ -303,6 +306,122 @@ export const useSnapStore = create<SnapStoreState>((set, get) => ({
   subscribeToReceivedSnaps: (userId: string) => {
     return FirestoreService.subscribeToReceivedSnaps(
       userId,
+      snaps => {
+        set({ receivedSnaps: snaps });
+      },
+      error => {
+        set({ error });
+      },
+    );
+  },
+
+  // Send event snap (host-only)
+  sendEventSnap: async (imageUri: string, senderId: string, eventId: string) => {
+    set({
+      isSending: true,
+      sendingProgress: 0,
+      sendingError: null,
+    });
+
+    try {
+      // Convert image URI to blob for upload
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
+
+      // Generate unique snap ID
+      const snapId = `${senderId}_${eventId}_${Date.now()}`;
+
+      set({ sendingProgress: 20 });
+
+      // Upload image to Firebase Storage
+      const uploadResult = await StorageService.uploadSnap(
+        blob,
+        senderId,
+        snapId,
+        {
+          onProgress: progress => {
+            set({ sendingProgress: 20 + progress * 60 }); // 20-80% of progress bar
+          },
+          customMetadata: {
+            eventId: eventId,
+            snapId: snapId,
+          },
+        },
+      );
+
+      if (!uploadResult.success || !uploadResult.data) {
+        throw new Error(uploadResult.error || 'Failed to upload snap');
+      }
+
+      set({ sendingProgress: 85 });
+
+      // Create event snap (host-only with validation)
+      const snapResult = await FirestoreService.createEventSnap(
+        senderId,
+        eventId,
+        uploadResult.data.downloadURL,
+        uploadResult.data.fullPath,
+        {
+          fileSize: uploadResult.data.size,
+          contentType: uploadResult.data.contentType,
+          compressed: true,
+        },
+      );
+
+      if (!snapResult.success) {
+        throw new Error(snapResult.error || 'Failed to create event snap');
+      }
+
+      // Success - reset state
+      set({
+        isSending: false,
+        sendingProgress: 100,
+        sendingError: null,
+      });
+
+      return true;
+    } catch (error) {
+      set({
+        isSending: false,
+        sendingError:
+          error instanceof Error ? error.message : 'Failed to send event snap',
+        sendingProgress: 0,
+      });
+      return false;
+    }
+  },
+
+  // Load received snaps for a specific event
+  loadReceivedSnapsForEvent: async (userId: string, eventId: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const response = await FirestoreService.getReceivedSnapsForEvent(userId, eventId);
+
+      if (response.success && response.data) {
+        set({
+          receivedSnaps: response.data,
+          isLoading: false,
+        });
+      } else {
+        set({
+          error: response.error || 'Failed to load event snaps',
+          isLoading: false,
+        });
+      }
+    } catch (_error) {
+      set({
+        error: 'Failed to load event snaps',
+        isLoading: false,
+      });
+    }
+  },
+
+  // Subscribe to real-time received snaps for a specific event
+  subscribeToReceivedSnapsForEvent: (userId: string, eventId: string) => {
+    return FirestoreService.subscribeToReceivedSnapsForEvent(
+      userId,
+      eventId,
       snaps => {
         set({ receivedSnaps: snaps });
       },

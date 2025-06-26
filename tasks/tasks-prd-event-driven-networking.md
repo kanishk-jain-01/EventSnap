@@ -1,6 +1,6 @@
 ## Relevant Files
 
-- `src/services/firestore.service.ts` – Extend for event CRUD operations (`createEvent`, `joinEvent`, `getActiveEvent`, etc.)
+- `src/services/firestore.service.ts` – MODIFIED: added event-scoped story methods (getActiveStoriesForEvent, subscribeToStoriesForEvent), updated createStory to accept eventId, added event-scoped snap methods (getReceivedSnapsForEvent, subscribeToReceivedSnapsForEvent, createEventSnap with host-only validation)
 - `src/services/storage.service.ts` – Add event asset upload helper and EVENT_ASSET path
 - `src/services/ai/assistant.service.ts` – NEW: client helper to call AI assistant Cloud Function and stream responses
 - `src/services/ai/ingestion.service.ts` – Helper to call Cloud Functions for PDF & image embeddings
@@ -8,7 +8,7 @@
 - `src/navigation/EventTabNavigator.tsx` – NEW: Tab navigator for `EventFeed`, `Assistant`, `Profile`
 - `src/screens/auth/EventSelectionScreen.tsx` – NEW: list public events / join private event
 - `src/screens/organizer/EventSetupScreen.tsx` – NEW: event creation form UI (Host only)
-- `src/screens/main/EventFeedScreen.tsx` – NEW: combined event feed (stories + snaps)
+- `src/screens/main/EventFeedScreen.tsx` – CREATED: combined event feed (stories + snaps) with Creative Light Theme
 - `src/screens/ai/AssistantScreen.tsx` – NEW: chat UI for AI assistant
 - `src/screens/main/CameraScreen.tsx` – MODIFY: role gating & text-overlay before posting
 - `src/components/ui/ThemeProvider.tsx` – CREATED: provide modern palette tokens via React Context
@@ -21,8 +21,8 @@
 - `src/screens/auth/AuthLoadingScreen.tsx` – REFACTORED: use Creative Light Theme and EventSnap branding
 - `src/screens/auth/LoginScreen.tsx` – REFACTORED: use Creative Light Theme and EventSnap branding  
 - `src/screens/auth/RegisterScreen.tsx` – REFACTORED: use Creative Light Theme and EventSnap branding
-- `src/store/storyStore.ts` – MODIFY: filter queries by `eventId`
-- `src/store/snapStore.ts` – MODIFY: enforce `eventId` and Host-only posting
+- `src/store/storyStore.ts` – MODIFIED: added event-scoped story methods (loadStoriesForEvent, subscribeToStoriesForEvent)
+- `src/store/snapStore.ts` – MODIFIED: added event-scoped snap methods (loadReceivedSnapsForEvent, subscribeToReceivedSnapsForEvent, sendEventSnap with host-only validation)
 - `tailwind.config.js` – MODIFY: replace Snapchat yellow with new palette
 - `firebase.rules` – UPDATE: events, participants, snaps/stories access control
 - `functions/assistantChat/index.ts` – NEW: Cloud Function for AI assistant (RAG)
@@ -78,9 +78,9 @@
   - [x] 4.5 Manual verification of new Creative Light Theme rendering across all refactored components
 
 - [ ] 5.0 Event Stories, Snaps & Feed Adaptation
-  - [ ] 5.1 Create `EventFeedScreen` combining stories + snaps for current event
-  - [ ] 5.2 Update `storyStore` & Firestore queries to filter by `eventId`
-  - [ ] 5.3 Update `snapStore` & Firestore queries to filter by `eventId` and enforce Host-only posting
+  - [x] 5.1 Create `EventFeedScreen` combining stories + snaps for current event
+  - [x] 5.2 Update `storyStore` & Firestore queries to filter by `eventId`
+  - [x] 5.3 Update `snapStore` & Firestore queries to filter by `eventId` and enforce Host-only posting
   - [ ] 5.4 Add optional ≤200-char text overlay workflow in `CameraScreen` before posting
   - [ ] 5.5 Role gating: hide post buttons for Guests in UI and services
   - [ ] 5.6 Update navigation: add `EventTabNavigator` (Feed, Assistant, Profile) and remove `HomeScreen`
