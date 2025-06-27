@@ -13,7 +13,7 @@ import { StatusBar } from 'expo-status-bar';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { EventVisibility, EventPalette } from '../../types';
+import { EventVisibility } from '../../types';
 import { useEventStore } from '../../store/eventStore';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigation } from '@react-navigation/native';
@@ -27,37 +27,7 @@ import { UploadStatus } from '../../components/ui/UploadProgress';
 import { CleanupService } from '../../services/ai/cleanup.service';
 import { useThemeColors } from '../../components/ui/ThemeProvider';
 
-interface ColorOption {
-  label: string;
-  palette: EventPalette;
-}
 
-const COLOR_PRESETS: ColorOption[] = [
-  {
-    label: 'Indigo / Pink',
-    palette: {
-      primary: '#4F46E5',
-      accent: '#EC4899',
-      background: '#FFFFFF',
-    } as EventPalette,
-  },
-  {
-    label: 'Emerald / Amber',
-    palette: {
-      primary: '#10B981',
-      accent: '#F59E0B',
-      background: '#FFFFFF',
-    } as EventPalette,
-  },
-  {
-    label: 'Sky / Rose',
-    palette: {
-      primary: '#0EA5E9',
-      accent: '#F43F5E',
-      background: '#FFFFFF',
-    } as EventPalette,
-  },
-];
 
 export const EventSetupScreen: React.FC = () => {
   const colors = useThemeColors();
@@ -68,7 +38,7 @@ export const EventSetupScreen: React.FC = () => {
   const [endTime, setEndTime] = useState<Date>(
     new Date(Date.now() + 3 * 60 * 60 * 1000),
   );
-  const [paletteIndex, setPaletteIndex] = useState(0);
+
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -125,7 +95,6 @@ export const EventSetupScreen: React.FC = () => {
     }
 
     setSubmitting(true);
-    const palette = COLOR_PRESETS[paletteIndex].palette;
 
     const success = await createEvent({
       name: name.trim(),
@@ -134,7 +103,6 @@ export const EventSetupScreen: React.FC = () => {
       startTime,
       endTime,
       hostUid: userId,
-      palette,
       assets: [],
     });
 
@@ -514,45 +482,7 @@ export const EventSetupScreen: React.FC = () => {
             )}
           </View>
 
-          {/* Color Palette */}
-          <View style={{ marginBottom: 24 }}>
-            <Text
-              style={{
-                color: colors.textPrimary,
-                fontSize: 16,
-                fontWeight: '600',
-                marginBottom: 8,
-              }}
-            >
-              Color Palette
-            </Text>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              {COLOR_PRESETS.map((preset, index) => (
-                <TouchableOpacity
-                  key={preset.label}
-                  onPress={() => setPaletteIndex(index)}
-                  style={{
-                    flex: 1,
-                    borderRadius: 8,
-                    borderWidth: 3,
-                    borderColor:
-                      paletteIndex === index ? colors.primary : colors.border,
-                    padding: 16,
-                    backgroundColor: preset.palette.primary,
-                  }}
-                >
-                  <View
-                    style={{
-                      width: '100%',
-                      height: 8,
-                      borderRadius: 4,
-                      backgroundColor: preset.palette.accent,
-                    }}
-                  />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
+
 
           {/* Submit Button */}
           <Button

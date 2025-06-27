@@ -97,11 +97,6 @@ export interface EventDocument {
   startTime: Timestamp;
   endTime: Timestamp;
   hostUid: string;
-  palette: {
-    primary: string;
-    accent: string;
-    background: string;
-  };
   assets: string[];
   createdAt: Timestamp;
 }
@@ -1303,7 +1298,6 @@ export class FirestoreService {
         startTime,
         endTime,
         hostUid,
-        palette,
         assets = [],
       } = event;
 
@@ -1314,7 +1308,6 @@ export class FirestoreService {
         startTime: Timestamp.fromDate(startTime),
         endTime: Timestamp.fromDate(endTime),
         hostUid,
-        palette,
         assets,
         createdAt: serverTimestamp() as Timestamp,
       };
@@ -1342,7 +1335,6 @@ export class FirestoreService {
         startTime,
         endTime,
         hostUid,
-        palette,
         assets,
         createdAt: new Date(),
       };
@@ -1416,7 +1408,6 @@ export class FirestoreService {
         startTime: data.startTime.toDate(),
         endTime: data.endTime.toDate(),
         hostUid: data.hostUid,
-        palette: data.palette,
         assets: data.assets,
         createdAt: data.createdAt.toDate(),
       };
@@ -1516,7 +1507,6 @@ export class FirestoreService {
           startTime: data.startTime.toDate(),
           endTime: data.endTime.toDate(),
           hostUid: data.hostUid,
-          palette: data.palette,
           assets: data.assets,
           createdAt: data.createdAt.toDate(),
         };
@@ -1558,7 +1548,6 @@ export class FirestoreService {
         startTime: data.startTime.toDate(),
         endTime: data.endTime.toDate(),
         hostUid: data.hostUid,
-        palette: data.palette,
         assets: data.assets,
         createdAt: data.createdAt.toDate(),
       };

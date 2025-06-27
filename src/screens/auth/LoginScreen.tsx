@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -22,12 +22,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const { login, isLoading, error, clearError } = useAuth();
+  const { login, isLoading, error } = useAuth();
 
-  // Clear auth errors when component mounts
-  // useEffect(() => {
-  //   clearError();
-  // }, [clearError]);
+
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -37,9 +34,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
     try {
       await login(email.trim().toLowerCase(), password);
-    } catch (err) {
+    } catch {
       // Error is handled by the auth store
-      console.log('Login error caught:', err);
     }
   };
 

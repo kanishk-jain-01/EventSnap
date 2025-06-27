@@ -279,15 +279,6 @@ export interface Theme {
 
 export type EventVisibility = 'public' | 'private';
 
-export interface EventPalette {
-  /** Primary brand color for the event (HEX) */
-  primary: string;
-  /** Accent color for buttons / highlights (HEX) */
-  accent: string;
-  /** Background color (HEX) */
-  background: string;
-}
-
 export interface Event {
   /** Firestore auto-generated ID */
   id: string;
@@ -303,8 +294,6 @@ export interface Event {
   endTime: Date;
   /** UID of the user that created the event */
   hostUid: string;
-  /** Colour palette tokens for dynamic theming */
-  palette: EventPalette;
   /** Storage paths/URLs to uploaded PDF assets */
   assets: string[];
   /** Document creation timestamp */
