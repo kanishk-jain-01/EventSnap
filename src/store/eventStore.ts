@@ -13,13 +13,14 @@ interface EventStoreState {
 
   // Actions
   initializeEventStore: (_userId: string) => Promise<void>;
-  createEvent: (_event: Omit<AppEvent, 'id' | 'createdAt'>) => Promise<boolean>;
+  createEvent: (_event: Omit<AppEvent, 'id' | 'createdAt' | 'hostCode' | 'joinCode'>) => Promise<boolean>;
   joinEvent: (
     _eventId: string,
     _userId: string,
     _joinCode?: string | null,
   ) => Promise<boolean>;
   joinEventByCode: (_joinCode: string, _userId: string) => Promise<boolean>;
+  promoteToHost: (_hostCode: string, _userId: string) => Promise<boolean>;
   fetchEvent: (_eventId: string) => Promise<void>;
   addParticipant: (
     _eventId: string,
@@ -153,6 +154,46 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
       return true;
     } catch (_err) {
       set({ error: 'Failed to join event', isLoading: false });
+      return false;
+    }
+  },
+
+  /** Promote guest to host using host code */
+  promoteToHost: async (hostCode, userId) => {
+    const { activeEvent } = get();
+    if (!activeEvent) {
+      set({ error: 'No active event to promote in' });
+      return false;
+    }
+
+    set({ isLoading: true, error: null });
+    try {
+      const res = await FirestoreService.promoteToHost(
+        activeEvent.id,
+        userId,
+        hostCode,
+      );
+      
+      if (!res.success) {
+        set({ error: res.error || 'Failed to promote to host', isLoading: false });
+        return false;
+      }
+
+      // Update local state - user is now a host
+      set({ role: 'host', isLoading: false });
+      
+      // Refresh the auth store to reflect the new role
+      const { user, setUser } = useAuthStore.getState();
+      if (user && user.uid === userId) {
+        setUser({
+          ...user,
+          eventRole: 'host',
+        });
+      }
+
+      return true;
+    } catch (_err) {
+      set({ error: 'Failed to promote to host', isLoading: false });
       return false;
     }
   },

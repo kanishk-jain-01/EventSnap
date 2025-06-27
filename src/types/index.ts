@@ -269,6 +269,8 @@ export interface Event {
   name: string;
   /** 6-digit join code for all events */
   joinCode: string;
+  /** 8-digit host promotion code - allows guests to become hosts */
+  hostCode: string;
   /** ISO start time */
   startTime: Date;
   /** ISO end time */

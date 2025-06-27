@@ -75,6 +75,7 @@ export interface ContactDocument {
 export interface EventDocument {
   name: string;
   joinCode: string;
+  hostCode: string;
   startTime: Timestamp;
   endTime: Timestamp;
   hostUid: string;
@@ -800,12 +801,17 @@ export class FirestoreService {
    * Create a new event
    */
   static async createEvent(
-    event: Omit<AppEvent, 'id' | 'createdAt'>,
+    event: Omit<AppEvent, 'id' | 'createdAt' | 'hostCode' | 'joinCode'>,
   ): Promise<ApiResponse<AppEvent>> {
     try {
+      // Generate unique codes
+      const joinCode = this.generateJoinCode();
+      const hostCode = this.generateHostCode();
+      
       const eventData: EventDocument = {
         name: event.name,
-        joinCode: event.joinCode,
+        joinCode: joinCode,
+        hostCode: hostCode,
         startTime: Timestamp.fromDate(event.startTime),
         endTime: Timestamp.fromDate(event.endTime),
         hostUid: event.hostUid,
@@ -825,7 +831,8 @@ export class FirestoreService {
       const createdEvent: AppEvent = {
         id: docRef.id,
         name: event.name,
-        joinCode: event.joinCode,
+        joinCode: eventData.joinCode,
+        hostCode: eventData.hostCode,
         startTime: event.startTime,
         endTime: event.endTime,
         hostUid: event.hostUid,
@@ -905,6 +912,7 @@ export class FirestoreService {
         id: docSnap.id,
         name: data.name,
         joinCode: data.joinCode,
+        hostCode: data.hostCode,
         startTime: data.startTime.toDate(),
         endTime: data.endTime.toDate(),
         hostUid: data.hostUid,
@@ -1049,6 +1057,7 @@ export class FirestoreService {
         id: doc.id,
         name: data.name,
         joinCode: data.joinCode,
+        hostCode: data.hostCode,
         startTime: data.startTime.toDate(),
         endTime: data.endTime.toDate(),
         hostUid: data.hostUid,
@@ -1066,5 +1075,71 @@ export class FirestoreService {
         error: 'Failed to find event',
       };
     }
+  }
+
+  /**
+   * Promote a guest to host using the host code
+   */
+  static async promoteToHost(
+    eventId: string,
+    userId: string,
+    hostCode: string,
+  ): Promise<ApiResponse<void>> {
+    try {
+      // First, verify the event exists and the host code is correct
+      const eventRes = await this.getActiveEvent(eventId);
+      if (!eventRes.success || !eventRes.data) {
+        return {
+          success: false,
+          error: 'Event not found',
+        };
+      }
+
+      const event = eventRes.data;
+
+      // Verify host code
+      if (event.hostCode !== hostCode) {
+        return {
+          success: false,
+          error: 'Invalid host code',
+        };
+      }
+
+      // Check if user is already a participant in this event
+      const participantRes = await this.getParticipant(eventId, userId);
+      if (!participantRes.success) {
+        return {
+          success: false,
+          error: 'You must be a participant in this event to become a host',
+        };
+      }
+
+      // Update participant role to host
+      await this.addParticipant(eventId, userId, 'host');
+
+      // Update user's event role in their profile
+      await this.updateUserActiveEvent(userId, eventId, 'host');
+
+      return { success: true };
+    } catch (_error) {
+      return {
+        success: false,
+        error: 'Failed to promote to host',
+      };
+    }
+  }
+
+  /**
+   * Generate a random 6-digit join code
+   */
+  private static generateJoinCode(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  /**
+   * Generate a random 8-digit host code
+   */
+  private static generateHostCode(): string {
+    return Math.floor(10000000 + Math.random() * 90000000).toString();
   }
 }

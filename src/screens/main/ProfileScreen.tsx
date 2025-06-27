@@ -28,7 +28,7 @@ type ProfileScreenNavigationProp =
 export const ProfileScreen: React.FC = () => {
   const colors = useThemeColors();
   const { user: authUser, logout } = useAuthStore();
-  const { activeEvent, role } = useEventStore();
+  const { activeEvent, role, promoteToHost } = useEventStore();
   const {
     currentUser,
     isLoading,
@@ -46,6 +46,10 @@ export const ProfileScreen: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  
+  // Host promotion state
+  const [hostCode, setHostCode] = useState('');
+  const [isPromoting, setIsPromoting] = useState(false);
 
   // Load profile & contacts on mount
   useEffect(() => {
@@ -135,6 +139,48 @@ export const ProfileScreen: React.FC = () => {
   const handleManageEvent = () => {
     if (role === 'host') {
       navigation.navigate('EventSetup');
+    }
+  };
+
+  const handlePromoteToHost = async () => {
+    if (!authUser?.uid) return;
+    if (!hostCode.trim()) {
+      Alert.alert('Validation', 'Please enter the host code');
+      return;
+    }
+    if (hostCode.trim().length !== 8) {
+      Alert.alert('Validation', 'Host code must be 8 digits');
+      return;
+    }
+
+    setIsPromoting(true);
+    const success = await promoteToHost(hostCode.trim(), authUser.uid);
+    setIsPromoting(false);
+
+    if (success) {
+      setHostCode(''); // Clear the input
+      Alert.alert(
+        'Success!',
+        'You are now a host! You can now post stories and manage the event.',
+        [{ text: 'OK' }],
+      );
+    } else {
+      Alert.alert(
+        'Promotion Failed',
+        'Invalid host code or promotion failed. Please check the code and try again.',
+        [{ text: 'OK' }],
+      );
+    }
+  };
+
+  const copyHostCode = () => {
+    if (activeEvent?.hostCode) {
+      // In a real app, you'd use Clipboard API
+      Alert.alert(
+        'Host Code',
+        `Host Code: ${activeEvent.hostCode}\n\nShare this code with guests to make them hosts.`,
+        [{ text: 'OK' }],
+      );
     }
   };
 
@@ -414,13 +460,72 @@ export const ProfileScreen: React.FC = () => {
 
             {/* Host-only event management */}
             {role === 'host' && (
-              <Button
-                title='Manage Event'
-                onPress={handleManageEvent}
-                variant='secondary'
-                size='small'
-              />
+              <View style={{ gap: 8 }}>
+                <Button
+                  title='Manage Event'
+                  onPress={handleManageEvent}
+                  variant='secondary'
+                  size='small'
+                />
+                <Button
+                  title='Show Host Code'
+                  onPress={copyHostCode}
+                  variant='outline'
+                  size='small'
+                />
+              </View>
             )}
+          </View>
+        )}
+
+        {/* Guest Host Promotion Section */}
+        {role === 'guest' && activeEvent && (
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 12,
+              padding: 16,
+              marginBottom: 24,
+            }}
+          >
+            <Text
+              style={{
+                color: colors.textPrimary,
+                fontSize: 18,
+                fontWeight: '600',
+                marginBottom: 8,
+              }}
+            >
+              Become a Host
+            </Text>
+            <Text
+              style={{
+                color: colors.textSecondary,
+                fontSize: 14,
+                marginBottom: 16,
+              }}
+            >
+              Ask the event host for the host code to get host privileges and post stories.
+            </Text>
+            
+            <Input
+              label='Host Code'
+              placeholder='Enter 8-digit host code'
+              value={hostCode}
+              onChangeText={setHostCode}
+              keyboardType='numeric'
+              maxLength={8}
+              returnKeyType='done'
+              onSubmitEditing={handlePromoteToHost}
+            />
+            
+            <Button
+              title='Promote to Host'
+              onPress={handlePromoteToHost}
+              loading={isPromoting}
+              disabled={hostCode.length !== 8}
+              size='small'
+            />
           </View>
         )}
 

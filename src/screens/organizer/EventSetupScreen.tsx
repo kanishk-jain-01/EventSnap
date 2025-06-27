@@ -93,7 +93,6 @@ export const EventSetupScreen: React.FC = () => {
 
     const success = await createEvent({
       name: name.trim(),
-      joinCode: '', // Will be auto-generated
       startTime,
       endTime,
       hostUid: userId,
