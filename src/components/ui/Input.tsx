@@ -13,6 +13,9 @@ export const Input: React.FC<InputProps> = ({
   autoCapitalize = 'none',
   keyboardType = 'default',
   maxLength,
+  returnKeyType,
+  onSubmitEditing,
+  blurOnSubmit,
 }) => {
   const colors = useThemeColors();
 
@@ -23,7 +26,7 @@ export const Input: React.FC<InputProps> = ({
           {label}
         </Text>
       )}
-      <TextInput
+              <TextInput
         className={`bg-surface border rounded-lg px-5 py-4 text-text-primary text-base ${
           error ? 'border-error' : 'border-border focus:border-primary'
         }`}
@@ -35,6 +38,9 @@ export const Input: React.FC<InputProps> = ({
         autoCapitalize={autoCapitalize}
         keyboardType={keyboardType}
         maxLength={maxLength}
+        returnKeyType={returnKeyType}
+        onSubmitEditing={onSubmitEditing}
+        blurOnSubmit={blurOnSubmit}
         autoCorrect={false}
         autoComplete='off'
         style={{

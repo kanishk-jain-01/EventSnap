@@ -92,8 +92,7 @@ export interface ContactDocument {
  */
 export interface EventDocument {
   name: string;
-  visibility: 'public' | 'private';
-  joinCode?: string | null;
+  joinCode: string;
   startTime: Timestamp;
   endTime: Timestamp;
   hostUid: string;
@@ -1291,19 +1290,13 @@ export class FirestoreService {
     event: Omit<AppEvent, 'id' | 'createdAt'>,
   ): Promise<ApiResponse<AppEvent>> {
     try {
-      const {
-        name,
-        visibility,
-        joinCode = null,
-        startTime,
-        endTime,
-        hostUid,
-        assets = [],
-      } = event;
+      const { name, startTime, endTime, hostUid, assets = [] } = event;
+
+      // Always generate a 6-digit join code
+      const joinCode = Math.floor(100000 + Math.random() * 900000).toString();
 
       const eventData: EventDocument = {
         name,
-        visibility,
         joinCode,
         startTime: Timestamp.fromDate(startTime),
         endTime: Timestamp.fromDate(endTime),
@@ -1330,7 +1323,6 @@ export class FirestoreService {
       const createdEvent: AppEvent = {
         id: docRef.id,
         name,
-        visibility,
         joinCode,
         startTime,
         endTime,
@@ -1364,10 +1356,9 @@ export class FirestoreService {
       const data = evtSnap.data() as EventDocument;
 
       if (
-        data.visibility === 'private' &&
-        (data.joinCode === null ||
-          data.joinCode === undefined ||
-          data.joinCode !== joinCodeInput)
+        data.joinCode === null ||
+        data.joinCode === undefined ||
+        data.joinCode !== joinCodeInput
       ) {
         return { success: false, error: 'Invalid join code' };
       }
@@ -1403,8 +1394,7 @@ export class FirestoreService {
       const event: AppEvent = {
         id: evtSnap.id,
         name: data.name,
-        visibility: data.visibility,
-        joinCode: data.joinCode ?? null,
+        joinCode: data.joinCode,
         startTime: data.startTime.toDate(),
         endTime: data.endTime.toDate(),
         hostUid: data.hostUid,
@@ -1482,40 +1472,12 @@ export class FirestoreService {
     }
   }
 
-  /** Get public events ordered by start time */
+  /** Get public events ordered by start time - DEPRECATED: All events are now private with join codes */
   static async getPublicEvents(
-    limitCount: number = 20,
+    _limitCount: number = 20,
   ): Promise<ApiResponse<AppEvent[]>> {
-    try {
-      const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
-      const q = query(
-        eventsRef,
-        where('visibility', '==', 'public'),
-        orderBy('startTime', 'asc'),
-        limit(limitCount),
-      );
-
-      const snapshot = await getDocs(q);
-
-      const events: AppEvent[] = snapshot.docs.map(doc => {
-        const data = doc.data() as EventDocument;
-        return {
-          id: doc.id,
-          name: data.name,
-          visibility: data.visibility,
-          joinCode: data.joinCode ?? null,
-          startTime: data.startTime.toDate(),
-          endTime: data.endTime.toDate(),
-          hostUid: data.hostUid,
-          assets: data.assets,
-          createdAt: data.createdAt.toDate(),
-        };
-      });
-
-      return { success: true, data: events };
-    } catch (_error) {
-      return { success: false, error: 'Failed to fetch public events' };
-    }
+    // Return empty array since we no longer have public events
+    return { success: true, data: [] };
   }
 
   /** Find event by join code */
@@ -1527,7 +1489,7 @@ export class FirestoreService {
       const q = query(
         eventsRef,
         where('joinCode', '==', joinCode),
-        where('visibility', '==', 'private'),
+        where('joinCode', '!=', null),
         limit(1),
       );
 
@@ -1543,8 +1505,7 @@ export class FirestoreService {
       const event: AppEvent = {
         id: doc.id,
         name: data.name,
-        visibility: data.visibility,
-        joinCode: data.joinCode ?? null,
+        joinCode: data.joinCode,
         startTime: data.startTime.toDate(),
         endTime: data.endTime.toDate(),
         hostUid: data.hostUid,

@@ -29,11 +29,11 @@ service cloud.firestore {
     match /events/{eventId} {
       // CRITICAL: Allow public event discovery while maintaining privacy
       allow read: if request.auth != null && (
-        resource.data.visibility == 'public' || 
+        resource.data.visibility == 'public' ||
         participantInEvent(eventId)
       );
       allow create: if request.auth != null;
-      allow update, delete: if request.auth != null && 
+      allow update, delete: if request.auth != null &&
         request.auth.uid == resource.data.hostUid;
     }
   }
@@ -53,13 +53,13 @@ service cloud.firestore {
     // Public Event Discovery (REQUIRED)
     {
       "collectionGroup": "events",
-      "queryScope": "COLLECTION", 
+      "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "visibility", "order": "ASCENDING" },
         { "fieldPath": "startTime", "order": "ASCENDING" }
       ]
     },
-    
+
     // Event-Scoped Snaps (REQUIRED - ADDED TODAY)
     {
       "collectionGroup": "snaps",
@@ -71,11 +71,11 @@ service cloud.firestore {
         { "fieldPath": "timestamp", "order": "DESCENDING" }
       ]
     },
-    
+
     // Event-Scoped Stories (REQUIRED - ADDED TODAY)
     {
       "collectionGroup": "stories",
-      "queryScope": "COLLECTION", 
+      "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "eventId", "order": "ASCENDING" },
         { "fieldPath": "expiresAt", "order": "ASCENDING" },
@@ -94,22 +94,22 @@ interface ThemeConsistencyPattern {
   // Always use useThemeColors() hook
   component: {
     import: "import { useThemeColors } from './ThemeProvider';";
-    usage: "const colors = useThemeColors();";
-    styling: "style={{ backgroundColor: colors.background }}";
+    usage: 'const colors = useThemeColors();';
+    styling: 'style={{ backgroundColor: colors.background }}';
   };
 
   // NEVER use className with old theme
   antiPattern: {
     avoid: "className='bg-black text-white'"; // ❌ Old dark theme
-    avoid: "className='snap-yellow'";         // ❌ Deprecated colors
+    avoid: "className='snap-yellow'"; // ❌ Deprecated colors
   };
 
   // Professional EventSnap colors
   correctColors: {
-    background: "colors.background",     // Clean white
-    primary: "colors.primary",           // EventSnap purple
-    accent: "colors.accent",             // Purple accent
-    textPrimary: "colors.textPrimary",   // Professional text
+    background: 'colors.background'; // Clean white
+    primary: 'colors.primary'; // EventSnap purple
+    accent: 'colors.accent'; // Purple accent
+    textPrimary: 'colors.textPrimary'; // Professional text
   };
 }
 ```
@@ -120,14 +120,14 @@ interface ThemeConsistencyPattern {
 // CORRECT PATTERN: Automatic Flow Management
 interface NavigationPattern {
   appNavigator: {
-    responsibility: "Check auth + event state, auto-navigate";
+    responsibility: 'Check auth + event state, auto-navigate';
     pattern: "useEffect(() => { if (auth && event) navigate('Main'); })";
     avoidManualCalls: "Don't call navigation.navigate() in screens";
   };
 
   screenButtons: {
-    correctPattern: "navigation.goBack()";  // ✅ Works with auto-flow
-    avoidPattern: "navigation.navigate()"; // ❌ Conflicts with auto-flow
+    correctPattern: 'navigation.goBack()'; // ✅ Works with auto-flow
+    avoidPattern: 'navigation.navigate()'; // ❌ Conflicts with auto-flow
   };
 }
 ```
@@ -148,6 +148,7 @@ interface NavigationPattern {
 ```
 
 **CRITICAL SUCCESS FACTORS** (Learned from debugging):
+
 1. **Security Rules**: Must allow public event discovery before joining
 2. **Database Indexes**: All composite queries must have matching indexes
 3. **Theme Consistency**: Use EventSnap Creative Light Theme throughout
@@ -263,9 +264,9 @@ interface AppState {
   eventError: string | null;
 
   // AsyncStorage Persistence (PHASE 6.0 - WORKING)
-  _saveActiveEventToStorage: () => Promise<void>;     // ✅ WORKING
-  _loadActiveEventFromStorage: () => Promise<void>;   // ✅ WORKING
-  initializeEventStore: () => Promise<void>;          // ✅ WORKING
+  _saveActiveEventToStorage: () => Promise<void>; // ✅ WORKING
+  _loadActiveEventFromStorage: () => Promise<void>; // ✅ WORKING
+  initializeEventStore: () => Promise<void>; // ✅ WORKING
 
   // Theme System (FIXED TODAY)
   theme: ThemeTokens;
@@ -302,21 +303,21 @@ interface AppState {
 interface AsyncStoragePatterns {
   eventPersistence: {
     keys: {
-      activeEvent: 'eventsnap_active_event';  // ✅ WORKING
-      userRole: 'eventsnap_user_role';        // ✅ WORKING
+      activeEvent: 'eventsnap_active_event'; // ✅ WORKING
+      userRole: 'eventsnap_user_role'; // ✅ WORKING
     };
 
     validation: {
-      expiration: 'Check 24 hours after event end';     // ✅ WORKING
+      expiration: 'Check 24 hours after event end'; // ✅ WORKING
       existence: 'Verify event still exists in Firestore'; // ✅ WORKING
       participation: 'Confirm user is still a participant'; // ✅ WORKING
       network: 'Graceful offline handling with cached data'; // ✅ WORKING
     };
 
     lifecycle: {
-      save: 'Auto-save on every event change';          // ✅ WORKING
+      save: 'Auto-save on every event change'; // ✅ WORKING
       load: 'Initialize on app launch with validation'; // ✅ WORKING
-      cleanup: 'Clear on logout and expiration';       // ✅ WORKING
+      cleanup: 'Clear on logout and expiration'; // ✅ WORKING
     };
   };
 }
@@ -329,28 +330,28 @@ interface AsyncStoragePatterns {
 ```typescript
 interface QualityStandards {
   typescript: {
-    errors: 0;              // ✅ ACHIEVED
-    strictMode: true;       // ✅ ACHIEVED
-    coverage: '100%';       // ✅ ACHIEVED
+    errors: 0; // ✅ ACHIEVED
+    strictMode: true; // ✅ ACHIEVED
+    coverage: '100%'; // ✅ ACHIEVED
   };
 
   eslint: {
-    errors: 0;              // ✅ ACHIEVED
-    warnings: 14;           // ✅ Only pre-existing console statements
-    rules: 'strict';        // ✅ ACHIEVED
+    errors: 0; // ✅ ACHIEVED
+    warnings: 14; // ✅ Only pre-existing console statements
+    rules: 'strict'; // ✅ ACHIEVED
   };
 
   prettier: {
-    formatted: true;        // ✅ ACHIEVED
-    consistent: true;       // ✅ ACHIEVED
+    formatted: true; // ✅ ACHIEVED
+    consistent: true; // ✅ ACHIEVED
   };
 
   functionality: {
-    appLaunch: 'working';   // ✅ ACHIEVED
+    appLaunch: 'working'; // ✅ ACHIEVED
     eventDiscovery: 'working'; // ✅ ACHIEVED
-    eventCreation: 'working';  // ✅ ACHIEVED
-    feedPage: 'working';       // ✅ ACHIEVED
-    navigation: 'working';     // ✅ ACHIEVED
+    eventCreation: 'working'; // ✅ ACHIEVED
+    feedPage: 'working'; // ✅ ACHIEVED
+    navigation: 'working'; // ✅ ACHIEVED
   };
 }
 ```
@@ -393,22 +394,22 @@ interface DebuggingPatterns {
 interface ProductionReadiness {
   database: {
     securityRules: 'properly configured for public/private access'; // ✅
-    indexes: 'all composite queries have matching indexes';         // ✅
-    performance: 'optimized queries with proper filtering';         // ✅
+    indexes: 'all composite queries have matching indexes'; // ✅
+    performance: 'optimized queries with proper filtering'; // ✅
   };
 
   frontend: {
     themeConsistency: 'EventSnap Creative Light Theme throughout'; // ✅
-    typeScript: 'zero errors with strict mode compliance';         // ✅
-    navigation: 'seamless role-based flow';                        // ✅
-    persistence: 'robust AsyncStorage with validation';            // ✅
+    typeScript: 'zero errors with strict mode compliance'; // ✅
+    navigation: 'seamless role-based flow'; // ✅
+    persistence: 'robust AsyncStorage with validation'; // ✅
   };
 
   userExperience: {
-    onboarding: 'professional event discovery and joining';        // ✅
-    roleBasedUI: 'clear host/guest differentiation';              // ✅
-    errorHandling: 'user-friendly messages throughout';           // ✅
-    performance: 'fast loading with proper loading states';       // ✅
+    onboarding: 'professional event discovery and joining'; // ✅
+    roleBasedUI: 'clear host/guest differentiation'; // ✅
+    errorHandling: 'user-friendly messages throughout'; // ✅
+    performance: 'fast loading with proper loading states'; // ✅
   };
 }
 ```

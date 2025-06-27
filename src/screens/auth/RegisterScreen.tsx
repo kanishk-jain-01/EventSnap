@@ -225,7 +225,9 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
               {/* Auth Error */}
               {error && (
                 <View className='bg-error/10 border border-error rounded-lg p-4 mb-4'>
-                  <Text className='text-error text-base text-center font-medium'>{error}</Text>
+                  <Text className='text-error text-base text-center font-medium'>
+                    {error}
+                  </Text>
                 </View>
               )}
 

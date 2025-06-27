@@ -1,12 +1,13 @@
-/* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   Alert,
   SafeAreaView,
-  RefreshControl,
+  TouchableWithoutFeedback,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
@@ -17,193 +18,21 @@ import { useAuthStore } from '../../store/authStore';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
-import { Event } from '../../types';
 import { RootStackParamList } from '../../navigation/types';
 
 type EventSelectionScreenNavigationProp =
   NativeStackNavigationProp<RootStackParamList>;
 
-interface PublicEventItemProps {
-  event: Event;
-  onJoin: (event: Event) => void;
-  isJoining: boolean;
-}
-
-const PublicEventItem: React.FC<PublicEventItemProps> = ({
-  event,
-  onJoin,
-  isJoining,
-}) => {
-  const colors = useThemeColors();
-  // Using event parameter for display and logic
-
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    }).format(date);
-  };
-
-  const isEventActive = () => {
-    const now = new Date();
-    return now >= event.startTime && now <= event.endTime;
-  };
-
-  const isEventUpcoming = () => {
-    const now = new Date();
-    return now < event.startTime;
-  };
-
-  const getEventStatus = () => {
-    if (isEventActive()) return { text: 'Live Now', color: colors.success };
-    if (isEventUpcoming()) return { text: 'Upcoming', color: colors.primary };
-    return { text: 'Ended', color: colors.textTertiary };
-  };
-
-  const status = getEventStatus();
-  const canJoin = isEventActive() || isEventUpcoming();
-
-  return (
-    <View
-      style={{
-        backgroundColor: colors.surface,
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: colors.border,
-      }}
-    >
-      {/* Event Header */}
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          marginBottom: 8,
-        }}
-      >
-        <Text
-          style={{
-            color: colors.textPrimary,
-            fontSize: 18,
-            fontWeight: '600',
-            flex: 1,
-            marginRight: 8,
-          }}
-        >
-          {event.name}
-        </Text>
-        <View
-          style={{
-            backgroundColor: status.color + '20',
-            paddingHorizontal: 8,
-            paddingVertical: 4,
-            borderRadius: 6,
-          }}
-        >
-          <Text
-            style={{
-              color: status.color,
-              fontSize: 12,
-              fontWeight: '600',
-            }}
-          >
-            {status.text}
-          </Text>
-        </View>
-      </View>
-
-      {/* Event Details */}
-      <View style={{ marginBottom: 12 }}>
-        <Text
-          style={{ color: colors.textSecondary, fontSize: 14, marginBottom: 4 }}
-        >
-          📅 {formatDate(event.startTime)} - {formatDate(event.endTime)}
-        </Text>
-        <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
-          👥 Event participants
-        </Text>
-      </View>
-
-      {/* Join Button */}
-      <Button
-        title={canJoin ? 'Join Event' : 'Event Ended'}
-        onPress={() => onJoin(event)}
-        disabled={!canJoin || isJoining}
-        loading={isJoining}
-        variant={canJoin ? 'primary' : 'secondary'}
-      />
-    </View>
-  );
-};
-
 export const EventSelectionScreen: React.FC = () => {
   const navigation = useNavigation<EventSelectionScreenNavigationProp>();
   const colors = useThemeColors();
   const { user } = useAuthStore();
-  const {
-    publicEvents,
-    isLoading,
-    error,
-    joinEvent,
-    joinEventByCode,
-    loadPublicEvents,
-  } = useEventStore();
+  const { joinEventByCode, isLoading, error } = useEventStore();
 
   const [joinCode, setJoinCode] = useState('');
-  const [isJoiningPrivate, setIsJoiningPrivate] = useState(false);
-  const [joiningEventId, setJoiningEventId] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
+  const [isJoiningEvent, setIsJoiningEvent] = useState(false);
 
-  useEffect(() => {
-    loadPublicEvents();
-  }, []);
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await loadPublicEvents();
-    setRefreshing(false);
-  };
-
-  const handleJoinPublicEvent = async (event: Event) => {
-    if (!user?.uid) {
-      Alert.alert('Error', 'You must be logged in to join an event');
-      return;
-    }
-
-    setJoiningEventId(event.id);
-
-    try {
-      const success = await joinEvent(event.id, user.uid);
-
-      if (success) {
-        Alert.alert(
-          'Joined Event!',
-          `Welcome to ${event.name}! You can now participate in event activities.`,
-          [
-            {
-              text: 'Continue',
-              onPress: () => {
-                // AppNavigator will automatically navigate to Main when activeEvent is set
-                // No manual navigation needed
-              },
-            },
-          ],
-        );
-      } else {
-        Alert.alert('Error', 'Failed to join event. Please try again.');
-      }
-    } catch (_error) {
-      Alert.alert('Error', 'Failed to join event. Please try again.');
-    } finally {
-      setJoiningEventId(null);
-    }
-  };
-
-  const handleJoinPrivateEvent = async () => {
+  const handleJoinEvent = async () => {
     if (!user?.uid) {
       Alert.alert('Error', 'You must be logged in to join an event');
       return;
@@ -214,7 +43,9 @@ export const EventSelectionScreen: React.FC = () => {
       return;
     }
 
-    setIsJoiningPrivate(true);
+    // Dismiss keyboard before proceeding
+    Keyboard.dismiss();
+    setIsJoiningEvent(true);
 
     try {
       const success = await joinEventByCode(joinCode.trim(), user.uid);
@@ -222,14 +53,13 @@ export const EventSelectionScreen: React.FC = () => {
       if (success) {
         setJoinCode('');
         Alert.alert(
-          'Joined Private Event!',
-          'You have successfully joined the private event.',
+          'Joined Event!',
+          'You have successfully joined the event. Welcome!',
           [
             {
               text: 'Continue',
               onPress: () => {
                 // AppNavigator will automatically navigate to Main when activeEvent is set
-                // No manual navigation needed
               },
             },
           ],
@@ -241,18 +71,23 @@ export const EventSelectionScreen: React.FC = () => {
         );
       }
     } catch (_error) {
-      Alert.alert('Error', 'Failed to join private event. Please try again.');
+      Alert.alert('Error', 'Failed to join event. Please try again.');
     } finally {
-      setIsJoiningPrivate(false);
+      setIsJoiningEvent(false);
     }
   };
 
   const handleCreateEvent = () => {
+    Keyboard.dismiss();
     navigation.navigate('EventSetup');
   };
 
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
   // Loading state
-  if (isLoading && !refreshing) {
+  if (isLoading && !isJoiningEvent) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
         <StatusBar style='dark' />
@@ -262,237 +97,179 @@ export const EventSelectionScreen: React.FC = () => {
           <LoadingSpinner
             size='large'
             color={colors.primary}
-            text='Loading events...'
+            text='Loading...'
           />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Error state
-  if (error && !refreshing) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
-        <StatusBar style='dark' />
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: 24,
-          }}
-        >
-          <Text
-            style={{
-              color: colors.error,
-              fontSize: 18,
-              fontWeight: '600',
-              marginBottom: 8,
-            }}
-          >
-            Something went wrong
-          </Text>
-          <Text
-            style={{
-              color: colors.textSecondary,
-              fontSize: 16,
-              textAlign: 'center',
-              marginBottom: 16,
-            }}
-          >
-            {error}
-          </Text>
-          <Button title='Retry' onPress={loadPublicEvents} />
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
-      <StatusBar style='dark' />
+    <TouchableWithoutFeedback onPress={dismissKeyboard}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
+        <StatusBar style='dark' />
 
-      {/* Header */}
-      <View
-        style={{
-          paddingHorizontal: 16,
-          paddingVertical: 16,
-          backgroundColor: colors.surface,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
-        }}
-      >
-        <Text
+        {/* Header */}
+        <View
           style={{
-            color: colors.textPrimary,
-            fontSize: 24,
-            fontWeight: '700',
-            marginBottom: 4,
+            paddingHorizontal: 24,
+            paddingVertical: 20,
+            backgroundColor: colors.surface,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
           }}
         >
-          Join an Event
-        </Text>
-        <Text style={{ color: colors.textSecondary, fontSize: 16 }}>
-          Choose an event to participate in or create your own
-        </Text>
-      </View>
-
-      <ScrollView
-        contentContainerStyle={{ padding: 16 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={colors.primary}
-            colors={[colors.primary]}
-          />
-        }
-      >
-        {/* Create Event Section */}
-        <View style={{ marginBottom: 24 }}>
           <Text
             style={{
               color: colors.textPrimary,
-              fontSize: 18,
-              fontWeight: '600',
-              marginBottom: 12,
+              fontSize: 24,
+              fontWeight: '700',
+              marginBottom: 6,
+              textAlign: 'center',
             }}
           >
-            Host an Event
+            Welcome to EventSnap
           </Text>
-          <View
+          <Text
             style={{
-              backgroundColor: colors.surface,
-              borderRadius: 12,
-              padding: 16,
-              borderWidth: 1,
-              borderColor: colors.border,
+              color: colors.textSecondary,
+              fontSize: 14,
+              textAlign: 'center',
+              lineHeight: 20,
             }}
           >
-            <Text
-              style={{
-                color: colors.textSecondary,
-                fontSize: 14,
-                marginBottom: 12,
-                lineHeight: 20,
-              }}
-            >
-              Create your own event and invite participants to join your
-              networking session.
-            </Text>
-            <Button
-              title='Create Event'
-              onPress={handleCreateEvent}
-              variant='primary'
-            />
-          </View>
+            Create your own event or join an existing one with a code
+          </Text>
         </View>
 
-        {/* Private Event Section */}
-        <View style={{ marginBottom: 24 }}>
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 18,
-              fontWeight: '600',
-              marginBottom: 12,
-            }}
-          >
-            Join Private Event
-          </Text>
-          <View
-            style={{
-              backgroundColor: colors.surface,
-              borderRadius: 12,
-              padding: 16,
-              borderWidth: 1,
-              borderColor: colors.border,
-            }}
-          >
-            <Text
-              style={{
-                color: colors.textSecondary,
-                fontSize: 14,
-                marginBottom: 12,
-              }}
-            >
-              Enter a 6-digit join code to access a private event
-            </Text>
-            <View style={{ marginBottom: 12 }}>
-              <Input
-                placeholder='Enter join code'
-                value={joinCode}
-                onChangeText={setJoinCode}
-                keyboardType='numeric'
-                maxLength={6}
-              />
-            </View>
-            <Button
-              title='Join Private Event'
-              onPress={handleJoinPrivateEvent}
-              disabled={joinCode.length !== 6 || isJoiningPrivate}
-              loading={isJoiningPrivate}
-            />
-          </View>
-        </View>
-
-        {/* Public Events Section */}
-        <View>
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 18,
-              fontWeight: '600',
-              marginBottom: 12,
-            }}
-          >
-            Public Events
-          </Text>
-
-          {publicEvents.length > 0 ? (
-            publicEvents.map((event: Event) => (
-              <PublicEventItem
-                key={event.id}
-                event={event}
-                onJoin={handleJoinPublicEvent}
-                isJoining={joiningEventId === event.id}
-              />
-            ))
-          ) : (
-            <View
-              style={{
-                backgroundColor: colors.surface,
-                borderRadius: 12,
-                padding: 24,
-                alignItems: 'center',
-                borderWidth: 1,
-                borderColor: colors.border,
-                borderStyle: 'dashed',
-              }}
-            >
-              <Text
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <View style={{ flex: 1, padding: 20 }}>
+            {/* Create Event Section */}
+            <View style={{ marginBottom: 20 }}>
+              <View
                 style={{
-                  color: colors.textSecondary,
-                  fontSize: 16,
-                  marginBottom: 4,
-                  textAlign: 'center',
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 20,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: 'center',
                 }}
               >
-                No public events available
-              </Text>
-              <Text
+                <Text
+                  style={{
+                    fontSize: 36,
+                    marginBottom: 12,
+                  }}
+                >
+                  🎉
+                </Text>
+                <Text
+                  style={{
+                    color: colors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: '600',
+                    marginBottom: 6,
+                    textAlign: 'center',
+                  }}
+                >
+                  Host an Event
+                </Text>
+                <Text
+                  style={{
+                    color: colors.textSecondary,
+                    fontSize: 14,
+                    marginBottom: 16,
+                    textAlign: 'center',
+                    lineHeight: 20,
+                  }}
+                >
+                  Create your own event and get a join code to share with
+                  participants
+                </Text>
+                <Button
+                  title='Create Event'
+                  onPress={handleCreateEvent}
+                  variant='primary'
+                  size='medium'
+                />
+              </View>
+            </View>
+
+            {/* Join Event Section */}
+            <View>
+              <View
                 style={{
-                  color: colors.textTertiary,
-                  fontSize: 14,
-                  textAlign: 'center',
+                  backgroundColor: colors.surface,
+                  borderRadius: 12,
+                  padding: 20,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: 'center',
                 }}
               >
-                Check back later or create your own event
-              </Text>
+                <Text
+                  style={{
+                    fontSize: 36,
+                    marginBottom: 12,
+                  }}
+                >
+                  🎫
+                </Text>
+                <Text
+                  style={{
+                    color: colors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: '600',
+                    marginBottom: 6,
+                    textAlign: 'center',
+                  }}
+                >
+                  Join an Event
+                </Text>
+                <Text
+                  style={{
+                    color: colors.textSecondary,
+                    fontSize: 14,
+                    marginBottom: 16,
+                    textAlign: 'center',
+                    lineHeight: 20,
+                  }}
+                >
+                  Enter the 6-digit code you received from the event organizer
+                </Text>
+
+                <View style={{ width: '100%', marginBottom: 16 }}>
+                  <Input
+                    placeholder='Enter 6-digit code'
+                    value={joinCode}
+                    onChangeText={setJoinCode}
+                    keyboardType='numeric'
+                    maxLength={6}
+                    autoCapitalize='none'
+                    error={error || undefined}
+                    returnKeyType='done'
+                    onSubmitEditing={handleJoinEvent}
+                    blurOnSubmit={true}
+                  />
+                </View>
+
+                <Button
+                  title='Join Event'
+                  onPress={handleJoinEvent}
+                  variant='primary'
+                  size='medium'
+                  disabled={joinCode.length !== 6}
+                  loading={isJoiningEvent}
+                />
+              </View>
             </View>
-          )}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+          </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 };

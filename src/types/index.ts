@@ -185,6 +185,9 @@ export interface InputProps {
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
   maxLength?: number;
+  returnKeyType?: 'done' | 'go' | 'next' | 'search' | 'send';
+  onSubmitEditing?: () => void;
+  blurOnSubmit?: boolean;
 }
 
 export interface LoadingSpinnerProps {
@@ -277,17 +280,13 @@ export interface Theme {
 
 // Event Types (Event-Driven Networking Pivot)
 
-export type EventVisibility = 'public' | 'private';
-
 export interface Event {
   /** Firestore auto-generated ID */
   id: string;
   /** Human-readable event name */
   name: string;
-  /** Publicly listed or private (join-code) */
-  visibility: EventVisibility;
-  /** Optional 6-digit join code for private events */
-  joinCode?: string | null;
+  /** 6-digit join code for all events */
+  joinCode: string;
   /** ISO start time */
   startTime: Date;
   /** ISO end time */

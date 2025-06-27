@@ -10,7 +10,6 @@ interface EventStoreState {
   activeEvent: AppEvent | null;
   role: 'host' | 'guest' | null;
   participants: Record<string, EventParticipant>; // keyed by uid
-  publicEvents: AppEvent[];
   isLoading: boolean;
   error: string | null;
   isInitialized: boolean;
@@ -25,7 +24,6 @@ interface EventStoreState {
   ) => Promise<boolean>;
   joinEventByCode: (_joinCode: string, _userId: string) => Promise<boolean>;
   fetchEvent: (_eventId: string) => Promise<void>;
-  loadPublicEvents: () => Promise<void>;
   addParticipant: (
     _eventId: string,
     _userId: string,
@@ -43,7 +41,6 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
   activeEvent: null,
   role: null,
   participants: {},
-  publicEvents: [],
   isLoading: false,
   error: null,
   isInitialized: false,
@@ -158,24 +155,6 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
     }
   },
 
-  /** Load public events */
-  loadPublicEvents: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const res = await FirestoreService.getPublicEvents();
-      if (res.success && res.data) {
-        set({ publicEvents: res.data, isLoading: false });
-      } else {
-        set({
-          error: res.error || 'Failed to load public events',
-          isLoading: false,
-        });
-      }
-    } catch (_err) {
-      set({ error: 'Failed to load public events', isLoading: false });
-    }
-  },
-
   /** Add/Update participant */
   addParticipant: async (eventId, userId, role = 'guest') => {
     await FirestoreService.addParticipant(eventId, userId, role);
@@ -193,7 +172,6 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
       activeEvent: null,
       role: null,
       participants: {},
-      publicEvents: [],
       error: null,
     });
     // Clear AsyncStorage when clearing state

@@ -8,12 +8,12 @@ import {
   Platform,
   Alert,
   SafeAreaView,
+  Clipboard,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { EventVisibility } from '../../types';
 import { useEventStore } from '../../store/eventStore';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigation } from '@react-navigation/native';
@@ -27,13 +27,9 @@ import { UploadStatus } from '../../components/ui/UploadProgress';
 import { CleanupService } from '../../services/ai/cleanup.service';
 import { useThemeColors } from '../../components/ui/ThemeProvider';
 
-
-
 export const EventSetupScreen: React.FC = () => {
   const colors = useThemeColors();
   const [name, setName] = useState('');
-  const [visibility, setVisibility] = useState<EventVisibility>('public');
-  const [joinCode, setJoinCode] = useState('');
   const [startTime, setStartTime] = useState<Date>(new Date());
   const [endTime, setEndTime] = useState<Date>(
     new Date(Date.now() + 3 * 60 * 60 * 1000),
@@ -79,7 +75,6 @@ export const EventSetupScreen: React.FC = () => {
   const isFormValid = () => {
     if (!name.trim()) return false;
     if (startTime >= endTime) return false;
-    if (visibility === 'private' && joinCode.trim().length !== 6) return false;
     return true;
   };
 
@@ -98,8 +93,7 @@ export const EventSetupScreen: React.FC = () => {
 
     const success = await createEvent({
       name: name.trim(),
-      visibility,
-      joinCode: visibility === 'private' ? joinCode.trim() : null,
+      joinCode: '', // Will be auto-generated
       startTime,
       endTime,
       hostUid: userId,
@@ -111,9 +105,19 @@ export const EventSetupScreen: React.FC = () => {
     if (success) {
       // Mark event as created; enable asset upload section
       setEventCreated(true);
-      Alert.alert('Success', 'Event created! You can now upload assets.');
+      Alert.alert(
+        'Success',
+        'Event created! Your join code is ready to share.',
+      );
     } else {
       Alert.alert('Error', 'Failed to create event. Please try again.');
+    }
+  };
+
+  const copyJoinCode = () => {
+    if (activeEvent?.joinCode) {
+      Clipboard.setString(activeEvent.joinCode);
+      Alert.alert('Copied!', 'Join code copied to clipboard');
     }
   };
 
@@ -345,69 +349,6 @@ export const EventSetupScreen: React.FC = () => {
             />
           </View>
 
-          {/* Visibility Toggle */}
-          <View style={{ marginBottom: 16 }}>
-            <Text
-              style={{
-                color: colors.textPrimary,
-                fontSize: 16,
-                fontWeight: '600',
-                marginBottom: 8,
-              }}
-            >
-              Visibility
-            </Text>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              {(['public', 'private'] as EventVisibility[]).map(option => (
-                <TouchableOpacity
-                  key={option}
-                  onPress={() => setVisibility(option)}
-                  style={{
-                    flex: 1,
-                    paddingVertical: 12,
-                    paddingHorizontal: 16,
-                    borderRadius: 8,
-                    borderWidth: 2,
-                    borderColor:
-                      visibility === option ? colors.primary : colors.border,
-                    backgroundColor:
-                      visibility === option
-                        ? colors.primary + '10'
-                        : colors.surface,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color:
-                        visibility === option
-                          ? colors.primary
-                          : colors.textSecondary,
-                      fontSize: 16,
-                      fontWeight: '600',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {option.charAt(0).toUpperCase() + option.slice(1)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Join Code (if private) */}
-          {visibility === 'private' && (
-            <View style={{ marginBottom: 16 }}>
-              <Input
-                label='Join Code (6 digits)'
-                placeholder='123456'
-                value={joinCode}
-                onChangeText={setJoinCode}
-                keyboardType='numeric'
-                maxLength={6}
-              />
-            </View>
-          )}
-
           {/* Start Time */}
           <View style={{ marginBottom: 16 }}>
             <Text
@@ -482,8 +423,6 @@ export const EventSetupScreen: React.FC = () => {
             )}
           </View>
 
-
-
           {/* Submit Button */}
           <Button
             title={eventCreated ? 'Event Created' : 'Create Event'}
@@ -493,9 +432,92 @@ export const EventSetupScreen: React.FC = () => {
             variant='primary'
           />
 
+          {/* Join Code Display */}
+          {eventCreated && activeEvent?.joinCode && (
+            <View style={{ marginTop: 32 }}>
+              <Text
+                style={{
+                  color: colors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: '600',
+                  marginBottom: 16,
+                  textAlign: 'center',
+                }}
+              >
+                🎉 Event Created!
+              </Text>
+
+              <View
+                style={{
+                  backgroundColor: colors.surface,
+                  borderRadius: 16,
+                  padding: 24,
+                  borderWidth: 2,
+                  borderColor: colors.primary,
+                  alignItems: 'center',
+                  marginBottom: 24,
+                }}
+              >
+                <Text
+                  style={{
+                    color: colors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: '600',
+                    marginBottom: 8,
+                  }}
+                >
+                  Share this join code:
+                </Text>
+
+                <View
+                  style={{
+                    backgroundColor: colors.bgPrimary,
+                    borderRadius: 12,
+                    paddingVertical: 16,
+                    paddingHorizontal: 24,
+                    marginBottom: 16,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: colors.primary,
+                      fontSize: 32,
+                      fontWeight: '700',
+                      textAlign: 'center',
+                      letterSpacing: 4,
+                    }}
+                  >
+                    {activeEvent.joinCode}
+                  </Text>
+                </View>
+
+                <Button
+                  title='Copy Join Code'
+                  onPress={copyJoinCode}
+                  variant='secondary'
+                  size='medium'
+                />
+
+                <Text
+                  style={{
+                    color: colors.textSecondary,
+                    fontSize: 14,
+                    textAlign: 'center',
+                    marginTop: 12,
+                    lineHeight: 20,
+                  }}
+                >
+                  Share this code with participants so they can join your event
+                </Text>
+              </View>
+            </View>
+          )}
+
           {/* Asset Upload Section */}
           {eventCreated && (
-            <View style={{ marginTop: 32 }}>
+            <View style={{ marginTop: 0 }}>
               <Text
                 style={{
                   color: colors.textPrimary,
@@ -541,11 +563,7 @@ export const EventSetupScreen: React.FC = () => {
 
               {/* Action Buttons */}
               <View style={{ marginTop: 24, gap: 12 }}>
-                <Button
-                  title='Done'
-                  onPress={handleDone}
-                  variant='primary'
-                />
+                <Button title='Done' onPress={handleDone} variant='primary' />
 
                 <Button
                   title='End Event'

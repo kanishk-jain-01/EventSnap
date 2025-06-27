@@ -24,8 +24,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
   const { login, isLoading, error } = useAuth();
 
-
-
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
@@ -38,8 +36,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       // Error is handled by the auth store
     }
   };
-
-
 
   return (
     <KeyboardAvoidingView
@@ -65,63 +61,65 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
             {/* Form */}
             <View>
-            <Input
-              label='Email'
-              placeholder='Enter your email'
-              value={email}
-              onChangeText={setEmail}
-              keyboardType='email-address'
-              autoCapitalize='none'
-            />
+              <Input
+                label='Email'
+                placeholder='Enter your email'
+                value={email}
+                onChangeText={setEmail}
+                keyboardType='email-address'
+                autoCapitalize='none'
+              />
 
-            <View className='relative'>
-              <View className='pr-16'>
-                <Input
-                  label='Password'
-                  placeholder='Enter your password'
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                />
-              </View>
-              <TouchableOpacity
-                className='absolute right-3'
-                style={{ top: 42 }}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <Text className='text-primary text-sm font-medium'>
-                  {showPassword ? 'Hide' : 'Show'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Auth Error */}
-            {error && (
-              <View className='bg-error/10 border border-error rounded-lg p-4 mb-4'>
-                <Text className='text-error text-base text-center font-medium'>{error}</Text>
-              </View>
-            )}
-
-            {/* Login Button */}
-            <Button
-              title='Login'
-              onPress={handleLogin}
-              loading={isLoading}
-              disabled={isLoading}
-            />
-
-            {/* Register Link */}
-            <View className='items-center mt-6'>
-              <Text className='text-text-secondary text-center text-base'>
-                Don't have an account?{' '}
-                <Text
-                  className='text-primary text-base font-semibold'
-                  onPress={() => navigation.navigate('Register')}
+              <View className='relative'>
+                <View className='pr-16'>
+                  <Input
+                    label='Password'
+                    placeholder='Enter your password'
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                  />
+                </View>
+                <TouchableOpacity
+                  className='absolute right-3'
+                  style={{ top: 42 }}
+                  onPress={() => setShowPassword(!showPassword)}
                 >
-                  Sign up
+                  <Text className='text-primary text-sm font-medium'>
+                    {showPassword ? 'Hide' : 'Show'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Auth Error */}
+              {error && (
+                <View className='bg-error/10 border border-error rounded-lg p-4 mb-4'>
+                  <Text className='text-error text-base text-center font-medium'>
+                    {error}
+                  </Text>
+                </View>
+              )}
+
+              {/* Login Button */}
+              <Button
+                title='Login'
+                onPress={handleLogin}
+                loading={isLoading}
+                disabled={isLoading}
+              />
+
+              {/* Register Link */}
+              <View className='items-center mt-6'>
+                <Text className='text-text-secondary text-center text-base'>
+                  Don't have an account?{' '}
+                  <Text
+                    className='text-primary text-base font-semibold'
+                    onPress={() => navigation.navigate('Register')}
+                  >
+                    Sign up
+                  </Text>
                 </Text>
-              </Text>
-            </View>
+              </View>
             </View>
           </View>
         </View>
