@@ -1,166 +1,94 @@
-# Product Context: EventSnap - Event-Driven Networking Platform
+# Product Context: Event-Driven Snapchat Clone
 
-## Problem Statement
+## Why This Project Exists
 
-Event attendees at conferences, festivals, and professional gatherings struggle to capture real-time moments and access contextual information (session schedules, exhibitor materials, sponsor content) within complex event environments. Existing social photo apps lack event-specific content expiration and AI-powered contextual search capabilities.
+### Problem Statement
+Traditional social media platforms create permanent digital footprints and lack context-specific sharing. Users want to share moments within specific events or gatherings without the content living forever or being visible to their entire network.
 
-## User Experience Goals
+### Solution Approach
+An event-driven ephemeral messaging platform that:
+- Requires users to be part of specific events to access content
+- Automatically deletes all content after predetermined timeframes
+- Provides rich, real-time communication within event contexts
+- Maintains privacy through event-scoped interactions
 
-### Core User Journey (EventSnap Platform)
+## How It Should Work
 
-1. **Event Onboarding**: Choose or create an event before accessing the main platform
-2. **Content Creation**: Capture photos with optional text overlays and share to event feed
-3. **AI Assistant Access**: Query event context ("When is this session?", "Show me the sponsor deck") with instant PDF/document responses
-4. **Event Feed Browsing**: View event-scoped stories and snaps from other participants
-5. **Role-Based Experience**: Host capabilities (content management, event settings) vs Guest experience (content consumption)
-6. **Automatic Cleanup**: All content automatically expires 24 hours after event ends
+### User Journey
 
-### Design Principles
+#### 1. Onboarding Flow
+1. **Authentication**: Email/password registration with Firebase
+2. **Event Selection**: User must either create or join an event
+3. **Role Assignment**: Automatic role assignment (host for creators, guest for joiners)
+4. **Main App Access**: Only granted after successful event participation
 
-- **Event-Centric**: All functionality scoped to current event context
-- **Professional Identity**: EventSnap branding for business/conference environments
-- **Creative Light Theme**: Modern purple/pink color scheme with clean white backgrounds
-- **Role Awareness**: Different capabilities for Hosts vs Guests
-- **AI-Enhanced**: Contextual information retrieval through RAG-powered assistant
-- **Ephemeral by Design**: Content lifecycle tied to event duration + 24 hours
+#### 2. Event Management
+- **Event Creation**: Hosts can create events with names, time ranges, and auto-generated join codes
+- **Event Joining**: Users join via 6-digit codes shared by hosts
+- **Event Switching**: Users can participate in multiple events but only one active at a time
 
-## Feature Requirements
+#### 3. Content Sharing
+- **Snap System**: Take photos or select from gallery, optimize automatically, send to event participants
+- **Story System**: Post content visible to all event participants for 24 hours
+- **Real-time Chat**: Text messaging with typing indicators and read receipts
 
-### Event Management System
+#### 4. Content Consumption
+- **Snap Viewing**: Tap to view received snaps, which disappear after viewing
+- **Story Feed**: Browse stories from event participants
+- **Chat Conversations**: Real-time messaging with status tracking
 
-- **Event Creation**: Host-only event setup with metadata, visibility settings, asset uploads
-- **Participant Management**: Host/Guest role assignment with permission-based access
-- **Event Discovery**: Public event listing and private event join-code access
-- **Asset Ingestion**: PDF/Image upload with AI embeddings for contextual search
-- **Lifecycle Management**: Manual and automatic event cleanup after expiration
+### User Experience Goals
 
-### Content Sharing (Event-Scoped)
+#### Simplicity
+- Minimal steps to join events and start sharing
+- Intuitive camera interface with smart optimization
+- Clear visual feedback for all actions
 
-- **Photo Stories**: 24-hour ephemeral stories visible to all event participants
-- **Snap Messaging**: Direct photo messages between event participants
-- **Text Annotations**: Optional overlay text on photos before posting
-- **Role-Based Posting**: Host can post freely, Guest access may be read-only
-- **Real-time Updates**: Live content feed with participant notifications
+#### Privacy & Ephemerality
+- All content automatically expires
+- Event-scoped visibility (no global social graph)
+- Clear indicators of content status (sent, delivered, viewed)
 
-### AI Assistant Integration
+#### Real-Time Engagement
+- Instant message delivery and status updates
+- Live typing indicators
+- Immediate snap notifications
 
-- **Contextual Search**: RAG-powered queries against event PDFs and images
-- **Streaming Responses**: Real-time chat interface with AI assistant
-- **Multimodal Citations**: Text responses with image thumbnails and source references
-- **Event Context**: AI responses tailored to current event's uploaded materials
+#### Quality & Reliability
+- Professional image processing and compression
+- Robust error handling with graceful degradation
+- Offline capability where possible
 
-### Authentication & Onboarding
+## Target User Personas
 
-- **EventSnap Identity**: Professional branding throughout auth flow
-- **Event Selection**: Required event choice before main app access
-- **Role Assignment**: Automatic permission setup based on Host/Guest status
-- **Persistent Sessions**: Remember last active event for seamless re-entry
+### The Event Host
+- **Needs**: Create private spaces for gatherings, control who can participate
+- **Goals**: Facilitate sharing among attendees, maintain event privacy
+- **Behaviors**: Creates events, shares join codes, monitors participation
 
-## Success Metrics
+### The Event Participant
+- **Needs**: Share moments with fellow attendees, see what others are sharing
+- **Goals**: Connect with others at the event, capture memories
+- **Behaviors**: Joins events via codes, shares snaps/stories, engages in chat
 
-### Technical Success
+### The Privacy-Conscious User
+- **Needs**: Share content without permanent digital footprint
+- **Goals**: Maintain control over content lifespan and visibility
+- **Behaviors**: Values ephemeral nature, appreciates event-scoped sharing
 
-- **App Performance**: EventSnap launches and runs without crashes
-- **Real-time Features**: Content updates appear within 2 seconds
-- **AI Response Time**: Assistant queries respond within 3 seconds
-- **Asset Processing**: PDF/Image ingestion completes successfully
-- **Event Lifecycle**: Cleanup system removes 100% of content within 25 hours post-event
+## Success Indicators
 
-### User Experience Success
+### Engagement Metrics
+- Time spent in app during events
+- Number of snaps/stories shared per event
+- Chat message frequency and response rates
 
-- **Event Engagement**: ≥40% of participants post at least one piece of content
-- **AI Utilization**: Assistant receives queries from ≥25% of participants
-- **Professional Appeal**: EventSnap branding appropriate for business environments
-- **Content Discovery**: Participants can easily find and consume event-relevant information
-- **Role Clarity**: Users understand and operate within Host/Guest permissions
+### User Satisfaction
+- Event creation to participation conversion rate
+- User retention across multiple events
+- Positive feedback on content quality and app performance
 
-## Visual Identity & Branding
-
-### EventSnap Brand Identity
-
-- **Application Name**: EventSnap (evolved from Snapchat clone)
-- **Target Positioning**: "Event-Driven Networking Platform"
-- **Visual Theme**: Creative Light Theme with professional aesthetics
-- **Primary Colors**: Purple (#7C3AED) with Hot Pink (#EC4899) accents
-- **Design Philosophy**: Clean, modern, accessible for professional environments
-
-### Creative Light Theme System
-
-- **Color Palette**:
-  - Primary: Rich Purple (#7C3AED) with light/dark variants
-  - Accent: Hot Pink (#EC4899) for interactive elements
-  - Semantic: Emerald (success), Amber (warning), Rose (error)
-  - Backgrounds: Clean whites (#FFFFFF, #F8FAFC, #FAFAFA)
-  - Text: Dark slate for optimal readability on light backgrounds
-
-- **Typography**: Modern font stacks with excellent readability
-- **Shadows & Depth**: Subtle elevation for component hierarchy
-- **Interactive States**: Purple focus states, hover effects, pressed states
-
-## Non-Goals (Out of Scope)
-
-- **General Social Networking**: No permanent friend/follower systems
-- **Video Content**: Focus on photo-only sharing for MVP
-- **Cross-Event Content**: No content sharing between different events
-- **Advanced AR/Filters**: Simple photo capture without camera effects
-- **Push Notifications**: Manual refresh for content updates initially
-- **Multi-Event Participation**: Users participate in one event at a time
-
-## User Personas
-
-### Primary Persona: "Conference Host/Organizer"
-
-- **Goal**: Facilitate networking and information sharing at their event
-- **Behavior**: Creates event, uploads materials (PDFs, images), manages participants
-- **Needs**: Easy event setup, asset management, participant engagement tools
-- **EventSnap Usage**: Full platform access with content creation and management capabilities
-
-### Secondary Persona: "Event Attendee/Guest"
-
-- **Goal**: Capture moments and access event information quickly
-- **Behavior**: Joins events, consumes content, queries AI assistant for context
-- **Needs**: Simple content consumption, fast information retrieval, networking opportunities
-- **EventSnap Usage**: Read-focused experience with AI assistant access
-
-### Tertiary Persona: "Professional Networker"
-
-- **Goal**: Connect with other attendees and capture business opportunities
-- **Behavior**: Active content consumption, frequent AI queries, photo sharing
-- **Needs**: Professional branding, business-appropriate content, contextual information
-- **EventSnap Usage**: Balanced content consumption and creation within professional context
-
-## Platform Evolution Context
-
-### Original Vision vs Current Reality
-
-- **Started As**: Snapchat clone for learning mobile development
-- **Evolved Into**: Professional Event-Driven Networking Platform
-- **Key Transformation**: Consumer social → Business/conference tool
-- **Brand Evolution**: Dark Snapchat aesthetic → Light EventSnap professional design
-
-### Strategic Positioning
-
-- **Market Position**: Event-specific social platform with AI enhancement
-- **Competitive Advantage**: Ephemeral content + AI-powered contextual search
-- **Target Events**: Tech conferences, creative festivals, professional gatherings
-- **Value Proposition**: "Capture moments, access context, connect meaningfully"
-
-### Technical Foundation
-
-- **Architecture**: Event-centric with role-based permissions
-- **AI Integration**: RAG-powered assistant with Pinecone vector search
-- **Content Lifecycle**: Automatic expiration tied to event duration
-- **Theme System**: Professional Creative Light Theme with comprehensive token architecture
-- **Quality Standards**: TypeScript clean, ESLint compliant, production-ready
-
-## Success Criteria Summary
-
-The EventSnap platform succeeds when:
-
-1. **Professional Appeal**: Business users find the EventSnap branding and Creative Light Theme appropriate for their events
-2. **Event Engagement**: Participants actively use the platform to capture and share moments
-3. **AI Value**: The assistant provides meaningful, contextual responses to user queries
-4. **Technical Reliability**: Platform performs consistently with proper content lifecycle management
-5. **User Experience**: Role-based permissions feel natural and enhance rather than restrict the experience
-
-**Current Status**: Visual transformation complete, AI assistant integration ready to begin.
+### Technical Performance
+- Message delivery speed and reliability
+- Image upload and processing efficiency
+- App stability and error rates 

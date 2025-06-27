@@ -79,6 +79,9 @@ export interface UserDocument {
   snapCount?: number;
   storyCount?: number;
   contacts?: string[]; // UIDs of friends/contacts
+  // Event tracking fields - replaces AsyncStorage
+  activeEventId?: string | null;
+  eventRole?: 'host' | 'guest' | null;
 }
 
 // Contact document interface for Firestore
@@ -896,6 +899,8 @@ export class FirestoreService {
         avatarUrl: user.avatarUrl,
         createdAt: Timestamp.fromDate(user.createdAt),
         lastSeen: serverTimestamp() as Timestamp,
+        activeEventId: user.activeEventId || null,
+        eventRole: user.eventRole || null,
       };
 
       await setDoc(doc(firestore, COLLECTIONS.USERS, user.uid), userDoc, {
@@ -909,6 +914,32 @@ export class FirestoreService {
       return {
         success: false,
         error: 'Failed to create/update user',
+      };
+    }
+  }
+
+  /**
+   * Update user's active event information
+   */
+  static async updateUserActiveEvent(
+    userId: string,
+    activeEventId: string | null,
+    eventRole: 'host' | 'guest' | null,
+  ): Promise<ApiResponse<void>> {
+    try {
+      await updateDoc(doc(firestore, COLLECTIONS.USERS, userId), {
+        activeEventId: activeEventId,
+        eventRole: eventRole,
+        lastSeen: serverTimestamp(),
+      });
+
+      return {
+        success: true,
+      };
+    } catch (_error) {
+      return {
+        success: false,
+        error: 'Failed to update user active event',
       };
     }
   }
@@ -936,6 +967,8 @@ export class FirestoreService {
         avatarUrl: data.avatarUrl,
         createdAt: data.createdAt.toDate(),
         lastSeen: data.lastSeen.toDate(),
+        activeEventId: data.activeEventId || null,
+        eventRole: data.eventRole || null,
       };
 
       return {
@@ -977,6 +1010,8 @@ export class FirestoreService {
             avatarUrl: data.avatarUrl,
             createdAt: data.createdAt.toDate(),
             lastSeen: data.lastSeen.toDate(),
+            activeEventId: data.activeEventId || null,
+            eventRole: data.eventRole || null,
           });
         }
       });

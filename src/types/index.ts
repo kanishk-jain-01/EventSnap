@@ -6,6 +6,9 @@ export interface User {
   avatarUrl?: string;
   createdAt: Date;
   lastSeen?: Date;
+  // Event tracking fields - replaces AsyncStorage
+  activeEventId?: string | null;
+  eventRole?: 'host' | 'guest' | null;
 }
 
 // Authentication Types

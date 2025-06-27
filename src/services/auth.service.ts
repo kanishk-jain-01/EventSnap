@@ -97,6 +97,8 @@ export class AuthService {
         avatarUrl: userData.avatarUrl,
         createdAt: userData.createdAt?.toDate() || new Date(),
         lastSeen: userData.lastSeen?.toDate() || new Date(),
+        activeEventId: userData.activeEventId || null,
+        eventRole: userData.eventRole || null,
       };
 
       // Update last seen timestamp
@@ -184,6 +186,8 @@ export class AuthService {
         avatarUrl: userData.avatarUrl,
         createdAt: userData.createdAt?.toDate() || new Date(),
         lastSeen: userData.lastSeen?.toDate() || new Date(),
+        activeEventId: userData.activeEventId || null,
+        eventRole: userData.eventRole || null,
       };
 
       return {

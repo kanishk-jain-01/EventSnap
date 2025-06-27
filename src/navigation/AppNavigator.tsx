@@ -14,7 +14,7 @@ const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 export const AppNavigator: React.FC = () => {
   const { initializeAuth, isAuthenticated, isLoading, user } = useAuthStore();
-  const { activeEvent, isInitialized, initializeEventStore } = useEventStore();
+  const { isInitialized, initializeEventStore } = useEventStore();
 
   useEffect(() => {
     // Initialize authentication when the app starts
@@ -37,8 +37,8 @@ export const AppNavigator: React.FC = () => {
     <NavigationContainer>
       <RootStack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated && user ? (
-          // User is authenticated - check if they have an active event
-          activeEvent ? (
+          // User is authenticated - check if they have an active event in their database record
+          user.activeEventId && user.eventRole ? (
             // User has an active event, show main app
             <RootStack.Screen name='Main' component={MainNavigator} />
           ) : (

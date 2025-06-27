@@ -267,13 +267,15 @@ export const EventSetupScreen: React.FC = () => {
                 [
                   {
                     text: 'OK',
-                    onPress: () => {
-                      // Clear event store and navigate to auth
-                      useEventStore.getState().clearState();
-                      // Navigate to auth by resetting the entire navigation stack
+                    onPress: async () => {
+                      // Clear event from both state and database
+                      if (userId) {
+                        await useEventStore.getState().clearActiveEvent(userId);
+                      }
+                      // Navigate to event selection since user no longer has active event
                       navigation.getParent()?.reset({
                         index: 0,
-                        routes: [{ name: 'Auth' }],
+                        routes: [{ name: 'EventSelection' }],
                       });
                     },
                   },

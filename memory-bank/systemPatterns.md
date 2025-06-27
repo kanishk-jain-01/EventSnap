@@ -1,417 +1,164 @@
-# System Patterns: EventSnap - Event-Driven Networking Platform
+# System Patterns: Technical Architecture
 
 ## Architecture Overview
 
-### High-Level Architecture
-
+### Layer Architecture
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   React Native  │    │    Firebase     │    │   AI Services   │    │   File Storage  │
-│   Frontend App  │◄──►│    Backend      │◄──►│   (OpenAI +     │◄──►│   (Images +     │
-│                 │    │                 │    │    Pinecone)    │    │    PDFs)        │
-│ • EventSnap UI  │    │ • Auth          │    │ • Embeddings    │    │ • Event Assets  │
-│ • Theme System  │    │ • Firestore     │    │ • RAG Search    │    │ • Stories       │
-│ • State (Zustand│    │ • Cloud Funcs   │    │ • Cleanup       │    │ • Snaps         │
-│ • Navigation    │    │ • Storage       │    │                 │    │ • Avatars       │
-│ • AsyncStorage  │    │ • AsyncStorage  │    │                 │    │ • Persistence   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-## Critical Stability Patterns (LEARNED FROM DEBUGGING SESSION)
-
-### Firestore Security Rules Pattern (CRITICAL - FIXED TODAY)
-
-```javascript
-// CORRECT PATTERN: Public Discovery + Private Access
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /events/{eventId} {
-      // CRITICAL: Allow public event discovery while maintaining privacy
-      allow read: if request.auth != null && (
-        resource.data.visibility == 'public' ||
-        participantInEvent(eventId)
-      );
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null &&
-        request.auth.uid == resource.data.hostUid;
-    }
-  }
-}
-
-// ANTI-PATTERN (CAUSED APP CRASH):
-// allow read: if request.auth != null && participantInEvent(eventId);
-// ❌ This creates catch-22: users can't read events to join them
+┌─────────────────────────────────────┐
+│           Presentation Layer        │  React Native + UI Components
+├─────────────────────────────────────┤
+│           Navigation Layer          │  React Navigation + Route Guards
+├─────────────────────────────────────┤
+│           State Management          │  Zustand Stores + Local State
+├─────────────────────────────────────┤
+│           Service Layer             │  Firebase Services + Business Logic
+├─────────────────────────────────────┤
+│           Data Layer                │  Firebase Backend + Local Storage
+└─────────────────────────────────────┘
 ```
 
-### Database Index Requirements Pattern (CRITICAL - FIXED TODAY)
+## Key Design Patterns
 
-```json
-// REQUIRED COMPOSITE INDEXES for Event-Scoped Queries
-{
-  "indexes": [
-    // Public Event Discovery (REQUIRED)
-    {
-      "collectionGroup": "events",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "visibility", "order": "ASCENDING" },
-        { "fieldPath": "startTime", "order": "ASCENDING" }
-      ]
-    },
+### 1. Event-Driven Architecture
+- **Central Concept**: All user interactions happen within event contexts
+- **Implementation**: Event store manages active event state across the app
+- **Benefits**: Clean separation of concerns, scalable multi-event support
 
-    // Event-Scoped Snaps (REQUIRED - ADDED TODAY)
-    {
-      "collectionGroup": "snaps",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "receiverId", "order": "ASCENDING" },
-        { "fieldPath": "eventId", "order": "ASCENDING" },
-        { "fieldPath": "expiresAt", "order": "ASCENDING" },
-        { "fieldPath": "timestamp", "order": "DESCENDING" }
-      ]
-    },
+### 2. Service Layer Pattern
+- **Structure**: Dedicated service classes for each Firebase service
+- **Examples**: `AuthService`, `FirestoreService`, `StorageService`, `MessagingService`
+- **Benefits**: Centralized business logic, consistent error handling, testability
 
-    // Event-Scoped Stories (REQUIRED - ADDED TODAY)
-    {
-      "collectionGroup": "stories",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "eventId", "order": "ASCENDING" },
-        { "fieldPath": "expiresAt", "order": "ASCENDING" },
-        { "fieldPath": "timestamp", "order": "DESCENDING" }
-      ]
-    }
-  ]
-}
-```
+### 3. State Management with Zustand
+- **Stores**: Separate stores for different domains (auth, events, snaps, chat, stories)
+- **Pattern**: Actions co-located with state, async operations handled in store actions
+- **Benefits**: TypeScript integration, minimal boilerplate, predictable state updates
 
-### Theme Consistency Pattern (CRITICAL - FIXED TODAY)
-
-```typescript
-// CORRECT PATTERN: EventSnap Creative Light Theme
-interface ThemeConsistencyPattern {
-  // Always use useThemeColors() hook
-  component: {
-    import: "import { useThemeColors } from './ThemeProvider';";
-    usage: 'const colors = useThemeColors();';
-    styling: 'style={{ backgroundColor: colors.background }}';
-  };
-
-  // NEVER use className with old theme
-  antiPattern: {
-    avoid: "className='bg-black text-white'"; // ❌ Old dark theme
-    avoid: "className='snap-yellow'"; // ❌ Deprecated colors
-  };
-
-  // Professional EventSnap colors
-  correctColors: {
-    background: 'colors.background'; // Clean white
-    primary: 'colors.primary'; // EventSnap purple
-    accent: 'colors.accent'; // Purple accent
-    textPrimary: 'colors.textPrimary'; // Professional text
-  };
-}
-```
-
-### Navigation Pattern (ENHANCED - WORKING CORRECTLY)
-
-```typescript
-// CORRECT PATTERN: Automatic Flow Management
-interface NavigationPattern {
-  appNavigator: {
-    responsibility: 'Check auth + event state, auto-navigate';
-    pattern: "useEffect(() => { if (auth && event) navigate('Main'); })";
-    avoidManualCalls: "Don't call navigation.navigate() in screens";
-  };
-
-  screenButtons: {
-    correctPattern: 'navigation.goBack()'; // ✅ Works with auto-flow
-    avoidPattern: 'navigation.navigate()'; // ❌ Conflicts with auto-flow
-  };
-}
-```
+### 4. Component Composition
+- **Structure**: 
+  - `components/ui/` - Reusable UI primitives
+  - `components/features/` - Feature-specific components
+  - `components/common/` - Shared business components
+- **Benefits**: Reusability, consistent design system, maintainability
 
 ## Data Flow Patterns
 
-### Complete Event Onboarding Flow (PHASE 6.0 COMPLETE + STABILIZED)
-
+### Authentication Flow
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   App Launch    │    │  Auth & Event   │    │ Event Discovery │    │ Role-Based App  │
-│                 │    │   Validation    │    │                 │    │                 │
-│ • Auth Check    │───►│ • Load Cached   │───►│ • Public Events │───►│ • Host Features │
-│ • AsyncStorage  │    │ • Validate Event│    │ • Join Codes    │    │ • Guest Features│
-│ • Initialize    │    │ • Network Check │    │ • Persistence   │    │ • Navigation    │
-│ • Event Store   │    │ • Auto-Rejoin   │    │ • State Update  │    │ • Role UI       │
-└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
+App Launch → Auth Check → Event Validation → Main App Access
+     ↓              ↓              ↓              ↓
+Auth Store → Firebase Auth → Event Store → Navigation
 ```
 
-**CRITICAL SUCCESS FACTORS** (Learned from debugging):
-
-1. **Security Rules**: Must allow public event discovery before joining
-2. **Database Indexes**: All composite queries must have matching indexes
-3. **Theme Consistency**: Use EventSnap Creative Light Theme throughout
-4. **Navigation Flow**: Let AppNavigator handle automatic transitions
-5. **Error Handling**: Comprehensive validation with user-friendly messages
-
-### AsyncStorage Persistence Pattern (PHASE 6.0 - WORKING CORRECTLY)
-
+### Content Sharing Flow
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│ Event Changes   │    │  Validation     │    │   Storage       │    │  Initialization │
-│                 │    │                 │    │                 │    │                 │
-│ • activeEvent   │───►│ • Expiration    │───►│ • AsyncStorage  │───►│ • App Launch    │
-│ • role          │    │ • Existence     │    │ • Serialization │    │ • Event Store   │
-│ • participants  │    │ • Participation │    │ • Keys          │    │ • Validation    │
-│ • Auto-Save     │    │ • Network Error │    │ • Cleanup       │    │ • Auto-Rejoin   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
+Camera Capture → Image Optimization → Recipient Selection → Upload → Notification
+       ↓                ↓                    ↓           ↓         ↓
+   CameraService → ImageUtils → SnapStore → Storage → Firestore → Realtime
 ```
 
-### Role-Based Navigation Pattern (PHASE 6.0 - WORKING CORRECTLY)
-
+### Real-time Messaging Flow
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  User Role      │    │  Navigation     │    │  Screen Access  │    │  UI Features    │
-│                 │    │                 │    │                 │    │                 │
-│ • Host          │───►│ • "Host Profile"│───►│ • Event Mgmt    │───►│ • Crown Icons   │
-│ • Guest         │    │ • "Camera"      │    │ • Full Access   │    │ • Manage Button │
-│ • No Event      │    │ • "View Only"   │    │ • Limited       │    │ • Contact Lists │
-│ • Permissions   │    │ • Tab Icons     │    │ • Read-Only     │    │ • Role Badges   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
+Message Input → Validation → Send → Real-time Sync → Status Update
+      ↓            ↓         ↓         ↓             ↓
+  ChatStore → MessagingService → Realtime DB → Listeners → UI Update
 ```
 
-### Event-Scoped Content Flow with Text Overlays (PHASE 5.0 - WORKING CORRECTLY)
+## Firebase Integration Patterns
 
+### 1. Multi-Database Strategy
+- **Firestore**: Structured data (users, events, snaps metadata, stories)
+- **Realtime Database**: Real-time messaging and presence
+- **Storage**: Image and media files
+- **Functions**: Background processing and cleanup
+
+### 2. Security Rules Pattern
+- **Principle**: Event-scoped access control
+- **Implementation**: Rules validate user participation in events
+- **Example**: Users can only access snaps/stories within their active events
+
+### 3. Data Modeling
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   User Action   │    │  Text Overlay   │    │  Database Query │    │   UI Update     │
-│                 │    │                 │    │                 │    │                 │
-│ • Capture Photo │───►│ • Add Text      │───►│ • Event Filter  │───►│ • Real-time     │
-│ • Post Story    │    │ • 200 char max  │    │ • Role Check    │    │   Feed Update   │
-│ • Send Snap     │    │ • Validation    │    │ • Batch Write   │    │ • Theme Applied │
-│ • View Feed     │    │ • Preview       │    │ • Permission    │    │ • Role Banner   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
-```
+Firestore Collections:
+├── users/{uid}
+├── events/{eventId}
+│   └── participants/{uid}
+├── snaps/{snapId}
+└── stories/{storyId}
 
-### Authentication Flow with Event Integration (PHASE 6.0 - WORKING CORRECTLY)
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  App Navigator  │    │  Auth Status    │    │  Event Status   │    │  Navigation     │
-│                 │    │                 │    │                 │    │                 │
-│ • Check Auth    │───►│ • Authenticated │───►│ • Has Event     │───►│ • MainNavigator │
-│ • Initialize    │    │ • Unauthenticated│    │ • No Event      │    │ • EventSelection│
-│ • Event Store   │    │ • Loading       │    │ • Expired       │    │ • AuthNavigator │
-│ • Automatic     │    │ • Error         │    │ • Invalid       │    │ • Loading       │
-└─────────────────┘    └─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-## Component Architecture
-
-### Screen-Level Components (EventSnap Themed with Role-Based Features - ALL WORKING)
-
-```
-screens/
-├── auth/
-│   ├── LoginScreen.tsx           # EventSnap login with Creative Light Theme
-│   ├── RegisterScreen.tsx        # EventSnap registration with purple accents
-│   ├── AuthLoadingScreen.tsx     # EventSnap branding with purple spinner
-│   └── EventSelectionScreen.tsx  # ✅ Professional event discovery (WORKING)
-├── main/
-│   ├── CameraScreen.tsx          # Photo capture with text overlay and role-based UI gating
-│   ├── EventFeedScreen.tsx       # ✅ Unified event content feed (WORKING after index fix)
-│   ├── ChatListScreen.tsx        # Chat conversations (legacy)
-│   ├── ChatScreen.tsx            # Individual chat (legacy)
-│   ├── SnapViewerScreen.tsx      # Full-screen snap viewing
-│   ├── RecipientSelectionScreen.tsx # Snap recipient selection
-│   ├── ProfileScreen.tsx         # ✅ Role-based user profile (WORKING)
-│   └── StoryViewerScreen.tsx     # Story viewing interface
-└── organizer/
-    └── EventSetupScreen.tsx      # ✅ Event creation (REDESIGNED - WORKING)
+Realtime Database:
+├── messages/{chatId}/{messageId}
+├── conversations/{chatId}
+├── presence/{userId}
+└── typing/{chatId}/{userId}
 ```
 
-### Navigation Components (Role-Aware - ALL WORKING)
+## Performance Patterns
 
-```
-navigation/
-├── AppNavigator.tsx              # ✅ Root navigator with auth + event flow (WORKING)
-├── AuthNavigator.tsx             # Authentication flow navigation
-├── MainNavigator.tsx             # Main app navigation with event integration
-├── MainTabNavigator.tsx          # ✅ Role-based tab navigation (WORKING)
-├── EventTabNavigator.tsx         # Event-scoped navigation with AI assistant placeholder
-└── types.ts                      # ✅ Navigation types with RootStack integration (WORKING)
-```
+### 1. Image Optimization Pipeline
+- **Context-Aware**: Different optimization for snaps, stories, avatars
+- **Automatic**: Smart compression based on content and network
+- **Progressive**: Show thumbnails while full images load
 
-## State Management Patterns
+### 2. Real-time Optimization
+- **Connection Management**: Monitor online/offline status
+- **Message Queuing**: Queue messages when offline
+- **Listener Management**: Proper cleanup to prevent memory leaks
 
-### Zustand Store Structure (Event-Centric with Persistence - ALL WORKING)
+### 3. State Persistence
+- **Database-First**: User's active event stored in Firestore user document
+- **Real-time Sync**: Event state synchronized between auth store and event store
+- **Cross-Device Consistency**: Active event persists across devices and sessions
+- **Session Persistence**: Active events survive logout/login cycles
+- **Explicit Termination**: Events only cleared when expired or ended by host
 
-```typescript
-interface AppState {
-  // Authentication (EventSnap)
-  user: User | null;
-  isAuthenticated: boolean;
-  authLoading: boolean;
+## Error Handling Patterns
 
-  // Events (PRIMARY ARCHITECTURE - PHASE 6.0 COMPLETE)
-  activeEvent: Event | null;
-  role: 'host' | 'guest' | null;
-  eventParticipants: User[];
-  publicEvents: AppEvent[]; // ✅ Public event discovery (WORKING)
-  isInitialized: boolean; // ✅ AsyncStorage initialization (WORKING)
-  eventLoading: boolean;
-  eventError: string | null;
+### 1. Layered Error Handling
+- **Service Layer**: Catch and transform Firebase errors
+- **Store Layer**: Handle business logic errors
+- **UI Layer**: Display user-friendly error messages
 
-  // AsyncStorage Persistence (PHASE 6.0 - WORKING)
-  _saveActiveEventToStorage: () => Promise<void>; // ✅ WORKING
-  _loadActiveEventFromStorage: () => Promise<void>; // ✅ WORKING
-  initializeEventStore: () => Promise<void>; // ✅ WORKING
+### 2. Graceful Degradation
+- **Offline Support**: Basic functionality when network unavailable
+- **Permission Handling**: Clear user guidance for required permissions
+- **Fallback UI**: Show appropriate states for loading/error conditions
 
-  // Theme System (FIXED TODAY)
-  theme: ThemeTokens;
-  isDarkMode: boolean; // Always false for Creative Light Theme
+### 3. Error Recovery
+- **Automatic Retry**: For transient network errors
+- **User-Initiated Retry**: For actions that can be safely repeated
+- **Error Reporting**: Log errors for debugging and monitoring
 
-  // Stories (EVENT-SCOPED - PHASE 5.0 WORKING)
-  stories: Story[];
-  eventStories: { [eventId: string]: Story[] };
-  storyOwners: { [userId: string]: User };
-  postingStory: boolean;
-  storyError: string | null;
+## Security Patterns
 
-  // Snaps (EVENT-SCOPED - PHASE 5.0 WORKING)
-  receivedSnaps: Snap[];
-  eventSnaps: { [eventId: string]: Snap[] };
-  sentSnaps: Snap[];
-  sendingSnap: boolean;
+### 1. Authentication Guard
+- **Implementation**: Route-level authentication checks
+- **Event Validation**: Ensure user has active event before main app access
+- **Session Management**: Handle auth state changes gracefully
 
-  // Chat (LEGACY - TO BE DEPRECATED)
-  conversations: Conversation[];
-  messages: { [chatId: string]: Message[] };
-  activeChat: string | null;
+### 2. Data Validation
+- **Client-Side**: Immediate feedback for user input
+- **Server-Side**: Firebase security rules as final validation
+- **Type Safety**: TypeScript interfaces for data contracts
 
-  // UI State
-  currentScreen: string;
-  cameraPermission: boolean;
-}
-```
+### 3. Content Security
+- **Ephemeral Design**: All content has expiration times
+- **Access Control**: Event-scoped visibility rules
+- **Cleanup Services**: Automated deletion of expired content
 
-### AsyncStorage Persistence Patterns (PHASE 6.0 - WORKING CORRECTLY)
+## Scalability Patterns
 
-```typescript
-// AsyncStorage integration patterns - ALL WORKING
-interface AsyncStoragePatterns {
-  eventPersistence: {
-    keys: {
-      activeEvent: 'eventsnap_active_event'; // ✅ WORKING
-      userRole: 'eventsnap_user_role'; // ✅ WORKING
-    };
+### 1. Modular Architecture
+- **Feature Isolation**: Each feature can be developed independently
+- **Service Boundaries**: Clear interfaces between services
+- **Component Reusability**: Shared components across features
 
-    validation: {
-      expiration: 'Check 24 hours after event end'; // ✅ WORKING
-      existence: 'Verify event still exists in Firestore'; // ✅ WORKING
-      participation: 'Confirm user is still a participant'; // ✅ WORKING
-      network: 'Graceful offline handling with cached data'; // ✅ WORKING
-    };
+### 2. Efficient Data Loading
+- **Pagination**: Load messages and content in chunks
+- **Lazy Loading**: Load content only when needed
+- **Caching**: Store frequently accessed data locally
 
-    lifecycle: {
-      save: 'Auto-save on every event change'; // ✅ WORKING
-      load: 'Initialize on app launch with validation'; // ✅ WORKING
-      cleanup: 'Clear on logout and expiration'; // ✅ WORKING
-    };
-  };
-}
-```
-
-## Quality Assurance Patterns (ACHIEVED TODAY)
-
-### Code Quality Standards (ALL ACHIEVED)
-
-```typescript
-interface QualityStandards {
-  typescript: {
-    errors: 0; // ✅ ACHIEVED
-    strictMode: true; // ✅ ACHIEVED
-    coverage: '100%'; // ✅ ACHIEVED
-  };
-
-  eslint: {
-    errors: 0; // ✅ ACHIEVED
-    warnings: 14; // ✅ Only pre-existing console statements
-    rules: 'strict'; // ✅ ACHIEVED
-  };
-
-  prettier: {
-    formatted: true; // ✅ ACHIEVED
-    consistent: true; // ✅ ACHIEVED
-  };
-
-  functionality: {
-    appLaunch: 'working'; // ✅ ACHIEVED
-    eventDiscovery: 'working'; // ✅ ACHIEVED
-    eventCreation: 'working'; // ✅ ACHIEVED
-    feedPage: 'working'; // ✅ ACHIEVED
-    navigation: 'working'; // ✅ ACHIEVED
-  };
-}
-```
-
-### Debugging Patterns (LEARNED TODAY)
-
-```typescript
-interface DebuggingPatterns {
-  securityRules: {
-    pattern: 'Always test public discovery before private access';
-    antiPattern: 'Requiring participation to read events before joining';
-    solution: 'Use visibility-based conditional access';
-  };
-
-  databaseIndexes: {
-    pattern: 'Deploy indexes before using compound queries';
-    antiPattern: 'Assuming simple queries work without indexes';
-    solution: 'Add all composite indexes to firestore.indexes.json';
-  };
-
-  themeConsistency: {
-    pattern: 'Use useThemeColors() hook throughout';
-    antiPattern: 'Mixing className and style approaches';
-    solution: 'Convert all components to style objects with theme colors';
-  };
-
-  navigationFlow: {
-    pattern: 'Let AppNavigator handle automatic transitions';
-    antiPattern: 'Manual navigation calls in screens';
-    solution: 'Use navigation.goBack() for simple back actions';
-  };
-}
-```
-
-## Production Readiness Patterns (ACHIEVED)
-
-### Deployment Architecture (READY FOR PRODUCTION)
-
-```typescript
-interface ProductionReadiness {
-  database: {
-    securityRules: 'properly configured for public/private access'; // ✅
-    indexes: 'all composite queries have matching indexes'; // ✅
-    performance: 'optimized queries with proper filtering'; // ✅
-  };
-
-  frontend: {
-    themeConsistency: 'EventSnap Creative Light Theme throughout'; // ✅
-    typeScript: 'zero errors with strict mode compliance'; // ✅
-    navigation: 'seamless role-based flow'; // ✅
-    persistence: 'robust AsyncStorage with validation'; // ✅
-  };
-
-  userExperience: {
-    onboarding: 'professional event discovery and joining'; // ✅
-    roleBasedUI: 'clear host/guest differentiation'; // ✅
-    errorHandling: 'user-friendly messages throughout'; // ✅
-    performance: 'fast loading with proper loading states'; // ✅
-  };
-}
-```
-
-**EventSnap is now a production-ready platform with comprehensive patterns established for maintaining stability, performance, and professional user experience.**
+### 3. Background Processing
+- **Firebase Functions**: Handle cleanup and processing server-side
+- **Client-Side Cleanup**: Opportunistic cleanup on app launch
+- **Scheduled Tasks**: Regular maintenance via cloud functions 

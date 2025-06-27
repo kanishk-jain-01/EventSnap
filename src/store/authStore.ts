@@ -18,6 +18,7 @@ interface AuthStore extends AuthState {
   clearError: () => void;
   initializeAuth: () => void;
   setLoading: (_loading: boolean) => void;
+  setUser: (_user: AuthState['user']) => void;
 }
 
 export const useAuthStore = create<AuthStore>((set, _get) => ({
@@ -151,6 +152,10 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
 
   setLoading: (loading: boolean) => {
     set({ isLoading: loading });
+  },
+
+  setUser: (user: AuthState['user']) => {
+    set({ user, isAuthenticated: !!user });
   },
 
   initializeAuth: () => {

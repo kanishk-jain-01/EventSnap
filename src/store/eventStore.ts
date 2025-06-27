@@ -1,10 +1,7 @@
 import { create } from 'zustand';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Event as AppEvent, EventParticipant } from '../types';
 import { FirestoreService } from '../services/firestore.service';
-
-const ACTIVE_EVENT_KEY = 'eventsnap_active_event';
-const USER_ROLE_KEY = 'eventsnap_user_role';
+import { useAuthStore } from './authStore';
 
 interface EventStoreState {
   activeEvent: AppEvent | null;
@@ -32,8 +29,13 @@ interface EventStoreState {
   removeParticipant: (_eventId: string, _userId: string) => Promise<void>;
   clearError: () => void;
   clearState: () => void;
-  _saveActiveEventToStorage: () => Promise<void>;
-  _loadActiveEventFromStorage: (_userId: string) => Promise<void>;
+  clearActiveEvent: (_userId: string) => Promise<void>;
+  _loadActiveEventFromUser: (_userId: string) => Promise<void>;
+  _updateUserActiveEvent: (
+    _userId: string,
+    _eventId: string | null,
+    _role: 'host' | 'guest' | null,
+  ) => Promise<void>;
 }
 
 export const useEventStore = create<EventStoreState>((set, get) => ({
@@ -45,12 +47,12 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
   error: null,
   isInitialized: false,
 
-  /** Initialize event store - load persisted active event */
+  /** Initialize event store - load active event from user's database record */
   initializeEventStore: async (userId: string) => {
     if (get().isInitialized) return;
 
     set({ isLoading: true });
-    await get()._loadActiveEventFromStorage(userId);
+    await get()._loadActiveEventFromUser(userId);
     set({ isInitialized: true, isLoading: false });
   },
 
@@ -58,13 +60,22 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
   createEvent: async eventInput => {
     set({ isLoading: true, error: null });
     try {
+      const { user } = useAuthStore.getState();
+      if (!user?.uid) {
+        set({ error: 'User not authenticated', isLoading: false });
+        return false;
+      }
+
       const res = await FirestoreService.createEvent(eventInput);
       if (!res.success || !res.data) {
         set({ error: res.error || 'Failed to create event', isLoading: false });
         return false;
       }
+
+      // Update user's active event in database
+      await get()._updateUserActiveEvent(user.uid, res.data.id, 'host');
+      
       set({ activeEvent: res.data, role: 'host', isLoading: false });
-      await get()._saveActiveEventToStorage();
       return true;
     } catch (_err) {
       set({ error: 'Failed to create event', isLoading: false });
@@ -81,14 +92,18 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
         set({ error: res.error || 'Failed to join event', isLoading: false });
         return false;
       }
+      
       // Fetch the event details to store locally
       const evtRes = await FirestoreService.getActiveEvent(eventId);
       if (evtRes.success && evtRes.data) {
         // Determine role
         const role: 'host' | 'guest' =
           evtRes.data.hostUid === userId ? 'host' : 'guest';
+        
+        // Update user's active event in database
+        await get()._updateUserActiveEvent(userId, eventId, role);
+        
         set({ activeEvent: evtRes.data, role, isLoading: false });
-        await get()._saveActiveEventToStorage();
       } else {
         set({ isLoading: false });
       }
@@ -130,8 +145,11 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
       // Determine role and set active event
       const role: 'host' | 'guest' =
         eventRes.data.hostUid === userId ? 'host' : 'guest';
+      
+      // Update user's active event in database
+      await get()._updateUserActiveEvent(userId, eventRes.data.id, role);
+      
       set({ activeEvent: eventRes.data, role, isLoading: false });
-      await get()._saveActiveEventToStorage();
       return true;
     } catch (_err) {
       set({ error: 'Failed to join event', isLoading: false });
@@ -146,7 +164,6 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
       const res = await FirestoreService.getActiveEvent(eventId);
       if (res.success && res.data) {
         set({ activeEvent: res.data, isLoading: false });
-        await get()._saveActiveEventToStorage();
       } else {
         set({ error: res.error || 'Failed to fetch event', isLoading: false });
       }
@@ -173,111 +190,129 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
       role: null,
       participants: {},
       error: null,
+      isInitialized: false,
     });
-    // Clear AsyncStorage when clearing state
-    AsyncStorage.multiRemove([ACTIVE_EVENT_KEY, USER_ROLE_KEY]).catch(() => {
-      // Ignore storage errors during cleanup
-    });
+    // Note: We don't clear the user's active event in the database here
+    // The active event should persist across login sessions
   },
 
-  /** Save active event to AsyncStorage */
-  _saveActiveEventToStorage: async () => {
-    const { activeEvent, role } = get();
-    try {
-      if (activeEvent && role) {
-        await AsyncStorage.multiSet([
-          [ACTIVE_EVENT_KEY, JSON.stringify(activeEvent)],
-          [USER_ROLE_KEY, role],
-        ]);
-      } else {
-        // Clear storage if no active event
-        await AsyncStorage.multiRemove([ACTIVE_EVENT_KEY, USER_ROLE_KEY]);
-      }
-    } catch (error) {
-      console.warn('Failed to save active event to storage:', error);
-    }
+  /** Clear active event from both state and database - only used when event expires or is ended */
+  clearActiveEvent: async (userId: string) => {
+    set({
+      activeEvent: null,
+      role: null,
+      participants: {},
+      error: null,
+    });
+
+    // Clear user's active event in database
+    await get()._updateUserActiveEvent(userId, null, null);
   },
 
-  /** Load active event from AsyncStorage and validate it */
-  _loadActiveEventFromStorage: async (userId: string) => {
+  /** Load active event from user's database record */
+  _loadActiveEventFromUser: async (userId: string) => {
     try {
-      const [eventData, roleData] = await AsyncStorage.multiGet([
-        ACTIVE_EVENT_KEY,
-        USER_ROLE_KEY,
-      ]);
-
-      const savedEventString = eventData[1];
-      const savedRole = roleData[1] as 'host' | 'guest' | null;
-
-      if (!savedEventString || !savedRole) {
-        return; // No saved event
+      // Get user data to check for active event
+      const userRes = await FirestoreService.getUser(userId);
+      if (!userRes.success || !userRes.data) {
+        console.warn('Could not load user data for event initialization');
+        return;
       }
 
-      const savedEvent: AppEvent = JSON.parse(savedEventString);
-
-      // Convert string dates back to Date objects
-      savedEvent.startTime = new Date(savedEvent.startTime);
-      savedEvent.endTime = new Date(savedEvent.endTime);
-      savedEvent.createdAt = new Date(savedEvent.createdAt);
-
-      // Check if event is still valid (not expired and user is still a participant)
-      const now = new Date();
-      const eventExpired =
-        now > new Date(savedEvent.endTime.getTime() + 24 * 60 * 60 * 1000); // 24 hours after end
-
-      if (eventExpired) {
-        // Event has expired, clear storage
-        await AsyncStorage.multiRemove([ACTIVE_EVENT_KEY, USER_ROLE_KEY]);
+      const user = userRes.data;
+      
+      // Check if user has an active event
+      if (!user.activeEventId || !user.eventRole) {
+        // No active event
         return;
       }
 
       // Verify event still exists and user is still a participant
       try {
-        const eventRes = await FirestoreService.getActiveEvent(savedEvent.id);
+        const eventRes = await FirestoreService.getActiveEvent(user.activeEventId);
         if (!eventRes.success || !eventRes.data) {
-          // Event no longer exists, clear storage
-          await AsyncStorage.multiRemove([ACTIVE_EVENT_KEY, USER_ROLE_KEY]);
+          // Event no longer exists, clear user's active event
+          await get().clearActiveEvent(userId);
           return;
         }
 
         // Check if user is still a participant
         const participantRes = await FirestoreService.getParticipant(
-          savedEvent.id,
+          user.activeEventId,
           userId,
         );
         if (!participantRes.success) {
-          // User is no longer a participant, clear storage
-          await AsyncStorage.multiRemove([ACTIVE_EVENT_KEY, USER_ROLE_KEY]);
+          // User is no longer a participant, clear active event
+          await get().clearActiveEvent(userId);
+          return;
+        }
+
+        // Check if event has expired (24 hours after end time)
+        const now = new Date();
+        const eventExpired =
+          now > new Date(eventRes.data.endTime.getTime() + 24 * 60 * 60 * 1000);
+
+        if (eventExpired) {
+          // Event has expired, clear active event
+          await get().clearActiveEvent(userId);
           return;
         }
 
         // Event is valid, restore it
         const currentRole: 'host' | 'guest' =
           eventRes.data.hostUid === userId ? 'host' : 'guest';
+        
+        // Update role if it has changed
+        if (currentRole !== user.eventRole) {
+          await get()._updateUserActiveEvent(userId, user.activeEventId, currentRole);
+        }
+        
         set({
           activeEvent: eventRes.data,
           role: currentRole,
           error: null,
         });
-
-        // Update storage with fresh event data
-        await get()._saveActiveEventToStorage();
       } catch (error) {
-        // Network error or other issue - keep the saved event for offline use
+        // Network error or other issue - try to use the stored event info
         console.warn(
-          'Could not verify saved event, using cached version:',
+          'Could not verify active event, may be offline:',
           error,
         );
+        // We don't have the full event data, so we'll need to fetch it when online
+        // For now, just clear the state to force re-selection
         set({
-          activeEvent: savedEvent,
-          role: savedRole,
+          activeEvent: null,
+          role: null,
           error: null,
         });
       }
     } catch (error) {
-      console.warn('Failed to load active event from storage:', error);
-      // Clear potentially corrupted data
-      await AsyncStorage.multiRemove([ACTIVE_EVENT_KEY, USER_ROLE_KEY]);
+      console.warn('Failed to load active event from user data:', error);
+    }
+  },
+
+  /** Update user's active event information in database */
+  _updateUserActiveEvent: async (
+    userId: string,
+    eventId: string | null,
+    role: 'host' | 'guest' | null,
+  ) => {
+    try {
+      // Update the user document
+      await FirestoreService.updateUserActiveEvent(userId, eventId, role);
+      
+      // Also update the auth store to keep it in sync
+      const { user, setUser } = useAuthStore.getState();
+      if (user && user.uid === userId) {
+        setUser({
+          ...user,
+          activeEventId: eventId,
+          eventRole: role,
+        });
+      }
+    } catch (error) {
+      console.warn('Failed to update user active event:', error);
+      // Don't throw - this is not critical for the operation to continue
     }
   },
 }));
