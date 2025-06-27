@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
-  FlatList,
   SafeAreaView,
+  Switch,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
@@ -20,10 +20,11 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { useThemeColors } from '../../components/ui/ThemeProvider';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../navigation/types';
+import { MainStackParamList } from '../../navigation/types';
+import type { User } from '../../types';
 
 type ProfileScreenNavigationProp =
-  NativeStackNavigationProp<RootStackParamList>;
+  NativeStackNavigationProp<MainStackParamList>;
 
 export const ProfileScreen: React.FC = () => {
   const colors = useThemeColors();
@@ -35,10 +36,6 @@ export const ProfileScreen: React.FC = () => {
     fetchCurrentUser,
     updateProfile,
     uploadAvatar,
-    contacts,
-    contactsLoading,
-    fetchContacts,
-    subscribeToContacts,
   } = useUserStore();
   const navigation = useNavigation<ProfileScreenNavigationProp>();
 
@@ -51,12 +48,14 @@ export const ProfileScreen: React.FC = () => {
   const [hostCode, setHostCode] = useState('');
   const [isPromoting, setIsPromoting] = useState(false);
 
-  // Load profile & contacts on mount
+  // Contact info state (hosts only)
+  const [instagramHandle, setInstagramHandle] = useState('');
+  const [contactVisible, setContactVisible] = useState<boolean>(false);
+
+  // Load profile on mount
   useEffect(() => {
     if (authUser?.uid) {
       fetchCurrentUser(authUser.uid);
-      fetchContacts();
-      subscribeToContacts();
     }
   }, [authUser]);
 
@@ -65,7 +64,16 @@ export const ProfileScreen: React.FC = () => {
     if (currentUser?.displayName) {
       setDisplayName(currentUser.displayName);
     }
-  }, [currentUser?.displayName]);
+
+    if (currentUser?.instagramHandle !== undefined) {
+      setInstagramHandle(currentUser.instagramHandle || '');
+      setContactVisible(
+        currentUser.contactVisible === undefined
+          ? false
+          : currentUser.contactVisible,
+      );
+    }
+  }, [currentUser?.displayName, currentUser?.instagramHandle, currentUser?.contactVisible]);
 
   const handlePickAvatar = async () => {
     const permissionResult =
@@ -108,15 +116,30 @@ export const ProfileScreen: React.FC = () => {
       Alert.alert('Validation', 'Display name cannot be empty');
       return;
     }
-    if (displayName.trim() === currentUser.displayName) {
+    if (displayName.trim() === currentUser.displayName &&
+        instagramHandle.trim() === (currentUser.instagramHandle || '') &&
+        contactVisible === (currentUser.contactVisible ?? false)
+    ) {
       Alert.alert('No changes', 'Nothing to save');
       return;
     }
 
+    const formattedHandle = instagramHandle.trim()
+      ? instagramHandle.trim().startsWith('@')
+        ? instagramHandle.trim()
+        : '@' + instagramHandle.trim()
+      : '';
+
+    const updates: Partial<User> = {
+      displayName: displayName.trim(),
+      instagramHandle: formattedHandle,
+      contactVisible,
+    };
+
     setIsSaving(true);
-    await updateProfile({ displayName: displayName.trim() });
+    await updateProfile(updates);
     setIsSaving(false);
-    Alert.alert('Profile', 'Display name updated');
+    Alert.alert('Profile', 'Profile updated');
   };
 
   const handleLogout = () => {
@@ -138,7 +161,7 @@ export const ProfileScreen: React.FC = () => {
 
   const handleManageEvent = () => {
     if (role === 'host') {
-      navigation.navigate('EventSetup');
+      (navigation as any).navigate('EventSetup');
     }
   };
 
@@ -204,72 +227,6 @@ export const ProfileScreen: React.FC = () => {
     if (isUpcoming) return { text: 'Upcoming', color: colors.primary };
     return { text: 'Ended', color: colors.textTertiary };
   };
-
-  const renderContactItem = ({ item }: { item: (typeof contacts)[0] }) => (
-    <TouchableOpacity
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        backgroundColor: colors.surface,
-        borderRadius: 8,
-        marginBottom: 8,
-      }}
-      onPress={() => {
-        // Note: UserProfile navigation would need to be added to RootStackParamList
-        // For now, we'll show an alert
-        Alert.alert(
-          'Feature Coming Soon',
-          `View ${item.displayName}'s profile`,
-        );
-      }}
-    >
-      {item.avatarUrl ? (
-        <Image
-          source={{ uri: item.avatarUrl }}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            borderWidth: 2,
-            borderColor: colors.primary,
-          }}
-        />
-      ) : (
-        <View
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            backgroundColor: colors.bgSecondary,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Text
-            style={{
-              color: colors.primary,
-              fontWeight: '600',
-              fontSize: 16,
-            }}
-          >
-            {item.displayName.charAt(0).toUpperCase()}
-          </Text>
-        </View>
-      )}
-      <Text
-        style={{
-          marginLeft: 12,
-          color: colors.textPrimary,
-          fontSize: 16,
-          fontWeight: '500',
-        }}
-      >
-        {item.displayName}
-      </Text>
-    </TouchableOpacity>
-  );
 
   if (isLoading && !currentUser) {
     return (
@@ -458,23 +415,31 @@ export const ProfileScreen: React.FC = () => {
               {formatEventTime(activeEvent.endTime)}
             </Text>
 
-            {/* Host-only event management */}
-            {role === 'host' && (
-              <View style={{ gap: 8 }}>
-                <Button
-                  title='Manage Event'
-                  onPress={handleManageEvent}
-                  variant='secondary'
-                  size='small'
-                />
-                <Button
-                  title='Show Host Code'
-                  onPress={copyHostCode}
-                  variant='outline'
-                  size='small'
-                />
-              </View>
-            )}
+            {/* Buttons */}
+            <View style={{ gap: 8 }}>
+              <Button
+                title='See Host List'
+                onPress={() => navigation.navigate('HostList')}
+                variant='secondary'
+                size='small'
+              />
+              {role === 'host' && (
+                <>
+                  <Button
+                    title='Manage Event'
+                    onPress={handleManageEvent}
+                    variant='secondary'
+                    size='small'
+                  />
+                  <Button
+                    title='Show Host Code'
+                    onPress={copyHostCode}
+                    variant='outline'
+                    size='small'
+                  />
+                </>
+              )}
+            </View>
           </View>
         )}
 
@@ -538,54 +503,41 @@ export const ProfileScreen: React.FC = () => {
           maxLength={30}
         />
 
-        {/* Save Button */}
-        <Button title='Save Changes' onPress={handleSave} loading={isSaving} />
-
-        {/* Find Friends - only for hosts or if no active event */}
-        {(role === 'host' || !activeEvent) && (
-          <View style={{ marginTop: 16 }}>
-            <Button
-              title='Find Friends'
-              onPress={() => {
-                // UserSearch would need to be added to RootStackParamList
-                Alert.alert('Feature Coming Soon', 'Find and add friends');
-              }}
-              variant='secondary'
-              size='medium'
-              disabled={avatarUploading || isSaving}
+        {/* Host contact info */}
+        {role === 'host' && (
+          <>
+            <Input
+              label='Instagram Handle (optional)'
+              placeholder='@yourusername'
+              value={instagramHandle}
+              onChangeText={setInstagramHandle}
+              maxLength={60}
             />
-          </View>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 16,
+                marginTop: 8,
+              }}
+            >
+              <Text
+                style={{ flex: 1, color: colors.textPrimary, fontSize: 14 }}
+              >
+                Allow others to see contact
+              </Text>
+              <Switch
+                value={contactVisible}
+                onValueChange={setContactVisible}
+                thumbColor={contactVisible ? colors.primary : '#f4f3f4'}
+                trackColor={{ false: '#767577', true: colors.primaryLight }}
+              />
+            </View>
+          </>
         )}
 
-        {/* Contacts List - show fewer for guests */}
-        <View style={{ marginTop: 24 }}>
-          <Text
-            style={{
-              color: colors.textPrimary,
-              fontSize: 18,
-              fontWeight: '600',
-              marginBottom: 12,
-            }}
-          >
-            {role === 'host' ? 'My Friends' : 'Event Contacts'}
-          </Text>
-          {contactsLoading ? (
-            <LoadingSpinner />
-          ) : contacts.length === 0 ? (
-            <Text style={{ color: colors.textSecondary }}>
-              {role === 'host'
-                ? 'You have no friends yet.'
-                : 'No contacts available.'}
-            </Text>
-          ) : (
-            <FlatList
-              data={role === 'guest' ? contacts.slice(0, 5) : contacts}
-              renderItem={renderContactItem}
-              keyExtractor={item => item.uid}
-              scrollEnabled={false}
-            />
-          )}
-        </View>
+        {/* Save Button */}
+        <Button title='Save Changes' onPress={handleSave} loading={isSaving} />
 
         {/* Logout Button */}
         <View style={{ marginTop: 32, marginBottom: 20 }}>

@@ -40,7 +40,8 @@ service cloud.firestore {
 
       // Participants sub-collection
       match /participants/{participantId} {
-        allow read: if request.auth != null && request.auth.uid == participantId;
+        // Allow any authenticated participant in the event to read the hosts/participants list
+        allow read: if request.auth != null && participantInEvent(eventId);
 
         // A user can create their own participant doc (joining) or host can add others
         allow create: if request.auth != null && (

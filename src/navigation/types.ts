@@ -25,6 +25,7 @@ export type MainStackParamList = {
   StoryViewer: { stories: Story[]; initialIndex: number };
   UserProfile: { userId: string };
   UserSearch: undefined;
+  HostList: undefined;
 };
 
 // Main Tab Navigator

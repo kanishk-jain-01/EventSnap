@@ -5,6 +5,7 @@ import { ChatScreen } from '../screens/main/ChatScreen';
 import { StoryViewerScreen } from '../screens/main/StoryViewerScreen';
 import { UserSearchScreen } from '../screens/main/UserSearchScreen';
 import { UserProfileScreen } from '../screens/main/UserProfileScreen';
+import { HostListScreen } from '../screens/main/HostListScreen';
 import { MainStackParamList } from '../navigation/types';
 
 const MainStack = createNativeStackNavigator<MainStackParamList>();
@@ -80,6 +81,20 @@ export const MainNavigator: React.FC = () => {
           presentation: 'card',
           headerShown: true,
           title: 'Profile',
+          headerStyle: { backgroundColor: '#1F1F1F' },
+          headerTitleStyle: { color: '#FFFFFF' },
+          headerTintColor: '#FFFC00',
+        }}
+      />
+
+      {/* Host List Screen */}
+      <MainStack.Screen
+        name='HostList'
+        component={HostListScreen}
+        options={{
+          presentation: 'card',
+          headerShown: true,
+          title: 'Event Hosts',
           headerStyle: { backgroundColor: '#1F1F1F' },
           headerTitleStyle: { color: '#FFFFFF' },
           headerTintColor: '#FFFC00',

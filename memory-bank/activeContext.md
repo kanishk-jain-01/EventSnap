@@ -31,6 +31,15 @@
 - Removed joinCode requirement from event creation interfaces
 - Join codes now properly generate and save to database
 
+### 🆕 JUST IMPLEMENTED: Host List & Instagram Handle
+- Added "See Host List" button to ProfileScreen (visible to hosts **and** guests)
+- New HostListScreen lists all hosts in the active event with avatar, display name, and Instagram handle (if allowed)
+- `instagramHandle` + `contactVisible` fields added to `User` model & Firestore documents
+- Host profile now includes Instagram handle input and visibility toggle (default **off**)
+- Contacts/Friends section removed from profile to streamline UI
+- Firestore security rules updated: any authenticated participant can read `/events/{eventId}/participants/*` (enables host list fetch)
+- Button order in event card updated (Host List first)
+
 ### ✅ Completed Core Features
 
 #### 1. Authentication System

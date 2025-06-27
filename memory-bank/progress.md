@@ -144,7 +144,7 @@
 - **Offline Support**: Basic functionality when network unavailable
 - **Push Notifications**: Real-time notifications for stories and messages
 - **Advanced Camera Features**: Filters, text overlay, drawing tools
-- **User Search**: Find and add contacts within events
+- **User Search**: (Contact list removed; future discovery TBD)
 
 #### 4. Multi-Event Support
 - **Event Switching**: Allow users to participate in multiple events
@@ -198,6 +198,7 @@
 | Camera System | 100% | ✅ Complete | Core |
 | Stories System | 95% | ✅ Complete | Core |
 | Real-time Chat | 95% | ✅ Complete | Core |
+| Host List & IG Handles | 100% | ✅ Complete | Core |
 | ~~Snap Messaging~~ | ~~100%~~ | ❌ Removed | N/A |
 | Firebase Backend | 90% | ✅ Complete | Core |
 | UI/UX Components | 85% | ✅ Complete | Core |

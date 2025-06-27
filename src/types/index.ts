@@ -6,6 +6,10 @@ export interface User {
   avatarUrl?: string;
   createdAt: Date;
   lastSeen?: Date;
+  /** Optional Instagram handle provided by the user (e.g., @username) */
+  instagramHandle?: string;
+  /** Whether the user allows others to view their contact information */
+  contactVisible?: boolean;
   // Event tracking fields - replaces AsyncStorage
   activeEventId?: string | null;
   eventRole?: 'host' | 'guest' | null;

@@ -61,6 +61,9 @@ export interface UserDocument {
   // Event tracking fields - replaces AsyncStorage
   activeEventId?: string | null;
   eventRole?: 'host' | 'guest' | null;
+  // Instagram handle & visibility
+  instagramHandle?: string;
+  contactVisible?: boolean;
 }
 
 // Contact document interface for Firestore
@@ -434,15 +437,18 @@ export class FirestoreService {
    */
   static async createOrUpdateUser(user: User): Promise<ApiResponse<void>> {
     try {
-      const userDoc: UserDocument = {
+      const userDoc: Partial<UserDocument> = {
         email: user.email,
         displayName: user.displayName,
-        avatarUrl: user.avatarUrl,
         createdAt: Timestamp.fromDate(user.createdAt),
         lastSeen: serverTimestamp() as Timestamp,
-        activeEventId: user.activeEventId,
-        eventRole: user.eventRole,
       };
+
+      if (user.avatarUrl !== undefined) userDoc.avatarUrl = user.avatarUrl;
+      if (user.activeEventId !== undefined) userDoc.activeEventId = user.activeEventId;
+      if (user.eventRole !== undefined) userDoc.eventRole = user.eventRole;
+      if (user.instagramHandle !== undefined) userDoc.instagramHandle = user.instagramHandle;
+      if (user.contactVisible !== undefined) userDoc.contactVisible = user.contactVisible;
 
       await setDoc(doc(firestore, COLLECTIONS.USERS, user.uid), userDoc, {
         merge: true,
@@ -507,6 +513,8 @@ export class FirestoreService {
         lastSeen: data.lastSeen?.toDate(),
         activeEventId: data.activeEventId,
         eventRole: data.eventRole,
+        instagramHandle: data.instagramHandle,
+        contactVisible: data.contactVisible,
       };
 
       return {
@@ -551,6 +559,8 @@ export class FirestoreService {
           lastSeen: data.lastSeen?.toDate(),
           activeEventId: data.activeEventId,
           eventRole: data.eventRole,
+          instagramHandle: data.instagramHandle,
+          contactVisible: data.contactVisible,
         });
       });
 
@@ -608,6 +618,8 @@ export class FirestoreService {
             lastSeen: data.lastSeen?.toDate(),
             activeEventId: data.activeEventId,
             eventRole: data.eventRole,
+            instagramHandle: data.instagramHandle,
+            contactVisible: data.contactVisible,
           });
         }
       });
@@ -1016,6 +1028,43 @@ export class FirestoreService {
         success: false,
         error: 'Failed to get participant',
       };
+    }
+  }
+
+  /**
+   * Get all hosts for a specific event
+   */
+  static async getEventHosts(eventId: string): Promise<ApiResponse<User[]>> {
+    try {
+      // First, fetch participant documents where role == 'host'
+      const participantsRef = collection(
+        firestore,
+        COLLECTIONS.EVENTS,
+        eventId,
+        'participants',
+      );
+
+      const hostQuery = query(participantsRef, where('role', '==', 'host'));
+      const hostSnap = await getDocs(hostQuery);
+
+      if (hostSnap.empty) {
+        return { success: true, data: [] };
+      }
+
+      const hostIds: string[] = hostSnap.docs.map(doc => doc.id);
+
+      // Fetch user documents for each host UID
+      const userPromises = hostIds.map(uid => this.getUser(uid));
+      const results = await Promise.all(userPromises);
+
+      const hosts: User[] = [];
+      results.forEach(res => {
+        if (res.success && res.data) hosts.push(res.data);
+      });
+
+      return { success: true, data: hosts };
+    } catch (_error) {
+      return { success: false, error: 'Failed to fetch event hosts' };
     }
   }
 
