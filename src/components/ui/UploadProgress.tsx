@@ -1,7 +1,13 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import { useThemeColors } from './ThemeProvider';
 
-export type UploadStatus = 'uploading' | 'success' | 'error';
+export type UploadStatus =
+  | 'uploading'
+  | 'processing'
+  | 'completed'
+  | 'success'
+  | 'error';
 
 interface UploadProgressProps {
   fileName: string;
@@ -16,12 +22,16 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
   status,
   error,
 }) => {
+  const colors = useThemeColors();
   const renderStatusText = () => {
     switch (status) {
       case 'uploading':
         return `${Math.round(progress)}%`;
+      case 'processing':
+        return 'Processing...';
+      case 'completed':
       case 'success':
-        return 'Uploaded';
+        return 'Completed';
       case 'error':
         return `Error: ${error || 'Upload failed'}`;
       default:
@@ -30,20 +40,43 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
   };
 
   return (
-    <View className='w-full mb-4'>
+    <View style={{ width: '100%', marginBottom: 16 }}>
       {/* File name */}
-      <Text className='text-white text-sm mb-1'>{fileName}</Text>
+      <Text
+        style={{ color: colors.textPrimary, fontSize: 14, marginBottom: 4 }}
+      >
+        {fileName}
+      </Text>
 
       {/* Progress bar */}
-      <View className='w-full h-2 bg-gray-700 rounded'>
+      <View
+        style={{
+          width: '100%',
+          height: 8,
+          backgroundColor: colors.border,
+          borderRadius: 4,
+        }}
+      >
         <View
-          className={`h-full rounded ${status === 'error' ? 'bg-red-600' : 'bg-snap-yellow'}`}
-          style={{ width: `${status === 'success' ? 100 : progress}%` }}
+          style={{
+            height: '100%',
+            borderRadius: 4,
+            backgroundColor: status === 'error' ? colors.error : colors.primary,
+            width: `${status === 'completed' || status === 'success' ? 100 : progress}%`,
+          }}
         />
       </View>
 
       {/* Status text */}
-      <Text className='text-xs text-white mt-1'>{renderStatusText()}</Text>
+      <Text
+        style={{
+          fontSize: 12,
+          color: status === 'error' ? colors.error : colors.textSecondary,
+          marginTop: 4,
+        }}
+      >
+        {renderStatusText()}
+      </Text>
     </View>
   );
 };

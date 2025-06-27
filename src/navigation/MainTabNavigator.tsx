@@ -69,12 +69,18 @@ export const MainTabNavigator: React.FC = () => {
                 color: color,
               }}
             >
-              {role === 'host' ? (focused ? '📸' : '📸') : (focused ? '👀' : '👀')}
+              {role === 'host'
+                ? focused
+                  ? '📸'
+                  : '📸'
+                : focused
+                  ? '👀'
+                  : '👀'}
             </Text>
           ),
         }}
       />
-      
+
       {/* Chat tab - available to all roles */}
       <MainTab.Screen
         name='Chat'
@@ -93,7 +99,7 @@ export const MainTabNavigator: React.FC = () => {
           ),
         }}
       />
-      
+
       <MainTab.Screen
         name='Profile'
         component={ProfileScreen}
@@ -106,7 +112,13 @@ export const MainTabNavigator: React.FC = () => {
                 color: color,
               }}
             >
-              {role === 'host' ? (focused ? '👑' : '👑') : (focused ? '👤' : '👤')}
+              {role === 'host'
+                ? focused
+                  ? '👑'
+                  : '👑'
+                : focused
+                  ? '👤'
+                  : '👤'}
             </Text>
           ),
         }}

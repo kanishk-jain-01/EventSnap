@@ -22,7 +22,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 
-type ProfileScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type ProfileScreenNavigationProp =
+  NativeStackNavigationProp<RootStackParamList>;
 
 export const ProfileScreen: React.FC = () => {
   const colors = useThemeColors();
@@ -148,11 +149,11 @@ export const ProfileScreen: React.FC = () => {
 
   const getEventStatus = () => {
     if (!activeEvent) return null;
-    
+
     const now = new Date();
     const isActive = now >= activeEvent.startTime && now <= activeEvent.endTime;
     const isUpcoming = now < activeEvent.startTime;
-    
+
     if (isActive) return { text: 'Live Now', color: colors.success };
     if (isUpcoming) return { text: 'Upcoming', color: colors.primary };
     return { text: 'Ended', color: colors.textTertiary };
@@ -172,7 +173,10 @@ export const ProfileScreen: React.FC = () => {
       onPress={() => {
         // Note: UserProfile navigation would need to be added to RootStackParamList
         // For now, we'll show an alert
-        Alert.alert('Feature Coming Soon', `View ${item.displayName}'s profile`);
+        Alert.alert(
+          'Feature Coming Soon',
+          `View ${item.displayName}'s profile`,
+        );
       }}
     >
       {item.avatarUrl ? (
@@ -243,10 +247,7 @@ export const ProfileScreen: React.FC = () => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
       <StatusBar style='dark' />
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ padding: 20 }}
-      >
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20 }}>
         {/* Role Badge */}
         {role && (
           <View
@@ -257,7 +258,8 @@ export const ProfileScreen: React.FC = () => {
           >
             <View
               style={{
-                backgroundColor: role === 'host' ? colors.primary : colors.accent,
+                backgroundColor:
+                  role === 'host' ? colors.primary : colors.accent,
                 paddingHorizontal: 16,
                 paddingVertical: 8,
                 borderRadius: 20,
@@ -283,7 +285,10 @@ export const ProfileScreen: React.FC = () => {
 
         {/* Avatar */}
         <View style={{ alignItems: 'center', marginBottom: 24 }}>
-          <TouchableOpacity onPress={handlePickAvatar} disabled={avatarUploading}>
+          <TouchableOpacity
+            onPress={handlePickAvatar}
+            disabled={avatarUploading}
+          >
             {currentUser?.avatarUrl ? (
               <Image
                 source={{ uri: currentUser.avatarUrl }}
@@ -395,7 +400,7 @@ export const ProfileScreen: React.FC = () => {
                 </View>
               )}
             </View>
-            
+
             <Text
               style={{
                 color: colors.textSecondary,
@@ -403,16 +408,17 @@ export const ProfileScreen: React.FC = () => {
                 marginBottom: 12,
               }}
             >
-              📅 {formatEventTime(activeEvent.startTime)} - {formatEventTime(activeEvent.endTime)}
+              📅 {formatEventTime(activeEvent.startTime)} -{' '}
+              {formatEventTime(activeEvent.endTime)}
             </Text>
 
             {/* Host-only event management */}
             {role === 'host' && (
               <Button
-                title="Manage Event"
+                title='Manage Event'
                 onPress={handleManageEvent}
-                variant="secondary"
-                size="small"
+                variant='secondary'
+                size='small'
               />
             )}
           </View>
@@ -462,8 +468,8 @@ export const ProfileScreen: React.FC = () => {
             <LoadingSpinner />
           ) : contacts.length === 0 ? (
             <Text style={{ color: colors.textSecondary }}>
-              {role === 'host' 
-                ? 'You have no friends yet.' 
+              {role === 'host'
+                ? 'You have no friends yet.'
                 : 'No contacts available.'}
             </Text>
           ) : (

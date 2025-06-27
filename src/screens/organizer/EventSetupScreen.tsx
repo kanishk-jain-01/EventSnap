@@ -7,7 +7,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  SafeAreaView,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
@@ -23,6 +25,7 @@ import { StorageService } from '../../services/storage.service';
 import { IngestionService } from '../../services/ai/ingestion.service';
 import { UploadStatus } from '../../components/ui/UploadProgress';
 import { CleanupService } from '../../services/ai/cleanup.service';
+import { useThemeColors } from '../../components/ui/ThemeProvider';
 
 interface ColorOption {
   label: string;
@@ -35,7 +38,7 @@ const COLOR_PRESETS: ColorOption[] = [
     palette: {
       primary: '#4F46E5',
       accent: '#EC4899',
-      background: '#111827',
+      background: '#FFFFFF',
     } as EventPalette,
   },
   {
@@ -43,7 +46,7 @@ const COLOR_PRESETS: ColorOption[] = [
     palette: {
       primary: '#10B981',
       accent: '#F59E0B',
-      background: '#111827',
+      background: '#FFFFFF',
     } as EventPalette,
   },
   {
@@ -51,12 +54,13 @@ const COLOR_PRESETS: ColorOption[] = [
     palette: {
       primary: '#0EA5E9',
       accent: '#F43F5E',
-      background: '#111827',
+      background: '#FFFFFF',
     } as EventPalette,
   },
 ];
 
 export const EventSetupScreen: React.FC = () => {
+  const colors = useThemeColors();
   const [name, setName] = useState('');
   const [visibility, setVisibility] = useState<EventVisibility>('public');
   const [joinCode, setJoinCode] = useState('');
@@ -162,14 +166,12 @@ export const EventSetupScreen: React.FC = () => {
     const file = (result as any).assets ? (result as any).assets[0] : result; // compatibility
     const { uri, name, mimeType } = file;
 
+    // Generate unique asset ID
+    const assetId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     try {
       const response = await fetch(uri);
       const blob = await response.blob();
-
-      // Generate unique asset ID
-      const assetId = `${Date.now()}-${Math.random()
-        .toString(36)
-        .substr(2, 9)}`;
 
       // Add to uploads list
       setUploads(prev => [
@@ -200,7 +202,47 @@ export const EventSetupScreen: React.FC = () => {
         },
       );
 
-      if (!uploadRes.success || !uploadRes.data) {
+      if (uploadRes.success && uploadRes.data) {
+        // Update upload status to processing
+        setUploads(prev =>
+          prev.map(u =>
+            u.id === assetId ? { ...u, status: 'processing' } : u,
+          ),
+        );
+
+        // Trigger AI ingestion based on file type
+        const ingestionRes = name.toLowerCase().endsWith('.pdf')
+          ? await IngestionService.ingestPdf(
+              activeEvent.id,
+              uploadRes.data.fullPath,
+            )
+          : await IngestionService.ingestImage(
+              activeEvent.id,
+              uploadRes.data.fullPath,
+            );
+
+        if (ingestionRes.success) {
+          setUploads(prev =>
+            prev.map(u =>
+              u.id === assetId
+                ? { ...u, status: 'completed', progress: 100 }
+                : u,
+            ),
+          );
+        } else {
+          setUploads(prev =>
+            prev.map(u =>
+              u.id === assetId
+                ? {
+                    ...u,
+                    status: 'error',
+                    error: ingestionRes.error || 'Processing failed',
+                  }
+                : u,
+            ),
+          );
+        }
+      } else {
         setUploads(prev =>
           prev.map(u =>
             u.id === assetId
@@ -212,46 +254,12 @@ export const EventSetupScreen: React.FC = () => {
               : u,
           ),
         );
-        return;
       }
-
-      // Trigger ingestion based on file type
-      const ingestRes = name.toLowerCase().endsWith('.pdf')
-        ? await IngestionService.ingestPdf(
-            activeEvent.id,
-            uploadRes.data.fullPath,
-          )
-        : await IngestionService.ingestImage(
-            activeEvent.id,
-            uploadRes.data.fullPath,
-          );
-
-      if (!ingestRes.success) {
-        setUploads(prev =>
-          prev.map(u =>
-            u.id === assetId
-              ? {
-                  ...u,
-                  status: 'error',
-                  error: ingestRes.error || 'Ingestion failed',
-                }
-              : u,
-          ),
-        );
-        return;
-      }
-
-      // Success
+    } catch (_error) {
       setUploads(prev =>
         prev.map(u =>
-          u.id === assetId ? { ...u, progress: 100, status: 'success' } : u,
-        ),
-      );
-    } catch (_err) {
-      setUploads(prev =>
-        prev.map(u =>
-          u.fileName === name
-            ? { ...u, status: 'error', error: 'Unknown error' }
+          u.id === assetId
+            ? { ...u, status: 'error', error: 'Upload failed' }
             : u,
         ),
       );
@@ -261,13 +269,13 @@ export const EventSetupScreen: React.FC = () => {
   /** End the event and clean up all content */
   const handleEndEvent = async () => {
     if (!activeEvent?.id) {
-      Alert.alert('Error', 'No active event found');
+      Alert.alert('Error', 'No active event to end');
       return;
     }
 
     Alert.alert(
       'End Event',
-      'This will permanently delete all event content including stories, snaps, and assets. This action cannot be undone.',
+      'This will permanently delete all event content (stories, snaps, assets). This action cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -309,168 +317,305 @@ export const EventSetupScreen: React.FC = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      className='flex-1 bg-black'
-    >
-      <ScrollView contentContainerStyle={{ padding: 20 }}>
-        <Text className='text-2xl font-bold text-white mb-6'>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
+      <StatusBar style='dark' />
+
+      {/* Header */}
+      <View
+        style={{
+          paddingHorizontal: 16,
+          paddingVertical: 16,
+          backgroundColor: colors.surface,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        }}
+      >
+        <Text
+          style={{
+            color: colors.textPrimary,
+            fontSize: 24,
+            fontWeight: '700',
+            marginBottom: 4,
+          }}
+        >
           Create New Event
         </Text>
+        <Text style={{ color: colors.textSecondary, fontSize: 16 }}>
+          Set up your event and invite participants
+        </Text>
+      </View>
 
-        {/* Event Name */}
-        <Input
-          label='Event Name'
-          placeholder='e.g. ReactConf 2025'
-          value={name}
-          onChangeText={setName}
-        />
-
-        {/* Visibility Toggle */}
-        <Text className='text-white font-medium mb-2'>Visibility</Text>
-        <View className='flex-row mb-4'>
-          {(['public', 'private'] as EventVisibility[]).map(option => (
-            <TouchableOpacity
-              key={option}
-              onPress={() => setVisibility(option)}
-              className={`flex-1 py-3 rounded-l-lg justify-center items-center border border-snap-light-gray ${
-                visibility === option ? 'bg-snap-yellow' : 'bg-snap-gray'
-              } ${option === 'private' ? 'rounded-r-lg ml-2' : ''}`}
-            >
-              <Text
-                className={`font-semibold ${
-                  visibility === option ? 'text-snap-dark' : 'text-white'
-                }`}
-              >
-                {option.charAt(0).toUpperCase() + option.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Join Code (if private) */}
-        {visibility === 'private' && (
-          <Input
-            label='Join Code (6 digits)'
-            placeholder='123456'
-            value={joinCode}
-            onChangeText={setJoinCode}
-            keyboardType='numeric'
-            maxLength={6}
-          />
-        )}
-
-        {/* Start & End Time */}
-        <Text className='text-white font-medium mb-2'>Start Time</Text>
-        <TouchableOpacity
-          onPress={() => setShowStartPicker(true)}
-          className='bg-snap-gray border border-snap-light-gray rounded-lg px-4 py-3 mb-4'
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={{ padding: 16 }}
+          showsVerticalScrollIndicator={false}
         >
-          <Text className='text-white'>{startTime.toLocaleString()}</Text>
-        </TouchableOpacity>
-        {showStartPicker && (
-          <DateTimePicker
-            value={startTime}
-            mode='datetime'
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={handleStartChange}
-          />
-        )}
+          {/* Event Name */}
+          <View style={{ marginBottom: 16 }}>
+            <Input
+              label='Event Name'
+              placeholder='e.g. ReactConf 2025'
+              value={name}
+              onChangeText={setName}
+            />
+          </View>
 
-        <Text className='text-white font-medium mb-2'>End Time</Text>
-        <TouchableOpacity
-          onPress={() => setShowEndPicker(true)}
-          className='bg-snap-gray border border-snap-light-gray rounded-lg px-4 py-3 mb-4'
-        >
-          <Text className='text-white'>{endTime.toLocaleString()}</Text>
-        </TouchableOpacity>
-        {showEndPicker && (
-          <DateTimePicker
-            value={endTime}
-            mode='datetime'
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={handleEndChange}
-          />
-        )}
-
-        {/* Palette Picker */}
-        <Text className='text-white font-medium mb-2'>Color Palette</Text>
-        <View className='flex-row mb-6'>
-          {COLOR_PRESETS.map((preset, index) => (
-            <TouchableOpacity
-              key={preset.label}
-              onPress={() => setPaletteIndex(index)}
-              className={`flex-1 px-2 ${index !== 0 ? 'ml-2' : ''}`}
+          {/* Visibility Toggle */}
+          <View style={{ marginBottom: 16 }}>
+            <Text
+              style={{
+                color: colors.textPrimary,
+                fontSize: 16,
+                fontWeight: '600',
+                marginBottom: 8,
+              }}
             >
-              <View
-                className={`rounded-lg border-2 p-4 ${
-                  paletteIndex === index
-                    ? 'border-snap-yellow'
-                    : 'border-transparent'
-                }`}
-                style={{ backgroundColor: preset.palette.primary }}
-              >
-                <View
-                  className='w-full h-2 rounded'
-                  style={{ backgroundColor: preset.palette.accent }}
-                />
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Submit Button */}
-        <Button
-          title={eventCreated ? 'Event Created' : 'Create Event'}
-          onPress={handleSubmit}
-          disabled={!isFormValid() || submitting || eventCreated}
-          loading={submitting}
-        />
-
-        {/* Asset Upload Section */}
-        {eventCreated && (
-          <View className='mt-10'>
-            <Text className='text-white text-lg font-semibold mb-4'>
-              Event Assets
+              Visibility
             </Text>
-            <Button title='Add Asset' onPress={handlePickAsset} />
-
-            {/* Upload list */}
-            <View className='mt-6'>
-              {uploads.map(u => (
-                <UploadProgress
-                  key={u.id}
-                  fileName={u.fileName}
-                  progress={u.progress}
-                  status={u.status}
-                  error={u.error}
-                />
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {(['public', 'private'] as EventVisibility[]).map(option => (
+                <TouchableOpacity
+                  key={option}
+                  onPress={() => setVisibility(option)}
+                  style={{
+                    flex: 1,
+                    paddingVertical: 12,
+                    paddingHorizontal: 16,
+                    borderRadius: 8,
+                    borderWidth: 2,
+                    borderColor:
+                      visibility === option ? colors.primary : colors.border,
+                    backgroundColor:
+                      visibility === option
+                        ? colors.primary + '10'
+                        : colors.surface,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color:
+                        visibility === option
+                          ? colors.primary
+                          : colors.textSecondary,
+                      fontSize: 16,
+                      fontWeight: '600',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {option.charAt(0).toUpperCase() + option.slice(1)}
+                  </Text>
+                </TouchableOpacity>
               ))}
             </View>
+          </View>
 
-            {/* Done and End Event buttons */}
-            <View className='mt-6 space-y-3'>
-              <Button
-                title='Done'
-                onPress={() => {
-                  // AppNavigator will automatically navigate to Main when activeEvent is set
-                  // We just need to go back to let the navigation flow handle it
-                  navigation.goBack();
-                }}
-              />
-
-              <Button
-                title='End Event'
-                onPress={handleEndEvent}
-                disabled={endingEvent}
-                loading={endingEvent}
-                variant='danger'
+          {/* Join Code (if private) */}
+          {visibility === 'private' && (
+            <View style={{ marginBottom: 16 }}>
+              <Input
+                label='Join Code (6 digits)'
+                placeholder='123456'
+                value={joinCode}
+                onChangeText={setJoinCode}
+                keyboardType='numeric'
+                maxLength={6}
               />
             </View>
+          )}
+
+          {/* Start Time */}
+          <View style={{ marginBottom: 16 }}>
+            <Text
+              style={{
+                color: colors.textPrimary,
+                fontSize: 16,
+                fontWeight: '600',
+                marginBottom: 8,
+              }}
+            >
+              Start Time
+            </Text>
+            <TouchableOpacity
+              onPress={() => setShowStartPicker(true)}
+              style={{
+                backgroundColor: colors.surface,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 8,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+              }}
+            >
+              <Text style={{ color: colors.textPrimary, fontSize: 16 }}>
+                {startTime.toLocaleString()}
+              </Text>
+            </TouchableOpacity>
+            {showStartPicker && (
+              <DateTimePicker
+                value={startTime}
+                mode='datetime'
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={handleStartChange}
+              />
+            )}
           </View>
-        )}
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+          {/* End Time */}
+          <View style={{ marginBottom: 16 }}>
+            <Text
+              style={{
+                color: colors.textPrimary,
+                fontSize: 16,
+                fontWeight: '600',
+                marginBottom: 8,
+              }}
+            >
+              End Time
+            </Text>
+            <TouchableOpacity
+              onPress={() => setShowEndPicker(true)}
+              style={{
+                backgroundColor: colors.surface,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 8,
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+              }}
+            >
+              <Text style={{ color: colors.textPrimary, fontSize: 16 }}>
+                {endTime.toLocaleString()}
+              </Text>
+            </TouchableOpacity>
+            {showEndPicker && (
+              <DateTimePicker
+                value={endTime}
+                mode='datetime'
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={handleEndChange}
+              />
+            )}
+          </View>
+
+          {/* Color Palette */}
+          <View style={{ marginBottom: 24 }}>
+            <Text
+              style={{
+                color: colors.textPrimary,
+                fontSize: 16,
+                fontWeight: '600',
+                marginBottom: 8,
+              }}
+            >
+              Color Palette
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {COLOR_PRESETS.map((preset, index) => (
+                <TouchableOpacity
+                  key={preset.label}
+                  onPress={() => setPaletteIndex(index)}
+                  style={{
+                    flex: 1,
+                    borderRadius: 8,
+                    borderWidth: 3,
+                    borderColor:
+                      paletteIndex === index ? colors.primary : colors.border,
+                    padding: 16,
+                    backgroundColor: preset.palette.primary,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: '100%',
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: preset.palette.accent,
+                    }}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Submit Button */}
+          <Button
+            title={eventCreated ? 'Event Created' : 'Create Event'}
+            onPress={handleSubmit}
+            disabled={!isFormValid() || submitting || eventCreated}
+            loading={submitting}
+            variant='primary'
+          />
+
+          {/* Asset Upload Section */}
+          {eventCreated && (
+            <View style={{ marginTop: 32 }}>
+              <Text
+                style={{
+                  color: colors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: '600',
+                  marginBottom: 16,
+                }}
+              >
+                Event Assets
+              </Text>
+              <Text
+                style={{
+                  color: colors.textSecondary,
+                  fontSize: 14,
+                  marginBottom: 16,
+                  lineHeight: 20,
+                }}
+              >
+                Upload PDFs and images for AI-powered contextual search.
+                Participants can ask questions about your event materials.
+              </Text>
+
+              <Button
+                title='Add Asset'
+                onPress={handlePickAsset}
+                variant='secondary'
+              />
+
+              {/* Upload Progress List */}
+              {uploads.length > 0 && (
+                <View style={{ marginTop: 16 }}>
+                  {uploads.map(upload => (
+                    <UploadProgress
+                      key={upload.id}
+                      fileName={upload.fileName}
+                      progress={upload.progress}
+                      status={upload.status}
+                      error={upload.error}
+                    />
+                  ))}
+                </View>
+              )}
+
+              {/* Action Buttons */}
+              <View style={{ marginTop: 24, gap: 12 }}>
+                <Button
+                  title='Done'
+                  onPress={() => navigation.goBack()}
+                  variant='primary'
+                />
+
+                <Button
+                  title='End Event'
+                  onPress={handleEndEvent}
+                  disabled={endingEvent}
+                  loading={endingEvent}
+                  variant='danger'
+                />
+              </View>
+            </View>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

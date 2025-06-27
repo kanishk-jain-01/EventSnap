@@ -99,7 +99,7 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
       if (response.success) {
         // Clear event store when logging out
         useEventStore.getState().clearState();
-        
+
         set({
           user: null,
           isAuthenticated: false,
@@ -192,7 +192,7 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
         } else {
           // User is signed out - clear event store as well
           useEventStore.getState().clearState();
-          
+
           set({
             user: null,
             isAuthenticated: false,

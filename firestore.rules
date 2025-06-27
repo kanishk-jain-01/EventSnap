@@ -29,12 +29,15 @@ service cloud.firestore {
      * EVENTS COLLECTION
      * -----------------
      * • Any authenticated user can create an event (they become host).
-     * • Event document readable only by participants (public events handled by listing security via indexes).
+     * • Public events readable by any authenticated user (for discovery).
+     * • Private events readable only by participants.
      * • Only the host can update or delete the event document.
      */
     match /events/{eventId} {
       allow create: if request.auth != null;
-      allow read: if request.auth != null && participantInEvent(eventId);
+      allow read: if request.auth != null && (
+        resource.data.visibility == 'public' || participantInEvent(eventId)
+      );
       allow update, delete: if request.auth != null && request.auth.uid == resource.data.hostUid;
 
       // Participants sub-collection

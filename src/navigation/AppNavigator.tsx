@@ -43,13 +43,16 @@ export const AppNavigator: React.FC = () => {
             <RootStack.Screen name='Main' component={MainNavigator} />
           ) : (
             // User needs to select/join an event first
-            <RootStack.Screen name='EventSelection' component={EventSelectionScreen} />
+            <RootStack.Screen
+              name='EventSelection'
+              component={EventSelectionScreen}
+            />
           )
         ) : (
           // User is not authenticated, show auth flow
           <RootStack.Screen name='Auth' component={AuthNavigator} />
         )}
-        
+
         {/* Event Setup Screen - accessible when authenticated */}
         {isAuthenticated && user && (
           <RootStack.Screen name='EventSetup' component={EventSetupScreen} />

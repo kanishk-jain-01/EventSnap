@@ -51,7 +51,7 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
   /** Initialize event store - load persisted active event */
   initializeEventStore: async (userId: string) => {
     if (get().isInitialized) return;
-    
+
     set({ isLoading: true });
     await get()._loadActiveEventFromStorage(userId);
     set({ isInitialized: true, isLoading: false });
@@ -236,7 +236,7 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
       }
 
       const savedEvent: AppEvent = JSON.parse(savedEventString);
-      
+
       // Convert string dates back to Date objects
       savedEvent.startTime = new Date(savedEvent.startTime);
       savedEvent.endTime = new Date(savedEvent.endTime);
@@ -244,7 +244,8 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
 
       // Check if event is still valid (not expired and user is still a participant)
       const now = new Date();
-      const eventExpired = now > new Date(savedEvent.endTime.getTime() + 24 * 60 * 60 * 1000); // 24 hours after end
+      const eventExpired =
+        now > new Date(savedEvent.endTime.getTime() + 24 * 60 * 60 * 1000); // 24 hours after end
 
       if (eventExpired) {
         // Event has expired, clear storage
@@ -262,7 +263,10 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
         }
 
         // Check if user is still a participant
-        const participantRes = await FirestoreService.getParticipant(savedEvent.id, userId);
+        const participantRes = await FirestoreService.getParticipant(
+          savedEvent.id,
+          userId,
+        );
         if (!participantRes.success) {
           // User is no longer a participant, clear storage
           await AsyncStorage.multiRemove([ACTIVE_EVENT_KEY, USER_ROLE_KEY]);
@@ -270,22 +274,26 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
         }
 
         // Event is valid, restore it
-        const currentRole: 'host' | 'guest' = eventRes.data.hostUid === userId ? 'host' : 'guest';
-        set({ 
-          activeEvent: eventRes.data, 
+        const currentRole: 'host' | 'guest' =
+          eventRes.data.hostUid === userId ? 'host' : 'guest';
+        set({
+          activeEvent: eventRes.data,
           role: currentRole,
-          error: null, 
+          error: null,
         });
 
         // Update storage with fresh event data
         await get()._saveActiveEventToStorage();
       } catch (error) {
         // Network error or other issue - keep the saved event for offline use
-        console.warn('Could not verify saved event, using cached version:', error);
-        set({ 
-          activeEvent: savedEvent, 
+        console.warn(
+          'Could not verify saved event, using cached version:',
+          error,
+        );
+        set({
+          activeEvent: savedEvent,
           role: savedRole,
-          error: null, 
+          error: null,
         });
       }
     } catch (error) {
