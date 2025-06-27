@@ -2,8 +2,8 @@
 
 ## Current Project Status
 **Status**: Production-Ready MVP with Advanced Features  
-**Last Updated**: Host Promotion Feature Implementation  
-**Active Development Phase**: Feature Enhancement
+**Last Updated**: Guest Camera Restriction & Story Posting Fix  
+**Active Development Phase**: UX Polish & Cleanup
 
 ## Recent Major Changes
 ⚡ **JUST IMPLEMENTED: Host Promotion System**
@@ -13,6 +13,16 @@
 - Host code input section for guests in ProfileScreen
 - Complete state management updates across auth and event stores
 - Real-time UI updates when role changes (tab navigation, permissions)
+
+📸 **JUST IMPLEMENTED: Host-Only Camera & Story-Only Capture**
+- Camera tab and camera prompt now hidden for guests (navigation & feed)
+- CameraScreen simplified: only "story" context; avatar/thumbnail removed
+- Story posting now passes `eventId`, adhering to Firestore security rules
+- Removed image context toggle UI and related unused code
+
+🐛 **JUST FIXED: Story Posting Failure ("Failed to Post Story")**
+- Bug cause: missing `eventId` when creating story; security rules blocked write
+- Fixed by including `activeEvent.id` in `postStory()` call
 
 🐛 **JUST FIXED: Join Code Generation Bug**
 - Fixed missing join code generation logic in event creation
@@ -44,7 +54,9 @@
 - Real-time camera preview with front/back toggle
 - Professional photo capture with quality controls
 - Gallery image selection with proper permissions
-- Context-aware image optimization (snap/story/avatar/thumbnail)
+- **Host-Only Access**: Camera available only to event hosts
+- Fixed story posting bug with eventId
+- Context-aware image optimization (story only)
 - Smart compression and automatic file size management
 
 #### 4. ~~Snap Messaging System~~ **REMOVED**
@@ -161,6 +173,7 @@
 2. **Basic Clipboard**: Host code sharing uses Alert instead of proper clipboard
 3. **Limited Offline Support**: Most features require active internet connection
 4. **Manual Cleanup**: Server-side cleanup functions not yet deployed
+5. **Guest Camera Access**: (RESOLVED) Guests no longer see camera UI
 
 ### Potential Issues
 1. **Memory Management**: Real-time listeners may accumulate if not properly cleaned up

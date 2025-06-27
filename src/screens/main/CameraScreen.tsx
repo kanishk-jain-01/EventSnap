@@ -42,8 +42,8 @@ export const CameraScreen: React.FC = () => {
   const navigation = useNavigation<CameraScreenNavigationProp>();
   const colors = useThemeColors();
 
-  // Import event store for role-based permissions
-  const { role: _role, activeEvent: _activeEvent } = useEventStore();
+  // Import active event ID for story posting
+  const { activeEvent } = useEventStore();
 
   
 
@@ -85,9 +85,7 @@ export const CameraScreen: React.FC = () => {
   // Image optimization states for Task 4.5
   const [autoOptimize, setAutoOptimize] = useState(true);
   const [showCompressionInfo] = useState(true);
-  const [imageContext, setImageContext] = useState<
-    'story' | 'avatar' | 'thumbnail'
-  >('story');
+  const [imageContext] = useState<'story'>('story');
 
   // Image editing states for Task 4.6
   const [showImageEditor, setShowImageEditor] = useState(false);
@@ -400,17 +398,6 @@ export const CameraScreen: React.FC = () => {
     setAutoOptimize(!autoOptimize);
   };
 
-  const cycleImageContext = () => {
-    const contexts: ('story' | 'avatar' | 'thumbnail')[] = [
-      'story',
-      'avatar',
-      'thumbnail',
-    ];
-    const currentIndex = contexts.indexOf(imageContext);
-    const nextIndex = (currentIndex + 1) % contexts.length;
-    setImageContext(contexts[nextIndex]);
-  };
-
   const toggleCameraType = () => {
     setCameraType(cameraType === 'back' ? 'front' : 'back');
   };
@@ -509,7 +496,7 @@ export const CameraScreen: React.FC = () => {
 
     // For now, we'll post the story with the original image
     // In a future enhancement, we could render the text overlay onto the image
-    const success = await postStory(capturedPhoto);
+    const success = await postStory(capturedPhoto, activeEvent?.id);
     if (success) {
       const message = overlayText
         ? 'Story posted with text overlay!'
@@ -1028,17 +1015,6 @@ export const CameraScreen: React.FC = () => {
             </View>
           </View>
 
-          {/* Left Side Context Controls for Task 4.5 */}
-          <View className='absolute left-4 top-1/2 -translate-y-1/2'>
-            <View className='bg-black/60 rounded-full py-2 px-1'>
-              <TouchableOpacity onPress={cycleImageContext} className='p-2'>
-                <Text className='text-white text-xs font-bold transform -rotate-90'>
-                  {imageContext.toUpperCase()}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
           {/* Bottom Controls */}
           <View className='absolute bottom-0 left-0 right-0 pb-8'>
             {/* Main Control Row */}
@@ -1115,9 +1091,7 @@ export const CameraScreen: React.FC = () => {
                   >
                     ⚡ {autoOptimize ? 'Auto' : 'Off'}
                   </Text>
-                  <Text className='text-blue-400 text-xs'>
-                    📦 {imageContext}
-                  </Text>
+                  {/* Image context chip removed – only story context is supported */}
                 </View>
               </View>
             </View>

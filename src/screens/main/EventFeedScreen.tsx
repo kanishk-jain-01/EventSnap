@@ -488,7 +488,7 @@ export const EventFeedScreen: React.FC = () => {
       >
         {renderStoriesHeader()}
         {renderChatPrompt()}
-        {renderCameraPrompt()}
+        {role === 'host' && renderCameraPrompt()}
       </ScrollView>
     </SafeAreaView>
   );

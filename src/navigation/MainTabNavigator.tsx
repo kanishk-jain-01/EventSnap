@@ -57,29 +57,25 @@ export const MainTabNavigator: React.FC = () => {
           ),
         }}
       />
-      <MainTab.Screen
-        name='Camera'
-        component={CameraScreen}
-        options={{
-          tabBarLabel: role === 'host' ? 'Camera' : 'View Only',
-          tabBarIcon: ({ focused, color }) => (
-            <Text
-              style={{
-                fontSize: 20,
-                color: color,
-              }}
-            >
-              {role === 'host'
-                ? focused
-                  ? '📸'
-                  : '📸'
-                : focused
-                  ? '👀'
-                  : '👀'}
-            </Text>
-          ),
-        }}
-      />
+      {role === 'host' && (
+        <MainTab.Screen
+          name='Camera'
+          component={CameraScreen}
+          options={{
+            tabBarLabel: 'Camera',
+            tabBarIcon: ({ focused, color }) => (
+              <Text
+                style={{
+                  fontSize: 20,
+                  color: color,
+                }}
+              >
+                {focused ? '📸' : '📸'}
+              </Text>
+            ),
+          }}
+        />
+      )}
 
       {/* Chat tab - available to all roles */}
       <MainTab.Screen
