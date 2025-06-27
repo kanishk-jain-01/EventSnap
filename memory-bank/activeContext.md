@@ -36,7 +36,7 @@
 - **User Experience**: Completely unprofessional appearance
 
 **Solution Implemented**:
-- **Complete Theme Overhaul**: Rewrote entire EventSetupScreen to use proper EventSnap design
+- **Complete Theme Overhaul**: Rewritten entire EventSetupScreen to use proper EventSnap design
   - Replaced all dark theme classes with EventSnap Creative Light Theme
   - Added proper header with EventSnap branding
   - Used `useThemeColors()` hook for consistent styling
@@ -316,3 +316,22 @@ The debugging session has transformed EventSnap from a feature-complete but bugg
 - Balanced feature access based on user permissions
 
 **Final Status**: EventSnap now provides a complete, professional event-driven networking experience with seamless onboarding, smart persistence, and role-aware user experiences. The platform is ready for advanced features like AI Assistant integration or enhanced content management systems.
+
+## 📅 2025-01-04 – Core UX Flows Planning Session
+
+**Key Outcomes**
+1. Drafted and saved new PRD `tasks/prd-core-ux-flows.md` covering foundational UX & permissions prior to AI integration.
+2. Created task list `tasks/tasks-prd-core-ux-flows.md` with parent and sub-tasks:
+   • 1.0 Single-Event Membership
+   • 2.0 Host Promotion via Host Code
+   • 3.0 Manage Event Page
+   • 4.0 Opt-In Contact Sharing
+   • 5.0 Harden 1-to-1 Chat Permissions
+   • 6.0 Host-Only Camera & Capture Simplification
+   • 7.0 Event Feed Redesign & Assistant Entry Point
+3. Updated task list per user feedback (camera restrictions, feed redesign).
+4. No code changes yet—next action is to implement sub-task **1.1 `hasActiveEvent` guard** (pending user go-ahead).
+
+**Platform Status**: Still stable (Phase 6.0 complete). New Phase "Core UX Polish & Stability" defined; subsequent phases renumbered.
+
+---

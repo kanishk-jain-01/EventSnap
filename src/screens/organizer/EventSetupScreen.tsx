@@ -316,6 +316,20 @@ export const EventSetupScreen: React.FC = () => {
     );
   };
 
+  const handleDone = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      // If there's no screen to go back to (e.g., EventSelection was removed
+      // after the new event became active), reset the root stack to Main so
+      // the user lands on the normal event UI.
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Main' }],
+      });
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bgPrimary }}>
       <StatusBar style='dark' />
@@ -599,7 +613,7 @@ export const EventSetupScreen: React.FC = () => {
               <View style={{ marginTop: 24, gap: 12 }}>
                 <Button
                   title='Done'
-                  onPress={() => navigation.goBack()}
+                  onPress={handleDone}
                   variant='primary'
                 />
 
