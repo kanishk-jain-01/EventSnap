@@ -40,6 +40,13 @@
 - Firestore security rules updated: any authenticated participant can read `/events/{eventId}/participants/*` (enables host list fetch)
 - Button order in event card updated (Host List first)
 
+### 🆕 JUST STARTED: AI Chat Assistant (RAG)
+- Replaced peer-to-peer chat UI with `AiChatScreen` (single prompt interface)
+- Updated MainTabNavigator to use new screen
+- Event feed prompt now directs users to AI chat
+- Placeholder AI response in place; backend integration pending
+- Task list created under tasks/prd-ai-chat-rag.md
+
 ### ✅ Completed Core Features
 
 #### 1. Authentication System
@@ -144,20 +151,18 @@
    - Role-based UI updates throughout app
 
 ### Immediate Priorities
-1. **Firebase Functions Deployment**
-   - Deploy cleanup functions to production
-   - Set up scheduled cleanup tasks
-   - Monitor function performance and costs
+1. **AI Chat Backend Integration**
+   - Implement Pinecone ingestion functions and `ragAnswer` callable
+   - Connect `sendAIQuery` in `chatStore`
+2. **Firebase Functions Deployment**
+   - Deploy cleanup & RAG functions together
+3. **Performance Optimization**
+   - Image caching, listener cleanup, startup time
 
-2. **Performance Optimization**
-   - Optimize image loading and caching
-   - Improve real-time listener management
-   - Reduce app startup time
-
-3. **Testing & Validation**
-   - Test host promotion flow end-to-end
-   - Validate role-based permissions
-   - Test state synchronization across devices
+### Testing & Validation
+- Test host promotion flow end-to-end
+- Validate role-based permissions
+- Test state synchronization across devices
 
 ### Technical Debt Items
 1. **Error Handling Enhancement**

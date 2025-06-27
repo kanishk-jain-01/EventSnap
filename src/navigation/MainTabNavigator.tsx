@@ -8,7 +8,7 @@ import { useEventStore } from '../store/eventStore';
 
 // Import the EventFeedScreen instead of HomeScreen
 import { EventFeedScreen } from '../screens/main/EventFeedScreen';
-import { ChatListScreen } from '../screens/main/ChatListScreen';
+import { AiChatScreen } from '../screens/main/AiChatScreen';
 import { ProfileScreen } from '../screens/main/ProfileScreen';
 
 const MainTab = createBottomTabNavigator<MainTabParamList>();
@@ -80,7 +80,7 @@ export const MainTabNavigator: React.FC = () => {
       {/* Chat tab - available to all roles */}
       <MainTab.Screen
         name='Chat'
-        component={ChatListScreen}
+        component={AiChatScreen}
         options={{
           tabBarLabel: 'Chat',
           tabBarIcon: ({ focused, color }) => (

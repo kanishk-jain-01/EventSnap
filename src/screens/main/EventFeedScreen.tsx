@@ -352,7 +352,7 @@ export const EventFeedScreen: React.FC = () => {
               marginBottom: 4,
             }}
           >
-            Start Chatting
+            Ask the Event AI
           </Text>
           <Text
             style={{
@@ -360,7 +360,7 @@ export const EventFeedScreen: React.FC = () => {
               fontSize: 14,
             }}
           >
-            Connect with other event participants
+            Have any questions? Chat with our AI assistant.
           </Text>
         </View>
         <Text style={{ color: colors.textTertiary, fontSize: 16 }}>→</Text>

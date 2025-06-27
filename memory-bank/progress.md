@@ -102,6 +102,16 @@
 
 **Reason for Removal**: Simplified the app to focus on stories and chat functionality only, as requested by the user.
 
+### AI Chat Assistant (RAG) – In Progress (~20% Complete)
+- ✅ UI scaffold (`AiChatScreen`) with placeholder responses
+- ✅ Navigation updated; Event feed prompt reworded
+- 🟡 Vector ingestion pipeline & Pinecone integration (pending)
+- 🟡 `ragAnswer` Cloud Function & `chatStore` integration (pending)
+
+#### Peer-to-Peer Chat System (Deprecated)
+- UI and state management slated for removal in favor of AI assistant
+- Existing chat models retained temporarily for fallback
+
 ## 🔄 What's In Progress (Partially Implemented)
 
 ### Background Cleanup Services (~60% Complete)
