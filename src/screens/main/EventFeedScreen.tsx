@@ -251,22 +251,20 @@ export const EventFeedScreen: React.FC = () => {
           {eventStories.map((story, index) => {
             const owner = storyOwners.get(story.userId);
             return (
-              <TouchableOpacity
+              <StoryRing
                 key={story.id}
-                onPress={() => handleStoryPress(story, index)}
-                style={{ marginRight: 12 }}
-              >
-                <StoryRing
-                  user={owner || { 
-                    uid: story.userId, 
+                user={
+                  owner || {
+                    uid: story.userId,
                     displayName: 'Unknown',
                     email: '',
                     createdAt: new Date(),
-                  }}
-                  hasUnviewed={!story.viewedBy.includes(user?.uid || '')}
-                  size={80}
-                />
-              </TouchableOpacity>
+                  }
+                }
+                hasUnviewed={!story.viewedBy.includes(user?.uid || '')}
+                size={80}
+                onPress={() => handleStoryPress(story, index)}
+              />
             );
           })}
         </ScrollView>
