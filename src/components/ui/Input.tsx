@@ -24,7 +24,7 @@ export const Input: React.FC<InputProps> = ({
         </Text>
       )}
       <TextInput
-        className={`bg-surface border rounded-lg px-4 py-3 text-text-primary text-base ${
+        className={`bg-surface border rounded-lg px-5 py-4 text-text-primary text-base ${
           error ? 'border-error' : 'border-border focus:border-primary'
         }`}
         placeholder={placeholder}
@@ -38,6 +38,8 @@ export const Input: React.FC<InputProps> = ({
         autoCorrect={false}
         autoComplete='off'
         style={{
+          minHeight: 52,
+          lineHeight: 20,
           // Additional styles for better light theme appearance
           shadowColor: colors.shadow,
           shadowOffset: { width: 0, height: 1 },

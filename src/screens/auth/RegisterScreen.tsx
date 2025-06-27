@@ -143,115 +143,124 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps='handled'
       >
-        <View className='flex-1 px-6 pt-20 pb-8'>
-          {/* Header */}
-          <View className='items-center mb-8'>
-            <Text className='text-primary text-4xl font-bold mb-2'>
-              EventSnap
-            </Text>
-            <Text className='text-text-primary text-lg'>
-              Create your account
-            </Text>
-          </View>
-
-          {/* Form */}
+        <View className='flex-1 px-6 pt-8 pb-8'>
+          {/* Centered Content Container */}
           <View className='flex-1 justify-center'>
-            <Input
-              label='Display Name'
-              placeholder='Enter your display name'
-              value={displayName}
-              onChangeText={setDisplayName}
-              autoCapitalize='words'
-              error={displayNameError}
-              maxLength={50}
-            />
-
-            <Input
-              label='Email'
-              placeholder='Enter your email'
-              value={email}
-              onChangeText={setEmail}
-              keyboardType='email-address'
-              autoCapitalize='none'
-              error={emailError}
-            />
-
-            <View className='relative'>
-              <Input
-                label='Password'
-                placeholder='Enter your password (min 6 characters)'
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                error={passwordError}
-              />
-              <TouchableOpacity
-                className='absolute right-4 top-9'
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <Text className='text-primary text-sm'>
-                  {showPassword ? 'Hide' : 'Show'}
-                </Text>
-              </TouchableOpacity>
+            {/* Header */}
+            <View className='items-center mb-8'>
+              <Text className='text-primary text-4xl font-bold mb-2'>
+                EventSnap
+              </Text>
+              <Text className='text-text-primary text-lg'>
+                Create your account
+              </Text>
             </View>
 
-            <View className='relative'>
+            {/* Form */}
+            <View>
               <Input
-                label='Confirm Password'
-                placeholder='Confirm your password'
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry={!showConfirmPassword}
-                error={confirmPasswordError}
+                label='Display Name'
+                placeholder='Enter your display name'
+                value={displayName}
+                onChangeText={setDisplayName}
+                autoCapitalize='words'
+                error={displayNameError}
+                maxLength={50}
               />
-              <TouchableOpacity
-                className='absolute right-4 top-9'
-                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                <Text className='text-primary text-sm'>
-                  {showConfirmPassword ? 'Hide' : 'Show'}
-                </Text>
-              </TouchableOpacity>
-            </View>
 
-            {/* Auth Error */}
-            {error && (
-              <View className='bg-error/20 border border-error rounded-lg p-3 mb-4'>
-                <Text className='text-error text-sm text-center'>{error}</Text>
+              <Input
+                label='Email'
+                placeholder='Enter your email'
+                value={email}
+                onChangeText={setEmail}
+                keyboardType='email-address'
+                autoCapitalize='none'
+                error={emailError}
+              />
+
+              <View className='relative'>
+                <View className='pr-16'>
+                  <Input
+                    label='Password'
+                    placeholder='Enter your password (min 6 characters)'
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    error={passwordError}
+                  />
+                </View>
+                <TouchableOpacity
+                  className='absolute right-3'
+                  style={{ top: 42 }}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Text className='text-primary text-sm font-medium'>
+                    {showPassword ? 'Hide' : 'Show'}
+                  </Text>
+                </TouchableOpacity>
               </View>
-            )}
 
-            {/* Register Button */}
-            <Button
-              title='Create Account'
-              onPress={handleRegister}
-              loading={isLoading}
-              disabled={!isFormValid()}
-            />
+              <View className='relative'>
+                <View className='pr-16'>
+                  <Input
+                    label='Confirm Password'
+                    placeholder='Confirm your password'
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry={!showConfirmPassword}
+                    error={confirmPasswordError}
+                  />
+                </View>
+                <TouchableOpacity
+                  className='absolute right-3'
+                  style={{ top: 42 }}
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <Text className='text-primary text-sm font-medium'>
+                    {showConfirmPassword ? 'Hide' : 'Show'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-            {/* Terms and Privacy */}
-            <View className='mt-4 px-4'>
-              <Text className='text-text-tertiary text-xs text-center leading-4'>
-                By creating an account, you agree to our Terms of Service and
-                Privacy Policy. This is a demo app for internal testing only.
-              </Text>
-            </View>
-          </View>
+              {/* Auth Error */}
+              {error && (
+                <View className='bg-error/10 border border-error rounded-lg p-4 mb-4'>
+                  <Text className='text-error text-base text-center font-medium'>{error}</Text>
+                </View>
+              )}
 
-          {/* Footer */}
-          <View className='mt-8'>
-            <View className='flex-row items-center justify-center'>
-              <Text className='text-text-secondary text-base'>
-                Already have an account?{' '}
-              </Text>
-              <TouchableOpacity
-                disabled={isLoading}
-                onPress={() => navigation.navigate('Login')}
-              >
-                <Text className='text-primary text-base font-semibold'>
-                  Sign In
+              {/* Register Button */}
+              <Button
+                title='Create Account'
+                onPress={handleRegister}
+                loading={isLoading}
+                disabled={!isFormValid()}
+              />
+
+              {/* Terms and Privacy */}
+              <View className='mt-4 px-4'>
+                <Text className='text-text-tertiary text-xs text-center leading-4'>
+                  By creating an account, you agree to our Terms of Service and
+                  Privacy Policy. This is a demo app for internal testing only.
                 </Text>
-              </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Footer */}
+            <View className='mt-8'>
+              <View className='flex-row items-center justify-center'>
+                <Text className='text-text-secondary text-base'>
+                  Already have an account?{' '}
+                </Text>
+                <TouchableOpacity
+                  disabled={isLoading}
+                  onPress={() => navigation.navigate('Login')}
+                >
+                  <Text className='text-primary text-base font-semibold'>
+                    Sign In
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>

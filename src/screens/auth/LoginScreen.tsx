@@ -25,9 +25,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const { login, isLoading, error, clearError } = useAuth();
 
   // Clear auth errors when component mounts
-  useEffect(() => {
-    clearError();
-  }, [clearError]);
+  // useEffect(() => {
+  //   clearError();
+  // }, [clearError]);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -37,10 +37,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
     try {
       await login(email.trim().toLowerCase(), password);
-    } catch {
+    } catch (err) {
       // Error is handled by the auth store
+      console.log('Login error caught:', err);
     }
   };
+
+
 
   return (
     <KeyboardAvoidingView
@@ -53,17 +56,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps='handled'
       >
-        <View className='flex-1 px-6 pt-20 pb-8'>
-          {/* Header */}
-          <View className='items-center mb-12'>
-            <Text className='text-primary text-4xl font-bold mb-2'>
-              EventSnap
-            </Text>
-            <Text className='text-text-primary text-lg'>Welcome back!</Text>
-          </View>
-
-          {/* Form */}
+        <View className='flex-1 px-6 pt-8 pb-8'>
+          {/* Centered Content Container */}
           <View className='flex-1 justify-center'>
+            {/* Header */}
+            <View className='items-center mb-8'>
+              <Text className='text-primary text-4xl font-bold mb-2'>
+                EventSnap
+              </Text>
+              <Text className='text-text-primary text-lg'>Welcome back!</Text>
+            </View>
+
+            {/* Form */}
+            <View>
             <Input
               label='Email'
               placeholder='Enter your email'
@@ -74,18 +79,21 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             />
 
             <View className='relative'>
-              <Input
-                label='Password'
-                placeholder='Enter your password'
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-              />
+              <View className='pr-16'>
+                <Input
+                  label='Password'
+                  placeholder='Enter your password'
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                />
+              </View>
               <TouchableOpacity
-                className='absolute right-4 top-9'
+                className='absolute right-3'
+                style={{ top: 42 }}
                 onPress={() => setShowPassword(!showPassword)}
               >
-                <Text className='text-primary text-sm'>
+                <Text className='text-primary text-sm font-medium'>
                   {showPassword ? 'Hide' : 'Show'}
                 </Text>
               </TouchableOpacity>
@@ -93,8 +101,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
             {/* Auth Error */}
             {error && (
-              <View className='bg-error/20 border border-error rounded-lg p-3 mb-4'>
-                <Text className='text-error text-sm text-center'>{error}</Text>
+              <View className='bg-error/10 border border-error rounded-lg p-4 mb-4'>
+                <Text className='text-error text-base text-center font-medium'>{error}</Text>
               </View>
             )}
 
@@ -117,6 +125,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   Sign up
                 </Text>
               </Text>
+            </View>
             </View>
           </View>
         </View>
