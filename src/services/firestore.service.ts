@@ -1115,10 +1115,16 @@ export class FirestoreService {
       }
 
       // Update participant role to host
-      await this.addParticipant(eventId, userId, 'host');
+      const addRes = await this.addParticipant(eventId, userId, 'host');
+      if (!addRes.success) {
+        return { success: false, error: addRes.error || 'Failed to update participant role' };
+      }
 
       // Update user's event role in their profile
-      await this.updateUserActiveEvent(userId, eventId, 'host');
+      const updateRes = await this.updateUserActiveEvent(userId, eventId, 'host');
+      if (!updateRes.success) {
+        return { success: false, error: updateRes.error || 'Failed to update user role' };
+      }
 
       return { success: true };
     } catch (_error) {

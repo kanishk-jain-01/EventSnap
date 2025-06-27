@@ -263,7 +263,7 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
       const user = userRes.data;
       
       // Check if user has an active event
-      if (!user.activeEventId || !user.eventRole) {
+      if (!user.activeEventId) {
         // No active event
         return;
       }
@@ -299,10 +299,14 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
           return;
         }
 
-        // Event is valid, restore it
-        const currentRole: 'host' | 'guest' =
-          eventRes.data.hostUid === userId ? 'host' : 'guest';
-        
+        // Determine the user's role based on participant document first (supports promoted hosts)
+        let currentRole: 'host' | 'guest' = participantRes.data?.role || 'guest';
+
+        // Fallback: if participant data missing role for some reason, rely on event hostUid
+        if (!participantRes.data?.role) {
+          currentRole = eventRes.data.hostUid === userId ? 'host' : 'guest';
+        }
+
         // Update role if it has changed
         if (currentRole !== user.eventRole) {
           await get()._updateUserActiveEvent(userId, user.activeEventId, currentRole);

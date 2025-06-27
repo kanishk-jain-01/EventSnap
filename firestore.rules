@@ -47,6 +47,13 @@ service cloud.firestore {
           request.auth.uid == participantId || participantIsHost(eventId)
         );
 
+        // Allow updates to the participant role (e.g., guest promoted to host)
+        // The participant themselves can change their role to "host" using a valid host code
+        // Hosts can also update participant roles
+        allow update: if request.auth != null && (
+          request.auth.uid == participantId || participantIsHost(eventId)
+        );
+
         // Participant can delete themselves (leave event) or host can remove
         allow delete: if request.auth != null && (
           request.auth.uid == participantId || participantIsHost(eventId)
