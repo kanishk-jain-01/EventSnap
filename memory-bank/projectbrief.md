@@ -1,53 +1,26 @@
-# Project Brief: Snapchat Clone MVP
+# Project Brief: Snapchat Clone
 
-## Overview
-A full-featured Snapchat clone mobile application built with React Native and Firebase, featuring ephemeral photo messaging, stories, real-time chat, and user authentication with an event-driven networking system.
+## Vision
+Build a mobile-first, cross-platform application that recreates Snapchat's core social experience—ephemeral multimedia messaging—while adding event-centric features and AI-powered chat capabilities.
 
-## Core Vision
-Create a social media platform that combines Snapchat's ephemeral messaging features with event-based networking, allowing users to connect and share content within specific events or gatherings.
+## Objectives
+1. **Ephemeral Communication** – Allow users to capture photos/videos and share them as self-destructing messages and 24-hour stories.
+2. **Realtime Chat** – Provide one-to-one and group chat with typing indicators, read receipts, and push notifications.
+3. **Camera First UX** – Launch directly into a camera screen supporting filters, flash, and media editing.
+4. **Event Layer** – Enable communities to host and join time-boxed events with dedicated story feeds and chats.
+5. **AI Integration** – Offer an in-app AI assistant (RAG) for content recommendations and conversational support.
+6. **Scalable Backend** – Leverage Firebase (Auth, Firestore, Storage, Realtime DB) and Cloud Functions for serverless scale.
 
-## Primary Objectives
+## Success Criteria
+- Sub-second message delivery and story uploads under typical network conditions.
+- 95% crash-free sessions across iOS and Android.
+- Onboarding to first snap in < 60 s for new users.
+- Meet OWASP Mobile Top 10 security best practices.
 
-### 1. Event-Driven Social Networking
-- Users must join or create events to access the main application
-- Events have unique join codes for easy sharing
-- Host/guest role system with different permissions
-- Event-scoped content (snaps, stories, chats)
+## Out of Scope (MVP)
+- AR Lenses marketplace
+- Third-party social sharing
+- Monetization features (ads, in-app purchases)
 
-### 2. Ephemeral Content System
-- Disappearing photo messages (snaps) with automatic deletion
-- 24-hour stories with automatic expiration
-- Real-time content delivery and status tracking
-
-### 3. Professional-Grade Features
-- Advanced camera system with optimization
-- Real-time chat with typing indicators and read receipts
-- Comprehensive state management
-- Firebase backend integration
-- Automated cleanup services
-
-## Target Users
-- Event organizers who want to create private social spaces
-- Event attendees who want to share moments within specific gatherings
-- Users seeking ephemeral, event-focused social interactions
-
-## Success Metrics
-- Seamless event creation and joining flow
-- High-quality image capture and sharing
-- Real-time messaging performance
-- Automatic content expiration reliability
-- User engagement within events
-
-## Technical Requirements
-- React Native with Expo for cross-platform mobile development
-- Firebase for authentication, database, and storage
-- TypeScript for type safety
-- Real-time capabilities for chat and notifications
-- Automated background services for content cleanup
-
-## Key Differentiators
-1. **Event-Centric**: Unlike traditional social media, all interactions happen within event contexts
-2. **Role-Based Permissions**: Host and guest roles with different capabilities
-3. **Ephemeral by Design**: All content automatically expires
-4. **Real-Time Everything**: Live messaging, status updates, and notifications
-5. **Professional Polish**: Advanced image processing, error handling, and performance optimization 
+---
+Generated automatically by Cursor AI to bootstrap the Memory Bank. 

@@ -1,257 +1,177 @@
-# Snapchat Clone MVP 📸
+# EventSnap 📸🎉
 
-A full-featured Snapchat clone mobile application built with React Native and Firebase, featuring ephemeral photo messaging, stories, real-time chat, and user authentication.
+**EventSnap** is a cross-platform mobile app that blends Snapchat-style ephemeral media with event-centric social features and an AI-powered chat assistant. Built entirely with React Native and Firebase, EventSnap lets communities capture moments, share disappearing stories, and converse in real-time around live events.
 
-## 🚀 Features
+---
 
-### ✅ Implemented Features
+## ✨ Key Features
 
-- **🔐 Authentication System**
-  - Email/password registration and login
-  - Secure session management with Firebase Auth
-  - Protected routes and authentication flow
+| Category | Highlights |
+|----------|------------|
+| **Authentication** | Email/Password sign-up & login powered by Firebase Auth, session persistence, profile setup |
+| **Camera-First UX** | Instant camera launch, photo/video capture, media editing & compression, gallery import |
+| **Ephemeral Snaps & Stories** | 1-to-1 snaps and 24-hour stories with auto-deletion & screenshot detection |
+| **Event Layer** | Create & join events with dedicated story feeds and group chat channels |
+| **Real-Time Chat** | 1-to-1 & group messaging (Firestore / Realtime DB), typing indicators, read receipts |
+| **AI Assistant** | Retrieval-Augmented Generation (RAG) chat for quick answers & content suggestions |
+| **Cloud Functions** | Serverless business logic, scheduled cleanup of expired media, AI embedding ingestion |
+| **Theming & Dark Mode** | NativeWind + Tailwind CSS-v4 design system |
 
-- **📷 Advanced Camera System**
-  - Real-time camera preview with front/back toggle
-  - Professional photo capture with quality control
-  - Gallery image selection with permissions
-  - Advanced camera controls (zoom, timer, grid, flash)
-  - Smart image compression and optimization
-  - Context-aware processing (snap/story/avatar/thumbnail)
-
-- **📱 Core Navigation & UI**
-  - Tab-based navigation with authentication flow
-  - Dark theme following Snapchat's aesthetic
-  - Reusable UI components (Button, Input, Modal, LoadingSpinner)
-  - Error boundary for graceful error handling
-
-- **💾 Firebase Storage Integration**
-  - Secure image upload with progress tracking
-  - User-based folder isolation
-  - Automatic file organization and naming
-
-- **📬 Snap System**
-  - Send and receive disappearing photo messages
-  - Recipient selection with search functionality
-  - Snap viewing with automatic deletion
-  - Comprehensive snap metadata tracking
-
-- **💬 Real-time Chat System** (In Progress)
-  - Text messaging between users
-  - Real-time message synchronization
-  - Conversation history preservation
-
-### 🔄 In Development
-
-- **📚 Stories Feature**
-  - 24-hour ephemeral story posting
-  - Story viewing from contacts
-  - Automatic story expiration
+---
 
 ## 🛠 Tech Stack
 
 ### Frontend
 
-- **React Native** with Expo SDK ~53.0
-- **TypeScript** for type safety
-- **TailwindCSS** with NativeWind for styling
-- **Zustand** for state management
-- **React Navigation** for navigation
+- **React Native (Expo SDK 50)**  
+- **TypeScript** end-to-end  
+- **NativeWind** (Tailwind CSS v4) for styling  
+- **React Navigation 7** (stack/tab)  
+- **Zustand** for lightweight state management  
+- **react-hook-form + zod** for forms & validation
 
-### Backend (Firebase)
+### Backend / Infrastructure
 
-- **Firebase Authentication** (Email/Password)
-- **Firestore** for structured data (users, stories, snap metadata)
-- **Realtime Database** for real-time chat messages
-- **Firebase Storage** for image uploads
-- **Security Rules** for data protection
-
-### Key Dependencies
-
-- `expo-camera` - Camera functionality
-- `expo-image-picker` - Gallery selection
-- `expo-image-manipulator` - Image processing
-- `firebase` - Backend services
-- `react-navigation` - Navigation system
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 20+
-- Expo CLI (`npm install -g @expo/cli`)
-- Firebase CLI (`npm install -g firebase-tools`)
-- iOS Simulator (Mac) or Android Emulator
-- Firebase project with enabled services
-
-### Installation
-
-1. **Clone the repository**
-
-   ```bash
-   git clone <repository-url>
-   cd snapchat-clone
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-3. **Firebase Setup**
-   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com)
-   - Enable Authentication (Email/Password provider)
-   - Create Firestore database
-   - Create Realtime Database
-   - Enable Storage
-   - Copy your Firebase config and create `firebase.config.js` (see setup guide below)
-
-4. **Configure Firebase**
-   Create `firebase.config.js` in the root directory:
-
-   ```javascript
-   import { initializeApp } from 'firebase/app';
-   import { getAuth } from 'firebase/auth';
-   import { getFirestore } from 'firebase/firestore';
-   import { getDatabase } from 'firebase/database';
-   import { getStorage } from 'firebase/storage';
-
-   const firebaseConfig = {
-     apiKey: 'your-api-key',
-     authDomain: 'your-project.firebaseapp.com',
-     databaseURL: 'https://your-project-rtdb.firebaseio.com',
-     projectId: 'your-project-id',
-     storageBucket: 'your-project.firebasestorage.app',
-     messagingSenderId: 'your-sender-id',
-     appId: 'your-app-id',
-   };
-
-   const app = initializeApp(firebaseConfig);
-   export const auth = getAuth(app);
-   export const firestore = getFirestore(app);
-   export const realtimeDb = getDatabase(app);
-   export const storage = getStorage(app);
-   export default app;
-   ```
-
-5. **Deploy Firebase Security Rules**
-
-   ```bash
-   firebase deploy --only firestore:rules,database:rules,storage:rules
-   ```
-
-6. **Start the development server**
-
-   ```bash
-   npm start
-   ```
-
-7. **Run on device/simulator**
-   ```bash
-   npm run ios    # for iOS
-   npm run android # for Android
-   ```
-
-## 📱 Usage
-
-1. **Registration/Login**: Create an account or sign in with existing credentials
-2. **Camera**: Tap the camera button to capture photos or select from gallery
-3. **Send Snaps**: Choose recipients and send disappearing photos
-4. **View Snaps**: Tap on received snaps to view (they disappear after viewing)
-5. **Chat**: Navigate to chat tab for real-time messaging
-6. **Stories**: Post and view 24-hour stories (coming soon)
-
-## 🏗 Project Structure
-
-```
-src/
-├── components/
-│   ├── common/           # Shared components
-│   ├── features/         # Feature-specific components
-│   │   ├── auth/         # Authentication components
-│   │   ├── camera/       # Camera-related components
-│   │   ├── chat/         # Chat components
-│   │   └── stories/      # Stories components
-│   ├── media/            # Media handling components
-│   └── ui/               # Reusable UI components
-├── hooks/                # Custom React hooks
-├── navigation/           # Navigation configuration
-├── screens/              # Screen components
-│   ├── auth/             # Authentication screens
-│   └── main/             # Main app screens
-├── services/             # Firebase and API services
-├── store/                # Zustand state management
-├── types/                # TypeScript type definitions
-└── utils/                # Utility functions
-```
-
-## 🔒 Security Features
-
-- **Firebase Security Rules** for Firestore, Realtime Database, and Storage
-- **User-based access control** for all data and files
-- **Input validation** and sanitization
-- **Protected routes** requiring authentication
-- **Secure image upload** with file type and size validation
-
-## 🧪 Development Scripts
-
-```bash
-npm start          # Start Expo development server
-npm run ios        # Run on iOS simulator
-npm run android    # Run on Android emulator
-npm run web        # Run in web browser
-npm run lint       # Run ESLint
-npm run lint:fix   # Fix ESLint issues
-npm run type-check # Run TypeScript type checking
-npm run format     # Format code with Prettier
-npm run check-all  # Run all checks (types, lint, format)
-```
-
-## 📋 Current Development Status
-
-**Phase 7: Real-time Chat System** (3/8 tasks completed)
-
-- ✅ Authentication System (100% complete)
-- ✅ Core Navigation & UI Framework (100% complete)
-- ✅ Advanced Camera Integration (87% complete)
-- ✅ Firebase Storage & Snap System (62% complete)
-- 🔄 Real-time Chat System (37% complete)
-- ⏳ Stories Feature (pending)
-- ⏳ UI Polish & Testing (pending)
-- ⏳ Security Hardening (pending)
-
-## 🐛 Known Issues
-
-- Camera functionality testing needed on physical devices
-- Stories feature implementation in progress
-- Push notifications not yet implemented
-- Advanced privacy settings pending
-
-## 🤝 Contributing
-
-This is an internal testing project. For development:
-
-1. Follow the existing code structure and patterns
-2. Run `npm run check-all` before committing
-3. Update documentation for new features
-4. Test on both iOS and Android when possible
-
-## 📄 License
-
-This project is for internal testing and learning purposes only.
-
-## 🔗 Related Documentation
-
-- [Product Requirements Document](./memory-bank/productContext.md)
-- [Technical Architecture](./memory-bank/techContext.md)
-- [Development Progress](./memory-bank/progress.md)
-- [Task List](./tasks/tasks-snapchat-clone-mvp.md)
-
-## 📞 Support
-
-For questions or issues, refer to the memory bank documentation or create an issue in the repository.
+- **Firebase** (Auth, Firestore, Realtime Database, Storage, Cloud Functions)  
+- **Cloud Functions (Node 20 + TS)** for serverless logic & AI integrations  
+- **OpenAI GPT-4o** via callable functions for AI chat  
+- **Expo Notifications + FCM** (push, coming soon)
 
 ---
 
-**Built with ❤️ using React Native, Expo, and Firebase**
+## 🚀 Getting Started Locally
+
+### Prerequisites
+
+1. **Node 20+** & **npm 9+**  
+2. **Expo CLI** – `npm i -g expo-cli`  
+3. **Firebase CLI** – `npm i -g firebase-tools`  
+4. iOS Simulator (macOS) or Android Emulator / physical device
+
+### 1. Clone & Install
+
+```bash
+# Clone
+git clone <repo-url> eventsnap && cd eventsnap
+
+# Install deps
+npm install
+```
+
+### 2. Configure Firebase
+
+1. Create a new Firebase project in the console.  
+2. Enable **Auth → Email/Password**, **Firestore**, **Realtime DB**, **Storage**.  
+3. Copy your web app config and duplicate `firebase.config.example.js` → `firebase.config.js`, then paste your keys.
+4. (Optional) Start local emulators:
+
+```bash
+firebase init emulators
+firebase emulators:start
+```
+
+### 3. Run the App
+
+```bash
+# Start Metro bundler
+npm start        # or: expo start
+
+# In a separate terminal, for iOS / Android shortcuts
+npm run ios      # macOS only
+npm run android  # Android emulator/device
+```
+
+The Expo Dev Tools UI will provide QR codes for physical devices.
+
+### 4. Deploy Cloud Functions & Rules (optional)
+
+```bash
+# Log in & select project
+firebase login
+firebase deploy --only functions,firestore:rules,database:rules,storage:rules
+```
+
+---
+
+## 📂 Project Structure (Simplified)
+
+```
+├── App.tsx                 # Root component
+├── src/
+│   ├── components/
+│   │   ├── features/       # Feature-scoped UI
+│   │   ├── ui/             # Atomic reusable components
+│   │   └── common/         # Shared components
+│   ├── hooks/              # Custom React hooks
+│   ├── navigation/         # App, Auth, Main navigators
+│   ├── screens/            # Screen components grouped by domain
+│   ├── services/           # Firebase & AI service wrappers
+│   ├── store/              # Zustand stores
+│   └── utils/              # Pure utility methods
+├── functions/              # Firebase Cloud Functions (TypeScript)
+└── memory-bank/            # Project docs & context used by Cursor AI
+```
+
+> For a full directory tree, inspect the `project_layout` in this repo.
+
+---
+
+## 📐 Architectural Overview
+
+EventSnap follows a **feature-modular architecture**:
+
+1. **UI Layer** → React Native components & screens  
+2. **State Layer** → Zustand stores & React context  
+3. **Service Layer** → Firebase & AI abstractions  
+4. **Backend** → Firebase services + Cloud Functions (cleanup, AI)  
+
+Refer to `memory-bank/systemPatterns.md` for diagrams and deeper insights.
+
+---
+
+## 🧪 Useful NPM Scripts
+
+```bash
+npm start           # Expo dev server
+npm run ios         # Run on iOS
+npm run android     # Run on Android
+npm run lint        # ESLint
+npm run format      # Prettier
+npm run type-check  # TypeScript check
+npm run test        # Jest tests (coming soon)
+```
+
+---
+
+## 🔒 Security & Privacy
+
+- Firebase Security Rules for Firestore, Realtime DB & Storage  
+- Per-user data isolation (UID-scoped documents & files)  
+- Expiring media cleanup every 24 h via Cloud Functions  
+- Environment variables excluded from version control
+
+---
+
+## 📄 Related Docs
+
+- [Product Brief](./memory-bank/projectbrief.md)
+- [Tech Context](./memory-bank/techContext.md)
+- [System Patterns](./memory-bank/systemPatterns.md)
+- [Progress Board](./memory-bank/progress.md)
+- [PRD & Task Lists](./tasks)
+
+---
+
+## 🤝 Contributing
+
+This repository is currently private/internal. PRs are welcome once the contribution guidelines are published.
+
+---
+
+## 🪪 License
+
+Internal prototype for educational & demo purposes only. Not affiliated with Snap Inc.
+
+---
+
+Crafted with ❤️ by the EventSnap team.
