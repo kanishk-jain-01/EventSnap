@@ -36,7 +36,7 @@ export interface UploadOptions {
 
 // Storage paths enum for consistency
 export enum StoragePaths {
-  SNAPS = 'snaps',
+
   STORIES = 'stories',
   AVATARS = 'avatars',
   THUMBNAILS = 'thumbnails',
@@ -46,7 +46,6 @@ export enum StoragePaths {
 
 // File upload context for different use cases
 export enum UploadContext {
-  SNAP = 'snap',
   STORY = 'story',
   AVATAR = 'avatar',
   THUMBNAIL = 'thumbnail',
@@ -136,28 +135,7 @@ export class StorageService {
     }
   }
 
-  /**
-   * Upload a snap image
-   */
-  static async uploadSnap(
-    file: Blob | Uint8Array | ArrayBuffer,
-    userId: string,
-    snapId: string,
-    options: UploadOptions = {},
-  ): Promise<ApiResponse<UploadResult>> {
-    const path = `${StoragePaths.SNAPS}/${userId}/${snapId}`;
-    const metadata = {
-      snapId,
-      userId,
-      type: 'snap',
-      ...options.customMetadata,
-    };
 
-    return this.uploadImage(file, path, {
-      ...options,
-      customMetadata: metadata,
-    });
-  }
 
   /**
    * Upload a story image
@@ -297,16 +275,7 @@ export class StorageService {
     }
   }
 
-  /**
-   * Delete a snap image
-   */
-  static async deleteSnap(
-    userId: string,
-    snapId: string,
-  ): Promise<ApiResponse<void>> {
-    const path = `${StoragePaths.SNAPS}/${userId}/${snapId}`;
-    return this.deleteFile(path);
-  }
+
 
   /**
    * Delete a story image
@@ -432,8 +401,7 @@ export class StorageService {
       fileId || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     switch (context) {
-      case UploadContext.SNAP:
-        return `${StoragePaths.SNAPS}/${userId}/${id}`;
+      
       case UploadContext.STORY:
         return `${StoragePaths.STORIES}/${userId}/${id}`;
       case UploadContext.AVATAR:

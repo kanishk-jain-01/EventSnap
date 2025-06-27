@@ -29,11 +29,7 @@ export interface UseImageUploadReturn {
     _fileId?: string,
     _options?: UploadOptions,
   ) => Promise<UploadResult | null>;
-  uploadSnap: (
-    _file: Blob | Uint8Array | ArrayBuffer,
-    _snapId: string,
-    _options?: UploadOptions,
-  ) => Promise<UploadResult | null>;
+
   uploadStory: (
     _file: Blob | Uint8Array | ArrayBuffer,
     _storyId: string,
@@ -149,78 +145,7 @@ export const useImageUpload = (
     [user, showSuccessAlert, showErrorAlert, onSuccess, onError],
   );
 
-  // Upload snap
-  const uploadSnap = useCallback(
-    async (
-      file: Blob | Uint8Array | ArrayBuffer,
-      snapId: string,
-      uploadOptions: UploadOptions = {},
-    ): Promise<UploadResult | null> => {
-      if (!user) {
-        const errorMsg = 'User must be authenticated to upload snaps';
-        setError(errorMsg);
-        if (showErrorAlert) {
-          Alert.alert('Error', errorMsg);
-        }
-        onError?.(errorMsg);
-        return null;
-      }
 
-      setIsUploading(true);
-      setUploadProgress(0);
-      setError(null);
-      setResult(null);
-
-      try {
-        const response = await StorageService.uploadSnap(
-          file,
-          user.uid,
-          snapId,
-          {
-            ...uploadOptions,
-            onProgress: progress => {
-              setUploadProgress(progress);
-              uploadOptions.onProgress?.(progress);
-            },
-          },
-        );
-
-        if (response.success && response.data) {
-          setResult(response.data);
-
-          if (showSuccessAlert) {
-            Alert.alert('Success', 'Snap uploaded successfully!');
-          }
-
-          onSuccess?.(response.data);
-          return response.data;
-        } else {
-          const errorMsg = response.error || 'Snap upload failed';
-          setError(errorMsg);
-
-          if (showErrorAlert) {
-            Alert.alert('Upload Error', errorMsg);
-          }
-
-          onError?.(errorMsg);
-          return null;
-        }
-      } catch (_err) {
-        const errorMsg = 'Unexpected error during snap upload';
-        setError(errorMsg);
-
-        if (showErrorAlert) {
-          Alert.alert('Upload Error', errorMsg);
-        }
-
-        onError?.(errorMsg);
-        return null;
-      } finally {
-        setIsUploading(false);
-      }
-    },
-    [user, showSuccessAlert, showErrorAlert, onSuccess, onError],
-  );
 
   // Upload story
   const uploadStory = useCallback(
@@ -377,7 +302,7 @@ export const useImageUpload = (
 
     // Actions
     uploadImage,
-    uploadSnap,
+
     uploadStory,
     uploadAvatar,
     reset,
@@ -385,13 +310,6 @@ export const useImageUpload = (
 };
 
 // Convenience hooks for specific upload types
-export const useSnapUpload = (options?: UseImageUploadOptions) => {
-  const upload = useImageUpload(options);
-  return {
-    ...upload,
-    uploadSnap: upload.uploadSnap,
-  };
-};
 
 export const useStoryUpload = (options?: UseImageUploadOptions) => {
   const upload = useImageUpload(options);

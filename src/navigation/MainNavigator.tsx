@@ -1,8 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabNavigator } from './MainTabNavigator';
-import { RecipientSelectionScreen } from '../screens/main/RecipientSelectionScreen';
-import { SnapViewerScreen } from '../screens/main/SnapViewerScreen';
 import { ChatScreen } from '../screens/main/ChatScreen';
 import { StoryViewerScreen } from '../screens/main/StoryViewerScreen';
 import { UserSearchScreen } from '../screens/main/UserSearchScreen';
@@ -29,24 +27,6 @@ export const MainNavigator: React.FC = () => {
       />
 
       {/* Modal Screens */}
-      <MainStack.Screen
-        name='RecipientSelection'
-        component={RecipientSelectionScreen}
-        options={{
-          presentation: 'modal',
-          gestureEnabled: true,
-        }}
-      />
-
-      <MainStack.Screen
-        name='SnapViewer'
-        component={SnapViewerScreen}
-        options={{
-          presentation: 'fullScreenModal',
-          gestureEnabled: false, // Disable default gestures - we handle swipe down manually
-          headerShown: false,
-        }}
-      />
 
       {/* Chat Screen */}
       <MainStack.Screen

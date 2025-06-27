@@ -1,5 +1,5 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
-import { Story, Snap } from '../types';
+import { Story } from '../types';
 
 // Root Stack Navigator
 export type RootStackParamList = {
@@ -23,10 +23,8 @@ export type MainStackParamList = {
   MainTabs: NavigatorScreenParams<MainTabParamList>;
   ChatScreen: { chatId: string; recipientName: string; recipientId: string };
   StoryViewer: { stories: Story[]; initialIndex: number };
-  SnapViewer: { snap: Snap };
   UserProfile: { userId: string };
   UserSearch: undefined;
-  RecipientSelection: { imageUri: string };
 };
 
 // Main Tab Navigator

@@ -28,7 +28,7 @@ import { ImageEditor } from '../../components/media/ImageEditor';
 import { MainStackParamList } from '../../navigation/types';
 import { useStoryStore } from '../../store/storyStore';
 import { useEventStore } from '../../store/eventStore';
-import { useSnapStore } from '../../store/snapStore';
+
 import { useAuthStore } from '../../store/authStore';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -43,13 +43,13 @@ export const CameraScreen: React.FC = () => {
   const colors = useThemeColors();
 
   // Import event store for role-based permissions
-  const { role, activeEvent } = useEventStore();
+  const { role: _role, activeEvent: _activeEvent } = useEventStore();
 
-  // Import snap store for event snap sending
-  const { sendEventSnap } = useSnapStore();
+  
+
 
   // Import auth store for user info
-  const { user } = useAuthStore();
+  const { user: _user } = useAuthStore();
 
   // Permission and loading states
   const [permissions, setPermissions] = useState<CameraPermissions | null>(
@@ -86,8 +86,8 @@ export const CameraScreen: React.FC = () => {
   const [autoOptimize, setAutoOptimize] = useState(true);
   const [showCompressionInfo] = useState(true);
   const [imageContext, setImageContext] = useState<
-    'snap' | 'story' | 'avatar' | 'thumbnail'
-  >('snap');
+    'story' | 'avatar' | 'thumbnail'
+  >('story');
 
   // Image editing states for Task 4.6
   const [showImageEditor, setShowImageEditor] = useState(false);
@@ -100,9 +100,8 @@ export const CameraScreen: React.FC = () => {
     y: 50,
   });
 
-  // Event snap sending states for Task 5.5
-  const [isSendingEventSnap, setIsSendingEventSnap] = useState(false);
-  const [eventSnapProgress, setEventSnapProgress] = useState(0);
+
+
 
   // Camera ref
   const cameraRef = useRef<CameraView>(null);
@@ -402,8 +401,7 @@ export const CameraScreen: React.FC = () => {
   };
 
   const cycleImageContext = () => {
-    const contexts: ('snap' | 'story' | 'avatar' | 'thumbnail')[] = [
-      'snap',
+    const contexts: ('story' | 'avatar' | 'thumbnail')[] = [
       'story',
       'avatar',
       'thumbnail',
@@ -503,55 +501,7 @@ export const CameraScreen: React.FC = () => {
     setOverlayText('');
   };
 
-  // Event snap sending for Task 5.5
-  const handleSendEventSnap = async () => {
-    if (!capturedPhoto || !user?.uid || !activeEvent?.id || role !== 'host') {
-      Alert.alert(
-        'Error',
-        'Unable to send event snap. Please check your permissions.',
-      );
-      return;
-    }
 
-    setIsSendingEventSnap(true);
-    setEventSnapProgress(0);
-
-    try {
-      const success = await sendEventSnap(
-        capturedPhoto,
-        user.uid,
-        activeEvent.id,
-      );
-
-      if (success) {
-        Alert.alert(
-          'Event Snap Sent!',
-          'Your snap has been sent to all event participants.',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                // Navigate back to event feed
-                navigation.navigate('MainTabs', { screen: 'Home' });
-                // Reset image and text
-                setCapturedPhoto(null);
-                setSelectedImage(null);
-                setImageSource(null);
-                setOverlayText('');
-              },
-            },
-          ],
-        );
-      } else {
-        Alert.alert('Error', 'Failed to send event snap. Please try again.');
-      }
-    } catch (_error) {
-      Alert.alert('Error', 'Failed to send event snap. Please try again.');
-    } finally {
-      setIsSendingEventSnap(false);
-      setEventSnapProgress(0);
-    }
-  };
 
   // Story posting with optional text overlay
   const handlePostStory = async () => {
@@ -929,44 +879,7 @@ export const CameraScreen: React.FC = () => {
                 </Text>
               </TouchableOpacity>
 
-              {/* Send Snap Button - Role-based visibility */}
-              {role === 'host' ? (
-                <TouchableOpacity
-                  onPress={handleSendEventSnap}
-                  className='bg-green-500 px-3 py-3 rounded-full flex-1'
-                  disabled={isSendingEventSnap}
-                >
-                  <Text className='text-white font-semibold text-center text-sm'>
-                    {isSendingEventSnap
-                      ? `📤 ${Math.round(eventSnapProgress)}%`
-                      : '📤 Event Snap'}
-                  </Text>
-                </TouchableOpacity>
-              ) : role === 'guest' ? (
-                <TouchableOpacity
-                  disabled={true}
-                  className='bg-gray-400 px-3 py-3 rounded-full flex-1 opacity-50'
-                >
-                  <Text className='text-gray-600 font-semibold text-center text-sm'>
-                    🚫 Host Only
-                  </Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  onPress={() => {
-                    if (capturedPhoto) {
-                      navigation.navigate('RecipientSelection', {
-                        imageUri: capturedPhoto,
-                      });
-                    }
-                  }}
-                  className='bg-green-500 px-3 py-3 rounded-full flex-1'
-                >
-                  <Text className='text-white font-semibold text-center text-sm'>
-                    📤 Snap
-                  </Text>
-                </TouchableOpacity>
-              )}
+
             </View>
           </View>
         </View>

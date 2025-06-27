@@ -19,26 +19,7 @@ export interface AuthState {
   error: string | null;
 }
 
-// Snap Types
-export interface Snap {
-  id: string;
-  senderId: string;
-  receiverId: string;
-  imageUrl: string;
-  timestamp: Date;
-  expiresAt: Date;
-  viewed: boolean;
-  viewedAt?: Date;
-  /** ID of the event this snap belongs to; null if legacy/global */
-  eventId?: string;
-}
 
-export interface SnapState {
-  receivedSnaps: Snap[];
-  sentSnaps: Snap[];
-  isLoading: boolean;
-  error: string | null;
-}
 
 // Story Types
 export interface Story {
@@ -140,9 +121,7 @@ export type MainStackParamList = {
   MainTabs: undefined;
   ChatScreen: { chatId: string; recipientName: string };
   StoryViewer: { stories: Story[]; initialIndex: number };
-  SnapViewer: { snap: Snap };
   UserProfile: { userId: string };
-  RecipientSelection: { imageUri: string };
 };
 
 // Camera Types

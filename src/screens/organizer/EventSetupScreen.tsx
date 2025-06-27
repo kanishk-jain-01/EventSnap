@@ -247,7 +247,7 @@ export const EventSetupScreen: React.FC = () => {
 
     Alert.alert(
       'End Event',
-      'This will permanently delete all event content (stories, snaps, assets). This action cannot be undone.',
+              'This will permanently delete all event content (stories, assets). This action cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -263,7 +263,7 @@ export const EventSetupScreen: React.FC = () => {
             if (result.success) {
               Alert.alert(
                 'Event Ended',
-                `Successfully cleaned up:\n• ${result.data?.deletedStories || 0} stories\n• ${result.data?.deletedSnaps || 0} snaps\n• ${result.data?.deletedAssets || 0} assets`,
+                `Successfully cleaned up:\n• ${result.data?.deletedStories || 0} stories\n• ${result.data?.deletedAssets || 0} assets`,
                 [
                   {
                     text: 'OK',
