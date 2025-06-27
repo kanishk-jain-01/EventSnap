@@ -28,14 +28,14 @@
   - [ ] 1.2 Update `joinEvent` & `joinEventByCode` to reject when `activeEvent` exists
   - [ ] 1.3 Update `EventSelectionScreen` to surface "Leave current event first" toast
   - [ ] 1.4 Extend `eventStore.clearState()` usage when leaving/ending events
-  - [ ] 1.5 Write unit tests for create/join guards
+  - [ ] 1.5 Manually Test
 
 - [ ] 2.0 Implement Host Promotion via Host Code
   - [ ] 2.1 Generate 6-digit `hostCode` in `createEvent`
   - [ ] 2.2 Add `promoteToHost(eventId, code)` helper in `firestore.service.ts`
   - [ ] 2.3 Add UI in `ManageEventScreen` to enter host code & call promotion helper
   - [ ] 2.4 Update Firestore rules to allow role update when correct code supplied
-  - [ ] 2.5 Write integration tests for host promotion flow
+  - [ ] 2.5 Manually Test
 
 - [ ] 3.0 Complete Manage Event Page (Hosts Only)
   - [ ] 3.1 Create `ManageEventScreen` with docs list, upload, end-event buttons
@@ -49,14 +49,14 @@
   - [ ] 4.2 Add toggle UI in `ProfileScreen`
   - [ ] 4.3 Create `ContactsListScreen` showing participants with sharing enabled
   - [ ] 4.4 Update store and hooks to subscribe to shared contacts list
-  - [ ] 4.5 Unit test contact toggle persistence and list query
+  - [ ] 4.5 Manually Test
 
 - [ ] 5.0 Harden Event-Scoped 1-to-1 Chat Permissions
   - [ ] 5.1 Add `eventId` field enforcement in chat room creation logic
   - [ ] 5.2 Update Realtime DB rules to restrict read/write to same-event participants
   - [ ] 5.3 Update chat UI to display error if users are in different events
   - [ ] 5.4 Add jest tests for chat rule validation using Firebase emulator
-  - [ ] 5.5 Manual regression test old chat rooms remain accessible within event boundaries
+  - [ ] 5.5 Manually Test
 
 - [ ] 6.0 Restrict Camera to Hosts & Simplify Capture Flow
   - [ ] 6.1 Hide `Camera` tab and direct capture entry points for guests (navigation & conditional rendering)
@@ -71,5 +71,5 @@
   - [ ] 7.2 Display story rings grouped by host with clear labels (Host name + avatar)
   - [ ] 7.3 Add engaging empty state: "No stories yet – encourage hosts to post"
   - [ ] 7.4 Add floating "Ask the Assistant" action button that opens Assistant tab (placeholder)
-  - [ ] 7.5 Update tests and snapshots for new feed layout
+  - [ ] 7.5 Manually Test
   - [ ] 7.6 QA visual polish across light & dark accessibility modes 
