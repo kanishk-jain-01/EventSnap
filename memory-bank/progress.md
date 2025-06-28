@@ -1,37 +1,15 @@
 # Progress
 
-_Last updated: {{date:YYYY-MM-DD}}_
+This document tracks the implementation progress of the AI Chat RAG feature, based on the task list in `tasks/tasks-prd-ai-chat-rag.md`.
 
-## What Works ✅
-- Core navigation and screen scaffolding
-- Firebase initialization and config abstraction
-- Auth flows: register, login, logout
-- Camera capture and image upload to Storage
-- Chat list and message viewing (Firestore backed)
-- Story ring UI and viewer with 24h TTL logic
-- Basic AI chat screen skeleton with service layer hooks
-- Cloud Functions for cleanup and embedding ingestion
-- Vector ingestion (PDF & image) functions deployed; Storage trigger auto-upserts to Pinecone
-- Event document upload for hosts (Profile → Upload Document) with validated Storage rules; successful vector ingestion verified
+## What Works
 
-## In Progress 🚧
-- AI Chat Retrieval-Augmented Generation (RAG) pipeline integration
-- Event creation & feed screens refinement
-- Push notification setup via Expo Notifications & FCM
-- End-to-end testing configuration
+-   **Task 1.0: Document Upload & Metadata Storage:** Complete. Hosts can upload documents (PDFs, images), which are stored in Firebase Storage, and the corresponding metadata is saved to Firestore. Security rules are in place.
+-   **Task 2.0: Vector Ingestion Pipeline:** Complete. Cloud Functions are triggered on document upload. They process the files (text extraction, OCR), generate embeddings, and successfully upsert the vectors into Pinecone, namespaced by `eventId`.
+-   **Partial UI Refactor (Task 4.2):** The chat screen composer has been updated to a single input field in preparation for the AI chat interface.
 
-## Next Up 🗓️
-1. Finalize AI chat backend endpoints & client integration
-2. Implement message reactions and typing indicators
-3. Polish UI with Tailwind theme tokens
-4. Add unit tests for hooks and stores
-5. CI/CD pipeline via GitHub Actions + EAS builds
+## What's Left to Build
 
-## Known Issues 🐞
-- Occasional duplicate story documents (race condition on upload)
-- Memory leaks when leaving CameraScreen rapidly
-- Unhandled promise rejection in `ai/cleanup.service.ts` on network loss
-- (Upload issue resolved)
-
----
-Generated automatically by Cursor AI to bootstrap the Memory Bank. 
+-   **Task 3.0: `ragAnswer` Cloud Function:** The core backend logic for retrieving context and generating answers is not yet implemented.
+-   **Task 4.0: Full Chat UI & State Management:** The `chatStore` needs to be updated to handle AI queries, and the UI needs to be able to render AI responses, citations, and loading/error states.
+-   **Task 5.0: Document Browser & Citation Interaction:** The screens for browsing uploaded documents and the functionality for handling clicks on citations in the chat do not exist yet. 

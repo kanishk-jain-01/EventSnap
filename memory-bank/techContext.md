@@ -1,35 +1,21 @@
 # Tech Context
 
-## Frontend
-- **Framework**: React Native (Expo SDK 50)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4 via NativeWind 2.x
-- **Navigation**: react-navigation 7
-- **State Management**: Zustand + React Context where needed
-- **Form Handling**: react-hook-form + zod for validation
-- **Media**: expo-camera, expo-image-picker, expo-av
-- **Testing**: Jest + @testing-library/react-native (to be configured)
+## Technologies Used
 
-## Backend
-- **Firebase**: Auth, Firestore, Storage, Realtime Database
-- **Cloud Functions**: TypeScript (Node 20), organized per feature, using modular SDK v11
-- **Hosting**: Firebase Hosting (for AI model endpoints if needed)
-- **AI Services**: OpenAI GPT-4o via secure callable functions
+-   **Frontend:** React Native with Expo
+-   **Styling:** Tailwind CSS (via `nativewind`)
+-   **State Management:** Zustand
+-   **Backend-as-a-Service (BaaS):** Firebase
+    -   **Authentication:** Firebase Auth
+    -   **Database:** Firestore
+    -   **File Storage:** Firebase Cloud Storage
+    -   **Serverless Logic:** Firebase Cloud Functions (written in TypeScript)
+-   **Vector Database:** Pinecone (for RAG feature)
+-   **AI/LLM Provider:** OpenAI (for `ragAnswer` function)
 
-## Dev Tooling
-- **Linting**: eslint + @typescript-eslint + prettier
-- **Bundler**: Metro (Expo Managed)
-- **CI/CD**: GitHub Actions + EAS Build/Submit (planned)
+## Development Setup
 
-## Environment Configuration
-- Sample Firebase config in `firebase.config.example.js` (must copy to `.env` or `.env.local`).
-- Tailwind theme defined in `tailwind.config.js`.
-- Local emulators supported via `firebase.json`.
-
-## Constraints
-- Keep bundle size < 10 MB for first install.
-- Support iOS 15+ and Android 10+.
-- Use serverless patterns; avoid dedicated backend servers.
-
----
-Generated automatically by Cursor AI to bootstrap the Memory Bank. 
+-   The project is a standard Expo application.
+-   Firebase configuration is required (see `firebase.config.example.js`).
+-   Cloud Functions are located in the `/functions` directory and must be deployed separately via the Firebase CLI.
+-   Environment variables for Pinecone and OpenAI APIs must be set in the Firebase Functions configuration. 

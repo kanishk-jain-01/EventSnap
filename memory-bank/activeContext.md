@@ -1,28 +1,17 @@
-# Active Context (updated {{date:YYYY-MM-DD}})
+# Active Context
 
-## Current Focus
-Continuing AI Chat RAG pipeline – Task 2.x wrap-up and prep for Task 3.0 (`ragAnswer` endpoint).
+## Current Work Focus
 
-### Completed Since Last Update
-1. Extended `functions/ingestPDFEmbeddings` and `functions/ingestImageEmbeddings` with Pinecone upserts (Tasks 2.1 & 2.2).
-2. Added shared `lib/pineconeClient.ts` and set required env vars (Task 2.3).
-3. Created `embeddingStorageTrigger` (onFinalize) to auto-ingest new uploads (Task 2.4).
-4. Deployed updated Cloud Functions; initial smoke test passes.
-5. Fixed Storage upload failure for event documents:
-   • Added debug logging, identified `storage/unauthorized` root cause.
-   • Simplified `storage.rules` – metadata-based `isUploader()` check, removed cross-service lookups.
-   • Verified PDF upload succeeds from Profile → Upload Document.
-   • Task 2.5 "Deploy CF & verify upserts" completed – vectors appear in Pinecone.
-6. Deprecated legacy asset-upload section in `EventSetupScreen`; removed code + UI.
+The immediate goal is to implement the **AI-powered Chat Assistant** using a Retrieval-Augmented Generation (RAG) architecture.
 
-### Remaining / Blocking
-None currently blocking.
+The implementation has been broken down into several parent tasks in `tasks/tasks-prd-ai-chat-rag.md`. We have completed the document upload and vector ingestion pipelines.
 
-### Next Steps
-1. Build Task 3.0 – `ragAnswer` HTTPS callable (query Pinecone + GPT-4o, return citations).
-2. Integrate `chatStore.sendAIQuery` and UI changes for assistant responses.
-3. Clean up debug `console` logs & tighten Storage read rules once RAG flow stabilises.
+## Next Steps
 
----
-
-_This file tracks the live development thread; update after every significant change or decision._ 
+The next task is **3.0 Build `ragAnswer` Cloud Function for RAG responses**. This involves creating a new, HTTPS-callable Cloud Function that will:
+1.  Receive a question from a user.
+2.  Validate the user's event participation.
+3.  Query the Pinecone vector database for relevant context from uploaded documents.
+4.  Construct a prompt using this context and the user's question.
+5.  Call the OpenAI GPT-4o model to generate an answer.
+6.  Return the structured answer, including citations, to the client application. 
