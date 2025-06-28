@@ -10,6 +10,7 @@ import {
 import { WebView } from 'react-native-webview';
 import { Image } from 'expo-image';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { MainStackParamList } from '../../navigation/types';
 import { useThemeColors } from '../../components/ui/ThemeProvider';
@@ -24,6 +25,7 @@ const DocumentViewerScreen: React.FC = () => {
   const route = useRoute<DocumentViewerRouteProp>();
   const navigation = useNavigation();
   const colors = useThemeColors();
+  const insets = useSafeAreaInsets();
   
   const { documentName, documentUrl, documentType, highlightText, chunkIndex } = route.params;
   
@@ -165,12 +167,15 @@ const DocumentViewerScreen: React.FC = () => {
   const renderHighlightBanner = () => {
     if (!highlightText) return null;
 
+    // Calculate the header height: safe area top + padding + content height
+    const headerHeight = insets.top + 12 + 60; // 60px estimated for header content
+
     return (
       <View 
         className={`absolute left-0 right-0 z-10 px-4 py-3 ${
           documentType === 'image' ? 'bg-yellow-500/90' : 'bg-yellow-100 border-b border-yellow-200'
         }`}
-        style={{ top: documentType === 'image' ? 90 : 80 }}
+        style={{ top: headerHeight }}
       >
         <View className="flex-row items-center">
           <Ionicons 
@@ -214,19 +219,20 @@ const DocumentViewerScreen: React.FC = () => {
         
         {/* Header */}
         <View 
-          className={`absolute top-0 left-0 right-0 z-10 px-4 py-3 ${
+          className={`absolute top-0 left-0 right-0 z-10 px-4 pb-3 ${
             documentType === 'image' ? 'bg-black/70' : 'bg-white border-b border-gray-200'
           }`}
-          style={{ paddingTop: documentType === 'image' ? 50 : 12 }}
+          style={{ paddingTop: insets.top + 12 }}
         >
           <View className="flex-row items-center">
             <TouchableOpacity
               onPress={handleClose}
-              className="mr-4 p-2 -ml-2"
+              className="mr-3 p-3 -ml-1"
+              style={{ minWidth: 44, minHeight: 44 }}
             >
               <Ionicons 
                 name="close" 
-                size={24} 
+                size={28} 
                 color={documentType === 'image' ? 'white' : colors.textPrimary} 
               />
             </TouchableOpacity>
@@ -288,8 +294,8 @@ const DocumentViewerScreen: React.FC = () => {
         className="flex-1" 
         style={{ 
           marginTop: documentType === 'image' 
-            ? (highlightText ? 140 : 0) 
-            : (highlightText ? 140 : 80),
+            ? (highlightText ? insets.top + 12 + 60 + 60 : 0) // header + banner
+            : (highlightText ? insets.top + 12 + 60 + 60 : insets.top + 12 + 60), // header only or header + banner
         }}
       >
         {documentType === 'pdf' ? renderPDFViewer() : renderImageViewer()}

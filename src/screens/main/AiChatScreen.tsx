@@ -15,14 +15,6 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { AIMessageBubble } from '../../components/features/chat/AIMessageBubble';
 import { useAIMessages, useIsLoadingAI, useAIError, useChatStore } from '../../store/chatStore';
 
-interface Citation {
-  documentId: string;
-  documentName: string;
-  chunkIndex: number;
-  excerpt: string;
-  storagePath: string;
-}
-
 export const AiChatScreen: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const flatListRef = useRef<FlatList>(null);
@@ -75,20 +67,11 @@ export const AiChatScreen: React.FC = () => {
     }
   };
 
-  const handleCitationPress = (citation: Citation) => {
-    // TODO: Navigate to document viewer (will be implemented in task 5.0)
-    Alert.alert(
-      'Document Citation',
-      `Opening "${citation.documentName}" is coming soon!`,
-      [{ text: 'OK' }],
-    );
-  };
-
   const renderItem = ({ item }: { item: any }) => {
     return (
       <AIMessageBubble
         message={item}
-        onCitationPress={handleCitationPress}
+        // Remove onCitationPress prop to let CitationLink handle its own navigation
       />
     );
   };
@@ -224,7 +207,7 @@ export const AiChatScreen: React.FC = () => {
               style={{ 
                 textAlignVertical: 'center',
                 paddingTop: 12,
-                paddingBottom: 12
+                paddingBottom: 12,
               }}
               multiline
               maxLength={500}
