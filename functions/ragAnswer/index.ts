@@ -119,7 +119,7 @@ export const ragAnswer = functions.https.onCall(async (request): Promise<RagAnsw
     
     // Step 3: Query Pinecone for relevant chunks within the event namespace
     const TOP_K = 5; // Number of most relevant chunks to retrieve
-    const SIMILARITY_THRESHOLD = 0.7; // Minimum similarity score
+    const SIMILARITY_THRESHOLD = 0.5; // Lowered threshold for better recall
     
     const queryResponse = await getPineconeIndex()
       .namespace(eventId)
@@ -131,6 +131,13 @@ export const ragAnswer = functions.https.onCall(async (request): Promise<RagAnsw
       });
     
     console.log(`📌 Pinecone returned ${queryResponse.matches?.length || 0} matches`);
+    
+    // Log all match scores for debugging
+    if (queryResponse.matches) {
+      queryResponse.matches.forEach((match, idx) => {
+        console.log(`🔍 Match ${idx + 1}: score=${match.score?.toFixed(4)}, text preview="${(match.metadata?.text as string)?.substring(0, 100)}..."`);
+      });
+    }
     
     // Filter results by similarity threshold and extract relevant chunks
     const relevantChunks = queryResponse.matches
