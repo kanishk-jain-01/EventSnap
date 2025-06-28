@@ -3,7 +3,8 @@
 - `src/services/firestore.service.ts` – Add `uploadEventDocument()` and related helpers.
 - `src/screens/main/DocumentUploadScreen.tsx` – UI for hosts to upload PDFs/images. (created)
 - `src/screens/main/DocumentListScreen.tsx` – Browsable list of documents for participants.
-- `src/components/features/documents/CitationLink.tsx` – Tappable citation component in chat.
+- `src/components/features/documents/CitationLink.tsx` – Tappable citation component in chat. (created)
+- `src/components/features/chat/AIMessageBubble.tsx` – AI response component with distinct styling. (created)
 - `src/store/chatStore.ts` – Add `sendAIQuery` and state for AI responses.
 - `src/screens/main/ChatScreen.tsx` – Refactor UI for AI chat, citation handling.
 - `src/screens/main/AiChatScreen.tsx` – New AI chat UI with single input and placeholder responses.
@@ -13,7 +14,7 @@
 - `src/screens/main/ProfileScreen.tsx` – Added "Upload Document" button for hosts.
 - `functions/ingestPDFEmbeddings/index.ts` – Extend to write vectors to Pinecone.
 - `functions/ingestImageEmbeddings/index.ts` – Add full-text OCR + vector push.
-- `functions/ragAnswer/index.ts` – New HTTPS callable Cloud Function.
+- `functions/ragAnswer/index.ts` – New HTTPS callable Cloud Function for RAG responses. (created)
 - `functions/lib/pineconeClient.ts` – Shared Pinecone client helper.
 - `firestore.rules` – Update for `events/{eventId}/documents` permissions.
 - `storage.rules` – Update for `events/{eventId}/docs/*` upload rules (host-only writes, participant reads).
@@ -36,18 +37,18 @@
   - [x] 2.4 Wire invocation of ingestion functions via Storage trigger (onFinalize).
   - [x] 2.5 Deploy updated Cloud Functions & verify upserts.
 
-- [ ] 3.0 Build `ragAnswer` Cloud Function for RAG responses
-  - [ ] 3.1 Scaffold HTTPS callable `ragAnswer` function accepting `{eventId, userId, question}`.
-  - [ ] 3.2 Validate `userId` participation in `eventId` via Firestore lookup.
-  - [ ] 3.3 Query Pinecone (top-k) within `namespace=eventId`.
-  - [ ] 3.4 Assemble prompt and call OpenAI GPT-4o; include citations metadata.
-  - [ ] 3.5 Return structured answer `{text, citations[]}` to client.
+- [x] 3.0 Build `ragAnswer` Cloud Function for RAG responses
+  - [x] 3.1 Scaffold HTTPS callable `ragAnswer` function accepting `{eventId, userId, question}`.
+  - [x] 3.2 Validate `userId` participation in `eventId` via Firestore lookup.
+  - [x] 3.3 Query Pinecone (top-k) within `namespace=eventId`.
+  - [x] 3.4 Assemble prompt and call OpenAI GPT-4o; include citations metadata.
+  - [x] 3.5 Return structured answer `{text, citations[]}` to client.
 
-- [ ] 4.0 Refactor Chat UI & `chatStore` for AI Assistant
-  - [ ] 4.1 Add `sendAIQuery(question)` action to `chatStore` to call `ragAnswer`.
+- [x] 4.0 Refactor Chat UI & `chatStore` for AI Assistant
+  - [x] 4.1 Add `sendAIQuery(question)` action to `chatStore` to call `ragAnswer`.
   - [x] 4.2 Update `ChatScreen` composer to single input without recipient selection.
-  - [ ] 4.3 Render AI responses with distinct styling and `CitationLink` components.
-  - [ ] 4.4 Add loading and error states during AI response fetch.
+  - [x] 4.3 Render AI responses with distinct styling and `CitationLink` components.
+  - [x] 4.4 Add loading and error states during AI response fetch.
 
 - [ ] 5.0 Implement Document Browser & Citation Interaction
   - [ ] 5.1 Build `DocumentListScreen` listing documents from Firestore for active event.

@@ -84,7 +84,7 @@ export const processImageEmbeddings = async (
       values: embedResp.data[0].embedding as number[],
       metadata: { eventId, storagePath, chunkIndex: 0, text: fallbackText, isImageFallback: true },
     });
-    console.log(`🖼️ Created fallback embedding (no text found)`);
+    console.log('🖼️ Created fallback embedding (no text found)');
   } else {
     const chunks = chunkText(rawText);
     let idx = 0;
@@ -129,7 +129,7 @@ export const processImageEmbeddings = async (
       { merge: true },
     );
 
-  console.log(`✅ Image embedding completed successfully`);
+  console.log('✅ Image embedding completed successfully');
   return { success: true, chunks: vectors.length };
 };
 

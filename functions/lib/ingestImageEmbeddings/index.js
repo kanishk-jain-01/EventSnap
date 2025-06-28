@@ -110,7 +110,7 @@ const processImageEmbeddings = async (eventId, storagePath) => {
             values: embedResp.data[0].embedding,
             metadata: { eventId, storagePath, chunkIndex: 0, text: fallbackText, isImageFallback: true },
         });
-        console.log(`🖼️ Created fallback embedding (no text found)`);
+        console.log('🖼️ Created fallback embedding (no text found)');
     }
     else {
         const chunks = chunkText(rawText);
@@ -150,7 +150,7 @@ const processImageEmbeddings = async (eventId, storagePath) => {
         chunks: vectors.length,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
-    console.log(`✅ Image embedding completed successfully`);
+    console.log('✅ Image embedding completed successfully');
     return { success: true, chunks: vectors.length };
 };
 exports.processImageEmbeddings = processImageEmbeddings;

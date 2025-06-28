@@ -7,22 +7,31 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { AIMessageBubble } from '../../components/features/chat/AIMessageBubble';
+import { useAIMessages, useIsLoadingAI, useAIError, useChatStore } from '../../store/chatStore';
 
-interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
+interface Citation {
+  documentId: string;
+  documentName: string;
+  chunkIndex: number;
+  excerpt: string;
+  storagePath: string;
 }
 
 export const AiChatScreen: React.FC = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
-  const [isSending, setIsSending] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+
+  // AI store hooks
+  const aiMessages = useAIMessages();
+  const isLoadingAI = useIsLoadingAI();
+  const aiError = useAIError();
+  const { sendAIQuery, clearAIError } = useChatStore();
 
   const headerHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
@@ -31,53 +40,56 @@ export const AiChatScreen: React.FC = () => {
     const text = inputText.trim();
     if (!text) return;
 
-    const userMsg: ChatMessage = {
-      id: `${Date.now()}-user`,
-      role: 'user',
-      content: text,
-    };
+    // Basic input validation
+    if (text.length < 3) {
+      Alert.alert(
+        'Question too short',
+        'Please ask a more detailed question (at least 3 characters).',
+        [{ text: 'OK' }],
+      );
+      return;
+    }
 
-    // Optimistically add user message
-    setMessages(prev => [...prev, userMsg]);
     setInputText('');
-    setIsSending(true);
-
+    
     try {
-      // TODO: Replace with real sendAIQuery in future implementation
-      // Simulate AI response
-      const assistantMsg: ChatMessage = {
-        id: `${Date.now()}-ai`,
-        role: 'assistant',
-        content: '🤖 This is a placeholder AI response. (Integration coming soon!)',
-      };
+      await sendAIQuery(text);
+      // Scroll to bottom after sending
       setTimeout(() => {
-        setMessages(prev => [...prev, assistantMsg]);
-        setIsSending(false);
         flatListRef.current?.scrollToEnd({ animated: true });
-      }, 600);
-    } catch (_err) {
-      // eslint-disable-next-line no-console
-      console.error(_err);
-      setIsSending(false);
+      }, 100);
+    } catch (error) {
+      console.error('Failed to send AI query:', error);
+      Alert.alert(
+        'Failed to send question',
+        'Please check your connection and try again.',
+        [{ text: 'OK' }],
+      );
     }
   };
 
-  const renderItem = ({ item }: { item: ChatMessage }) => {
-    const isUser = item.role === 'user';
+  const handleRetryLastQuery = () => {
+    const lastMessage = aiMessages[aiMessages.length - 1];
+    if (lastMessage && lastMessage.error) {
+      sendAIQuery(lastMessage.question);
+    }
+  };
+
+  const handleCitationPress = (citation: Citation) => {
+    // TODO: Navigate to document viewer (will be implemented in task 5.0)
+    Alert.alert(
+      'Document Citation',
+      `Opening "${citation.documentName}" is coming soon!`,
+      [{ text: 'OK' }],
+    );
+  };
+
+  const renderItem = ({ item }: { item: any }) => {
     return (
-      <View
-        className={`mb-2 px-4 ${isUser ? 'items-end' : 'items-start'}`}
-      >
-        <View
-          className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-            isUser ? 'bg-snap-yellow' : 'bg-gray-700'
-          }`}
-        >
-          <Text className={`${isUser ? 'text-black' : 'text-white'}`}>{
-            item.content
-          }</Text>
-        </View>
-      </View>
+      <AIMessageBubble
+        message={item}
+        onCitationPress={handleCitationPress}
+      />
     );
   };
 
@@ -89,9 +101,21 @@ export const AiChatScreen: React.FC = () => {
         Platform.OS === 'ios' ? headerHeight + insets.bottom : 0
       }
     >
+      {/* AI Processing Status Bar */}
+      {isLoadingAI && (
+        <View className='bg-blue-900 border-b border-blue-700 px-4 py-2'>
+          <View className='flex-row items-center justify-center'>
+            <LoadingSpinner size='small' color='#60a5fa' />
+            <Text className='text-blue-300 text-sm ml-2 font-medium'>
+              AI is analyzing documents...
+            </Text>
+          </View>
+        </View>
+      )}
+
       <FlatList
         ref={flatListRef}
-        data={messages}
+        data={aiMessages}
         keyExtractor={item => item.id}
         renderItem={renderItem}
         contentContainerStyle={{ paddingVertical: 16 }}
@@ -107,34 +131,84 @@ export const AiChatScreen: React.FC = () => {
             <Text className='text-gray-500 text-sm text-center'>
               Example: "What\'s at 2 p.m. today?"
             </Text>
+            {aiError && (
+              <View className='mt-4 p-4 bg-red-900 rounded-lg border border-red-700'>
+                <View className='flex-row items-center justify-center mb-2'>
+                  <Text className='text-red-300 text-lg mr-2'>⚠️</Text>
+                  <Text className='text-red-300 text-sm font-semibold'>
+                    Connection Error
+                  </Text>
+                </View>
+                <Text className='text-red-300 text-xs text-center mb-3'>
+                  {aiError}
+                </Text>
+                <View className='flex-row justify-center space-x-4'>
+                  <TouchableOpacity 
+                    onPress={handleRetryLastQuery} 
+                    className='bg-red-700 px-3 py-1 rounded'
+                  >
+                    <Text className='text-red-200 text-xs font-medium'>
+                      Retry
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={clearAIError} className='px-3 py-1'>
+                    <Text className='text-red-400 text-xs underline'>
+                      Dismiss
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </View>
         }
       />
 
       {/* Composer */}
       <View className='border-t border-gray-800 px-4 py-3'>
+        {/* Character count and validation */}
+        {inputText.length > 0 && (
+          <View className='flex-row justify-between items-center mb-2 px-2'>
+            <Text className={`text-xs ${
+              inputText.trim().length < 3 ? 'text-yellow-400' : 'text-gray-500'
+            }`}>
+              {inputText.trim().length < 3 
+                ? 'Ask a more detailed question...' 
+                : 'Ready to send'
+              }
+            </Text>
+            <Text className={`text-xs ${
+              inputText.length > 450 ? 'text-red-400' : 'text-gray-500'
+            }`}>
+              {inputText.length}/500
+            </Text>
+          </View>
+        )}
+        
         <View className='flex-row items-end space-x-3'>
-          <View className='flex-1 bg-gray-700 rounded-2xl px-4 py-2 min-h-[40px] justify-center'>
+          <View className={`flex-1 rounded-2xl px-4 py-2 min-h-[40px] justify-center ${
+            isLoadingAI ? 'bg-gray-800' : 'bg-gray-700'
+          }`}>
             <TextInput
               value={inputText}
               onChangeText={setInputText}
-              placeholder='Type your question...'
+              placeholder={isLoadingAI ? 'Please wait...' : 'Type your question...'}
               placeholderTextColor='#9CA3AF'
               className='text-white text-base'
               multiline
               maxLength={500}
               onSubmitEditing={handleSend}
               blurOnSubmit={false}
+              editable={!isLoadingAI}
             />
           </View>
           <TouchableOpacity
             onPress={handleSend}
-            disabled={!inputText.trim() || isSending}
+            disabled={!inputText.trim() || isLoadingAI}
             className={`w-10 h-10 rounded-full items-center justify-center ${
-              inputText.trim() && !isSending ? 'bg-snap-yellow' : 'bg-gray-600'
+              inputText.trim() && !isLoadingAI ? 'bg-snap-yellow' : 'bg-gray-600'
             }`}
           >
-            {isSending ? (
+            {isLoadingAI ? (
               <LoadingSpinner size='small' color='#000000' />
             ) : (
               <Text

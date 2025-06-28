@@ -137,7 +137,7 @@ export const processPdfEmbeddings = async (
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       }, { merge: true });
 
-    console.log(`✅ PDF embedding completed successfully`);
+    console.log('✅ PDF embedding completed successfully');
     return { success: true, chunks: vectors.length };
   } catch (error) {
     console.error('Error processing PDF embeddings:', error);

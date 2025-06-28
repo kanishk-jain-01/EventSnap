@@ -5,3 +5,4 @@ export {
   cleanupExpiredEventsScheduled,
 } from './deleteExpiredContent';
 export { ingestEmbeddingsOnFinalize } from './embeddingStorageTrigger';
+export { ragAnswer } from './ragAnswer';
