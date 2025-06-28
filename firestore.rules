@@ -60,6 +60,18 @@ service cloud.firestore {
           request.auth.uid == participantId || participantIsHost(eventId)
         );
       }
+
+      // Documents sub-collection for event assets (PDFs/images)
+      match /documents/{documentId} {
+        /*
+         * Read: Allowed for any authenticated participant in the event.
+         * Create/Update/Delete: Only event hosts may write or modify documents.
+         */
+        allow read: if request.auth != null && participantInEvent(eventId);
+
+        // Only hosts can create or modify documents
+        allow create, update, delete: if request.auth != null && participantIsHost(eventId);
+      }
     }
     
     // Snaps collection - readable by sender and recipient only

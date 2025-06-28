@@ -294,3 +294,29 @@ export interface EventParticipant {
   /** When the participant joined this event */
   joinedAt: Date;
 }
+
+// Event Document (uploaded PDF or image associated with an event)
+export interface EventDocument {
+  /** Firestore auto-generated ID */
+  id: string;
+  /** ID of the event this document belongs to */
+  eventId: string;
+  /** Original filename as uploaded by the host */
+  name: string;
+  /** Firebase Storage path where the file is stored */
+  storagePath: string;
+  /** Signed or public download URL */
+  downloadUrl: string;
+  /** MIME type of the uploaded file */
+  contentType: string;
+  /** Whether the doc is a PDF or an image */
+  type: 'pdf' | 'image';
+  /** UID of the user who uploaded the document */
+  uploadedBy: string;
+  /** File size in bytes */
+  size: number;
+  /** Creation timestamp */
+  createdAt: Date;
+  /** Additional optional metadata – e.g. page count for PDFs */
+  pageCount?: number;
+}

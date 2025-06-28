@@ -432,6 +432,12 @@ export const ProfileScreen: React.FC = () => {
                     size='small'
                   />
                   <Button
+                    title='Upload Document'
+                    onPress={() => navigation.navigate('DocumentUpload')}
+                    variant='secondary'
+                    size='small'
+                  />
+                  <Button
                     title='Show Host Code'
                     onPress={copyHostCode}
                     variant='outline'

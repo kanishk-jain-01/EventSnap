@@ -6,6 +6,7 @@ import { StoryViewerScreen } from '../screens/main/StoryViewerScreen';
 import { UserSearchScreen } from '../screens/main/UserSearchScreen';
 import { UserProfileScreen } from '../screens/main/UserProfileScreen';
 import { HostListScreen } from '../screens/main/HostListScreen';
+import DocumentUploadScreen from '../screens/main/DocumentUploadScreen';
 import { MainStackParamList } from '../navigation/types';
 
 const MainStack = createNativeStackNavigator<MainStackParamList>();
@@ -95,6 +96,20 @@ export const MainNavigator: React.FC = () => {
           presentation: 'card',
           headerShown: true,
           title: 'Event Hosts',
+          headerStyle: { backgroundColor: '#1F1F1F' },
+          headerTitleStyle: { color: '#FFFFFF' },
+          headerTintColor: '#FFFC00',
+        }}
+      />
+
+      {/* Document Upload Screen */}
+      <MainStack.Screen
+        name='DocumentUpload'
+        component={DocumentUploadScreen}
+        options={{
+          presentation: 'card',
+          headerShown: true,
+          title: 'Upload Document',
           headerStyle: { backgroundColor: '#1F1F1F' },
           headerTitleStyle: { color: '#FFFFFF' },
           headerTintColor: '#FFFC00',

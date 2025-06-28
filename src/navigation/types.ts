@@ -26,6 +26,7 @@ export type MainStackParamList = {
   UserProfile: { userId: string };
   UserSearch: undefined;
   HostList: undefined;
+  DocumentUpload: undefined;
 };
 
 // Main Tab Navigator

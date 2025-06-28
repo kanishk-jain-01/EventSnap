@@ -22,6 +22,7 @@ import { firestore } from './firebase/config';
 import type { Story } from '../types';
 import type { Event as AppEvent } from '../types';
 import { ApiResponse, User } from '../types';
+import { StorageService, UploadProgressCallback, StoragePaths } from './storage.service';
 
 // Firestore collection names
 export const COLLECTIONS = {
@@ -31,6 +32,14 @@ export const COLLECTIONS = {
   MESSAGES: 'messages',
   EVENTS: 'events',
   CONTACTS: 'contacts', // Sub-collection name for user contacts (planned)
+} as const;
+
+/**
+ * Sub-collection names inside an Event document
+ */
+export const EVENT_SUBCOLLECTIONS = {
+  PARTICIPANTS: 'participants',
+  DOCUMENTS: 'documents',
 } as const;
 
 // Story document interface for Firestore
@@ -1180,6 +1189,99 @@ export class FirestoreService {
       return {
         success: false,
         error: 'Failed to promote to host',
+      };
+    }
+  }
+
+  /**
+   * Upload an Event Document (PDF or image) to Storage and store its metadata under
+   * `/events/{eventId}/documents/{docId}` sub-collection.
+   */
+  static async uploadEventDocument(
+    eventId: string,
+    uploaderId: string,
+    file: Blob | Uint8Array | ArrayBuffer,
+    fileName: string,
+    contentType: string,
+    onProgress?: UploadProgressCallback,
+  ): Promise<ApiResponse<import('../types').EventDocument>> {
+    try {
+      // 1. Generate a Firestore document ID ahead of time so we can use it in the Storage path
+      const docId = doc(
+        collection(
+          firestore,
+          COLLECTIONS.EVENTS,
+          eventId,
+          EVENT_SUBCOLLECTIONS.DOCUMENTS,
+        ),
+      ).id;
+
+      // 2. Upload the file to Firebase Storage under `events/{eventId}/docs/{docId}`
+      const storagePath = `${StoragePaths.EVENTS}/${eventId}/docs/${docId}`;
+      const uploadRes = await StorageService.uploadImage(file, storagePath, {
+        onProgress,
+        contentType,
+        customMetadata: {
+          eventId,
+          docId,
+          uploaderId,
+          fileName,
+          type: 'eventDoc',
+        },
+      });
+
+      if (!uploadRes.success || !uploadRes.data) {
+        return {
+          success: false,
+          error: uploadRes.error || 'Failed to upload document',
+        };
+      }
+
+      const { downloadURL, fullPath, size } = uploadRes.data;
+
+      // 3. Construct Firestore document data
+      const docType: 'pdf' | 'image' = contentType.startsWith('application/pdf') ? 'pdf' : 'image';
+
+      const docData = {
+        name: fileName,
+        storagePath: fullPath,
+        downloadUrl: downloadURL,
+        contentType,
+        type: docType,
+        uploadedBy: uploaderId,
+        size,
+        createdAt: serverTimestamp() as Timestamp,
+      };
+
+      // 4. Write metadata to Firestore
+      const docRef = doc(
+        firestore,
+        COLLECTIONS.EVENTS,
+        eventId,
+        EVENT_SUBCOLLECTIONS.DOCUMENTS,
+        docId,
+      );
+      await setDoc(docRef, docData);
+
+      // 5. Return app-level type object
+      const eventDocument: import('../types').EventDocument = {
+        id: docId,
+        eventId,
+        name: fileName,
+        storagePath: fullPath,
+        downloadUrl: downloadURL,
+        contentType,
+        type: docType,
+        uploadedBy: uploaderId,
+        size,
+        createdAt: new Date(),
+      };
+
+      return { success: true, data: eventDocument };
+    } catch (_error) {
+      return {
+        success: false,
+        error: 'Failed to upload event document',
       };
     }
   }

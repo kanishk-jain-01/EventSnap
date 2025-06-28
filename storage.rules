@@ -30,6 +30,15 @@ service firebase.storage {
       return request.resource.size < 2 * 1024 * 1024; // 2MB limit for avatars
     }
 
+    // Cross-service checks (requires Firestore cross-service rules support)
+    function participantInEvent(eventId) {
+      return firestore.exists(/databases/$(database)/documents/events/$(eventId)/participants/$(request.auth.uid));
+    }
+
+    function participantIsHost(eventId) {
+      return firestore.get(/databases/$(database)/documents/events/$(eventId)/participants/$(request.auth.uid)).data.role == 'host';
+    }
+
     // Snaps - Ephemeral photo messages between users
     match /snaps/{userId}/{snapId} {
       // Users can upload snaps to their own folder
@@ -103,6 +112,19 @@ service firebase.storage {
       
       // Allow deletion for cleanup
       allow delete: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // Event Documents (PDFs & images uploaded by hosts)
+    match /events/{eventId}/docs/{docId} {
+      // Only hosts may upload or delete documents
+      allow write, delete: if isAuthenticated() && participantIsHost(eventId) && (
+        // Accept PDFs or images only
+        (request.resource.contentType.matches('image/.*') || request.resource.contentType.matches('application/pdf.*')) &&
+        request.resource.size < 20 * 1024 * 1024 // 20MB limit
+      );
+
+      // Any participant may read/download documents
+      allow read: if isAuthenticated() && participantInEvent(eventId);
     }
     
     // Deny all other access
