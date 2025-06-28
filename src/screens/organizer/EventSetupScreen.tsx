@@ -16,15 +16,6 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { useEventStore } from '../../store/eventStore';
 import { useAuth } from '../../hooks/useAuth';
-import { useNavigation } from '@react-navigation/native';
-import type { RootStackParamList } from '../../navigation/types';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import * as DocumentPicker from 'expo-document-picker';
-import { UploadProgress } from '../../components/ui/UploadProgress';
-import { StorageService } from '../../services/storage.service';
-import { IngestionService } from '../../services/ai/ingestion.service';
-import { UploadStatus } from '../../components/ui/UploadProgress';
-import { CleanupService } from '../../services/ai/cleanup.service';
 import { useThemeColors } from '../../components/ui/ThemeProvider';
 
 export const EventSetupScreen: React.FC = () => {
@@ -38,24 +29,10 @@ export const EventSetupScreen: React.FC = () => {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  // Upload state management
-  interface UploadItem {
-    id: string;
-    fileName: string;
-    progress: number;
-    status: UploadStatus;
-    error?: string;
-  }
-
-  const [uploads, setUploads] = useState<UploadItem[]>([]);
   const [eventCreated, setEventCreated] = useState(false);
-  const [endingEvent, setEndingEvent] = useState(false);
 
   const { userId } = useAuth();
   const createEvent = useEventStore(state => state.createEvent);
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const activeEvent = useEventStore(state => state.activeEvent);
 
   const handleStartChange = (_event: any, selectedDate?: Date) => {
@@ -117,189 +94,6 @@ export const EventSetupScreen: React.FC = () => {
     if (activeEvent?.joinCode) {
       Clipboard.setString(activeEvent.joinCode);
       Alert.alert('Copied!', 'Join code copied to clipboard');
-    }
-  };
-
-  /** Pick a PDF or image file and upload it as an event asset */
-  const handlePickAsset = async () => {
-    if (!activeEvent?.id) {
-      Alert.alert('Error', 'Event not found. Please create the event first.');
-      return;
-    }
-
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ['application/pdf', 'image/*'],
-      copyToCacheDirectory: true,
-    });
-
-    if (result.canceled) return;
-
-    const file = (result as any).assets ? (result as any).assets[0] : result; // compatibility
-    const { uri, name, mimeType } = file;
-
-    // Generate unique asset ID
-    const assetId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-    try {
-      const response = await fetch(uri);
-      const blob = await response.blob();
-
-      // Add to uploads list
-      setUploads(prev => [
-        ...prev,
-        {
-          id: assetId,
-          fileName: name,
-          progress: 0,
-          status: 'uploading',
-        },
-      ]);
-
-      const updateProgress = (progress: number) => {
-        setUploads(prev =>
-          prev.map(u => (u.id === assetId ? { ...u, progress } : u)),
-        );
-      };
-
-      const uploadRes = await StorageService.uploadEventAsset(
-        blob,
-        activeEvent.id,
-        assetId,
-        {
-          contentType:
-            mimeType ||
-            (name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
-          onProgress: updateProgress,
-        },
-      );
-
-      if (uploadRes.success && uploadRes.data) {
-        // Update upload status to processing
-        setUploads(prev =>
-          prev.map(u =>
-            u.id === assetId ? { ...u, status: 'processing' } : u,
-          ),
-        );
-
-        // Trigger AI ingestion based on file type
-        const ingestionRes = name.toLowerCase().endsWith('.pdf')
-          ? await IngestionService.ingestPdf(
-              activeEvent.id,
-              uploadRes.data.fullPath,
-            )
-          : await IngestionService.ingestImage(
-              activeEvent.id,
-              uploadRes.data.fullPath,
-            );
-
-        if (ingestionRes.success) {
-          setUploads(prev =>
-            prev.map(u =>
-              u.id === assetId
-                ? { ...u, status: 'completed', progress: 100 }
-                : u,
-            ),
-          );
-        } else {
-          setUploads(prev =>
-            prev.map(u =>
-              u.id === assetId
-                ? {
-                    ...u,
-                    status: 'error',
-                    error: ingestionRes.error || 'Processing failed',
-                  }
-                : u,
-            ),
-          );
-        }
-      } else {
-        setUploads(prev =>
-          prev.map(u =>
-            u.id === assetId
-              ? {
-                  ...u,
-                  status: 'error',
-                  error: uploadRes.error || 'Upload failed',
-                }
-              : u,
-          ),
-        );
-      }
-    } catch (_error) {
-      setUploads(prev =>
-        prev.map(u =>
-          u.id === assetId
-            ? { ...u, status: 'error', error: 'Upload failed' }
-            : u,
-        ),
-      );
-    }
-  };
-
-  /** End the event and clean up all content */
-  const handleEndEvent = async () => {
-    if (!activeEvent?.id) {
-      Alert.alert('Error', 'No active event to end');
-      return;
-    }
-
-    Alert.alert(
-      'End Event',
-              'This will permanently delete all event content (stories, assets). This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'End Event',
-          style: 'destructive',
-          onPress: async () => {
-            setEndingEvent(true);
-
-            const result = await CleanupService.endEvent(activeEvent.id, true);
-
-            setEndingEvent(false);
-
-            if (result.success) {
-              Alert.alert(
-                'Event Ended',
-                `Successfully cleaned up:\n• ${result.data?.deletedStories || 0} stories\n• ${result.data?.deletedAssets || 0} assets`,
-                [
-                  {
-                    text: 'OK',
-                    onPress: async () => {
-                      // Clear event from both state and database
-                      if (userId) {
-                        await useEventStore.getState().clearActiveEvent(userId);
-                      }
-                      // Navigate to event selection since user no longer has active event
-                      navigation.getParent()?.reset({
-                        index: 0,
-                        routes: [{ name: 'EventSelection' }],
-                      });
-                    },
-                  },
-                ],
-              );
-            } else {
-              Alert.alert('Error', result.error || 'Failed to end event');
-            }
-          },
-        },
-      ],
-    );
-  };
-
-  const handleDone = () => {
-    if (navigation.canGoBack()) {
-      navigation.goBack();
-    } else {
-      // If there's no screen to go back to (e.g., EventSelection was removed
-      // after the new event became active), reset the root stack to Main so
-      // the user lands on the normal event UI.
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Main' }],
-      });
     }
   };
 
@@ -512,67 +306,6 @@ export const EventSetupScreen: React.FC = () => {
                 >
                   Share this code with participants so they can join your event
                 </Text>
-              </View>
-            </View>
-          )}
-
-          {/* Asset Upload Section */}
-          {eventCreated && (
-            <View style={{ marginTop: 0 }}>
-              <Text
-                style={{
-                  color: colors.textPrimary,
-                  fontSize: 18,
-                  fontWeight: '600',
-                  marginBottom: 16,
-                }}
-              >
-                Event Assets
-              </Text>
-              <Text
-                style={{
-                  color: colors.textSecondary,
-                  fontSize: 14,
-                  marginBottom: 16,
-                  lineHeight: 20,
-                }}
-              >
-                Upload PDFs and images for AI-powered contextual search.
-                Participants can ask questions about your event materials.
-              </Text>
-
-              <Button
-                title='Add Asset'
-                onPress={handlePickAsset}
-                variant='secondary'
-              />
-
-              {/* Upload Progress List */}
-              {uploads.length > 0 && (
-                <View style={{ marginTop: 16 }}>
-                  {uploads.map(upload => (
-                    <UploadProgress
-                      key={upload.id}
-                      fileName={upload.fileName}
-                      progress={upload.progress}
-                      status={upload.status}
-                      error={upload.error}
-                    />
-                  ))}
-                </View>
-              )}
-
-              {/* Action Buttons */}
-              <View style={{ marginTop: 24, gap: 12 }}>
-                <Button title='Done' onPress={handleDone} variant='primary' />
-
-                <Button
-                  title='End Event'
-                  onPress={handleEndEvent}
-                  disabled={endingEvent}
-                  loading={endingEvent}
-                  variant='danger'
-                />
               </View>
             </View>
           )}

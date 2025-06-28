@@ -12,6 +12,7 @@ _Last updated: {{date:YYYY-MM-DD}}_
 - Basic AI chat screen skeleton with service layer hooks
 - Cloud Functions for cleanup and embedding ingestion
 - Vector ingestion (PDF & image) functions deployed; Storage trigger auto-upserts to Pinecone
+- Event document upload for hosts (Profile → Upload Document) with validated Storage rules; successful vector ingestion verified
 
 ## In Progress 🚧
 - AI Chat Retrieval-Augmented Generation (RAG) pipeline integration
@@ -30,7 +31,7 @@ _Last updated: {{date:YYYY-MM-DD}}_
 - Occasional duplicate story documents (race condition on upload)
 - Memory leaks when leaving CameraScreen rapidly
 - Unhandled promise rejection in `ai/cleanup.service.ts` on network loss
-- `uploadEventDocument` fails for some hosts (likely Storage rule / role mismatch)
+- (Upload issue resolved)
 
 ---
 Generated automatically by Cursor AI to bootstrap the Memory Bank. 

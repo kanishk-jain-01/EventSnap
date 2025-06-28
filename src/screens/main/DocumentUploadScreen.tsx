@@ -41,6 +41,21 @@ const DocumentUploadScreen: React.FC = () => {
       const response = await fetch(file.uri);
       const blob = await response.blob();
 
+      console.log('[DEBUG] Selected file size (bytes):', blob.size);
+
+      // DEBUG: log participant role/record before attempting upload
+      if (activeEvent && user?.uid) {
+        try {
+          const participantRes = await FirestoreService.getParticipant(
+            activeEvent.id,
+            user.uid,
+          );
+          console.log('[DEBUG] Participant record:', participantRes);
+        } catch (err) {
+          console.error('[DEBUG] Failed to fetch participant record', err);
+        }
+      }
+
       setIsUploading(true);
       setUploadProgress(0);
 
@@ -56,6 +71,11 @@ const DocumentUploadScreen: React.FC = () => {
         file.mimeType || 'application/octet-stream',
         onProgress,
       );
+
+      // DEBUG: log full response from upload attempt
+      if (!res.success) {
+        console.error('[DEBUG] uploadEventDocument response:', res);
+      }
 
       if (res.success) {
         Alert.alert('Upload Successful', `${file.name} has been uploaded.`);

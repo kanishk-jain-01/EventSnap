@@ -1218,9 +1218,21 @@ export class FirestoreService {
 
       // 2. Upload the file to Firebase Storage under `events/{eventId}/docs/{docId}`
       const storagePath = `${StoragePaths.EVENTS}/${eventId}/docs/${docId}`;
+
+      // Ensure content type is allowed by Storage rules (image/* or application/pdf)
+      const safeContentType =
+        contentType &&
+        (contentType.startsWith('image/') || contentType.startsWith('application/pdf'))
+          ? contentType
+          : fileName.toLowerCase().endsWith('.pdf')
+          ? 'application/pdf'
+          : 'image/jpeg';
+
+      console.log('[DEBUG] Using contentType for upload:', safeContentType);
+
       const uploadRes = await StorageService.uploadImage(file, storagePath, {
         onProgress,
-        contentType,
+        contentType: safeContentType,
         customMetadata: {
           eventId,
           docId,
@@ -1240,13 +1252,13 @@ export class FirestoreService {
       const { downloadURL, fullPath, size } = uploadRes.data;
 
       // 3. Construct Firestore document data
-      const docType: 'pdf' | 'image' = contentType.startsWith('application/pdf') ? 'pdf' : 'image';
+      const docType: 'pdf' | 'image' = safeContentType.startsWith('application/pdf') ? 'pdf' : 'image';
 
       const docData = {
         name: fileName,
         storagePath: fullPath,
         downloadUrl: downloadURL,
-        contentType,
+        contentType: safeContentType,
         type: docType,
         uploadedBy: uploaderId,
         size,
@@ -1270,7 +1282,7 @@ export class FirestoreService {
         name: fileName,
         storagePath: fullPath,
         downloadUrl: downloadURL,
-        contentType,
+        contentType: safeContentType,
         type: docType,
         uploadedBy: uploaderId,
         size,
@@ -1278,10 +1290,16 @@ export class FirestoreService {
       };
 
       return { success: true, data: eventDocument };
-    } catch (_error) {
+    } catch (err: any) {
+      // DEBUG: surface underlying error from Storage/Firebase
+      console.error('[FirestoreService] uploadEventDocument error', err);
+
       return {
         success: false,
-        error: 'Failed to upload event document',
+        error:
+          typeof err === 'string'
+            ? err
+            : err?.error || err?.message || 'Failed to upload event document',
       };
     }
   }

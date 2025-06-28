@@ -93,6 +93,8 @@ export class StorageService {
             options.onProgress?.(progress);
           },
           (error: StorageError) => {
+            // DEBUG: Log raw Firebase Storage error details
+            console.error('[StorageService] uploadImage error:', error.code, error.message);
             // Error handling
             reject({
               success: false,
@@ -100,6 +102,8 @@ export class StorageService {
             });
           },
           async () => {
+            // DEBUG: upload successful
+            console.log('[StorageService] uploadImage success for', path);
             // Upload completed successfully
             try {
               const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
