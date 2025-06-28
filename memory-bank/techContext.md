@@ -6,8 +6,9 @@
 - **Framework:** React Native with Expo
 - **Styling:** Tailwind CSS (via `nativewind`)
 - **State Management:** Zustand with subscriptions
-- **Navigation:** React Navigation v6
+- **Navigation:** React Navigation v6 with TypeScript integration
 - **Type Safety:** TypeScript throughout
+- **Document Viewing:** react-native-webview (PDFs), expo-image (images with zoom/pan)
 
 ### **Backend-as-a-Service (BaaS)**
 - **Authentication:** Firebase Auth with AsyncStorage persistence

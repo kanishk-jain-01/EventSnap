@@ -1,6 +1,5 @@
 import * as functions from 'firebase-functions/v2';
 import * as admin from 'firebase-admin';
-import * as fs from 'fs';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { Pinecone } from '@pinecone-database/pinecone';
 import OpenAI from 'openai';

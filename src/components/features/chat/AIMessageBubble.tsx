@@ -22,7 +22,7 @@ interface AIMessage {
 
 interface AIMessageBubbleProps {
   message: AIMessage;
-  onCitationPress?: (citation: Citation) => void;
+  onCitationPress?: (_citation: Citation) => void;
 }
 
 export const AIMessageBubble: React.FC<AIMessageBubbleProps> = ({

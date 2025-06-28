@@ -154,8 +154,8 @@ export const ragAnswer = functions.https.onCall(async (request): Promise<RagAnsw
     
     // Step 4: Assemble context and generate AI response
     // Prepare context from retrieved chunks
-    const contextSections = relevantChunks.map((chunk, idx) => 
-      `[Source ${idx + 1}]\n${chunk.text}\n`,
+    const contextSections = relevantChunks.map((chunk, _idx) => 
+      `[Source ${_idx + 1}]\n${chunk.text}\n`,
     ).join('\n');
     
     // Construct the prompt for GPT-4o
@@ -197,7 +197,7 @@ Please provide a helpful answer based on the event documents provided above.`;
     console.log(`✅ Generated AI response (${aiResponse.length} characters)`);
     
     // Prepare citations with better document naming
-    const citations: Citation[] = relevantChunks.map((chunk, idx) => {
+    const citations: Citation[] = relevantChunks.map((chunk, _idx) => {
       // Extract document name from storage path
       const pathParts = chunk.storagePath.split('/');
       const fileName = pathParts[pathParts.length - 1] || 'unknown';

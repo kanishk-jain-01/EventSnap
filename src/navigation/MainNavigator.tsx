@@ -7,6 +7,8 @@ import { UserSearchScreen } from '../screens/main/UserSearchScreen';
 import { UserProfileScreen } from '../screens/main/UserProfileScreen';
 import { HostListScreen } from '../screens/main/HostListScreen';
 import DocumentUploadScreen from '../screens/main/DocumentUploadScreen';
+import DocumentViewerScreen from '../screens/main/DocumentViewerScreen';
+import DocumentListScreen from '../screens/main/DocumentListScreen';
 import { MainStackParamList } from '../navigation/types';
 
 const MainStack = createNativeStackNavigator<MainStackParamList>();
@@ -113,6 +115,27 @@ export const MainNavigator: React.FC = () => {
           headerStyle: { backgroundColor: '#1F1F1F' },
           headerTitleStyle: { color: '#FFFFFF' },
           headerTintColor: '#FFFC00',
+        }}
+      />
+
+      {/* Document List Screen */}
+      <MainStack.Screen
+        name='DocumentList'
+        component={DocumentListScreen}
+        options={{
+          presentation: 'card',
+          headerShown: false,
+        }}
+      />
+
+      {/* Document Viewer Screen */}
+      <MainStack.Screen
+        name='DocumentViewer'
+        component={DocumentViewerScreen}
+        options={{
+          presentation: 'fullScreenModal',
+          headerShown: false,
+          gestureEnabled: false,
         }}
       />
 

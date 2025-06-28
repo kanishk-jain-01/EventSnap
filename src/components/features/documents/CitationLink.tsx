@@ -12,7 +12,7 @@ interface Citation {
 interface CitationLinkProps {
   citation: Citation;
   index: number;
-  onPress?: (citation: Citation) => void;
+  onPress?: (_citation: Citation) => void;
 }
 
 export const CitationLink: React.FC<CitationLinkProps> = ({

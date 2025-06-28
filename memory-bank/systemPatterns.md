@@ -28,6 +28,7 @@
 - **Component-Based UI:** The UI is built with reusable React components, organized by feature and type (e.g., `ui/`, `media/`, `social/`, `features/`).
 - **Centralized State Management:** Zustand is used for managing global state (e.g., auth status, current event), providing a simple and hook-based API. Feature-specific state is co-located with the components where possible.
 - **Feature-Driven Organization:** New pattern of organizing components by feature (`features/chat/`, `features/documents/`) for better maintainability.
+- **Screen-Based Navigation:** React Navigation with TypeScript integration for type-safe navigation between screens, including modal presentations for document viewing.
 
 ### **Backend Patterns**
 - **Event-Scoped Data Isolation:** All AI/RAG operations are scoped to specific events using Pinecone namespaces and Firestore subcollections, ensuring complete data privacy between events.
@@ -63,6 +64,7 @@
 ### **Compound Components**
 - **AIMessageBubble + CitationLink:** Composed components that work together to display AI responses with interactive citations.
 - **Modal + Content:** Reusable modal wrapper with various content types for consistent UX.
+- **DocumentListScreen + DocumentViewerScreen:** Integrated document management flow with list-to-detail navigation pattern.
 
 ### **Hook-Based State Access**
 - **Convenience Hooks:** Custom hooks like `useAIMessages()`, `useIsLoadingAI()` provide clean component APIs.
@@ -84,4 +86,6 @@
 
 ### **Caching & Optimization**
 - **Vector Caching:** Pinecone provides built-in caching for vector operations.
-- **Firebase Offline Support:** Firestore offline capabilities for improved user experience. 
+- **Firebase Offline Support:** Firestore offline capabilities for improved user experience.
+- **Real-time Subscriptions:** Efficient Firestore real-time listeners for document list updates.
+- **Native Performance:** expo-image for optimized image rendering with zoom/pan capabilities. 

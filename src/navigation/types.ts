@@ -27,6 +27,8 @@ export type MainStackParamList = {
   UserSearch: undefined;
   HostList: undefined;
   DocumentUpload: undefined;
+  DocumentViewer: { documentId: string; documentName: string; documentUrl: string; documentType: 'pdf' | 'image' };
+  DocumentList: undefined;
 };
 
 // Main Tab Navigator

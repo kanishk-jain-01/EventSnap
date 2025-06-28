@@ -1,16 +1,17 @@
 ## Relevant Files
 
-- `src/services/firestore.service.ts` – Add `uploadEventDocument()` and related helpers.
+- `src/services/firestore.service.ts` – Add `uploadEventDocument()`, `getEventDocuments()`, and `subscribeToEventDocuments()` methods.
 - `src/screens/main/DocumentUploadScreen.tsx` – UI for hosts to upload PDFs/images. (created)
-- `src/screens/main/DocumentListScreen.tsx` – Browsable list of documents for participants.
+- `src/screens/main/DocumentListScreen.tsx` – Browsable list of documents for participants. (created)
 - `src/components/features/documents/CitationLink.tsx` – Tappable citation component in chat. (created)
 - `src/components/features/chat/AIMessageBubble.tsx` – AI response component with distinct styling. (created)
 - `src/store/chatStore.ts` – Add `sendAIQuery` and state for AI responses.
 - `src/screens/main/ChatScreen.tsx` – Refactor UI for AI chat, citation handling.
 - `src/screens/main/AiChatScreen.tsx` – New AI chat UI with single input and placeholder responses.
 - `src/navigation/MainTabNavigator.tsx` – Switched Chat tab to use `AiChatScreen`.
-- `src/navigation/MainNavigator.tsx` – Added `DocumentUpload` screen.
-- `src/navigation/types.ts` – Added `DocumentUpload` route.
+- `src/navigation/MainNavigator.tsx` – Added `DocumentUpload`, `DocumentList`, and `DocumentViewer` screens.
+- `src/navigation/types.ts` – Added `DocumentUpload`, `DocumentList`, and `DocumentViewer` routes.
+- `src/screens/main/DocumentViewerScreen.tsx` – PDF and image viewer with WebView and expo-image. (created)
 - `src/screens/main/ProfileScreen.tsx` – Added "Upload Document" button for hosts.
 - `functions/ingestPDFEmbeddings/index.ts` – Extend to write vectors to Pinecone.
 - `functions/ingestImageEmbeddings/index.ts` – Add full-text OCR + vector push.
@@ -51,7 +52,7 @@
   - [x] 4.4 Add loading and error states during AI response fetch.
 
 - [ ] 5.0 Implement Document Browser & Citation Interaction
-  - [ ] 5.1 Build `DocumentListScreen` listing documents from Firestore for active event.
-  - [ ] 5.2 Show document thumbnails/titles and open in appropriate viewer (PDF WebView, Image viewer).
+  - [x] 5.1 Build `DocumentListScreen` listing documents from Firestore for active event.
+  - [x] 5.2 Show document thumbnails/titles and open in appropriate viewer (PDF WebView, Image viewer).
   - [ ] 5.3 Implement `CitationLink` that navigates to the document and highlights referenced page/section.
   - [ ] 5.4 Add navigation entry point (e.g., menu item or tab) visible to all participants. 

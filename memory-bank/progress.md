@@ -70,13 +70,30 @@ The AI Chat RAG system now provides:
 - Scalable vector search with Pinecone namespaces
 - Secure authentication and authorization chain
 
+### **Task 5.0: Document Browser & Citation Interaction - IN PROGRESS**
+- **5.1 COMPLETED**: `DocumentListScreen` with real-time document browsing:
+  - Lists all documents uploaded to the current event
+  - Shows metadata: name, size, type, uploader, upload date
+  - Role-based UI (different empty states for hosts vs guests)
+  - Floating action button for hosts to upload documents
+  - Pull-to-refresh functionality and loading states
+  - Navigation integration with proper TypeScript types
+- **5.2 COMPLETED**: Document viewer implementation:
+  - `DocumentViewerScreen` supporting PDFs and images
+  - PDF viewing via WebView with Google Docs viewer
+  - Image viewing with expo-image and zoom/pan capabilities
+  - Responsive UI with content-specific themes
+  - Comprehensive error handling and loading states
+  - Navigation integration from DocumentListScreen
+  - Added dependencies: `react-native-webview`, `expo-image`
+- **5.3 NEXT**: Citation navigation to documents with highlighting
+
 ## What's Left to Build
 
-### **Task 5.0: Document Browser & Citation Interaction - NEXT**
-- `DocumentListScreen` for browsing uploaded documents
-- Document viewer for PDFs and images
-- Citation click navigation to source documents
-- Document management interface for hosts
+### **Task 5.3: Citation Navigation - NEXT**
+- Make `CitationLink` components navigate to `DocumentViewerScreen`
+- Pass document reference and chunk information for highlighting
+- Enhance document viewer to scroll to/highlight referenced sections
 
 ## Technical Achievements
 
@@ -93,6 +110,9 @@ The AI Chat RAG system now provides:
 - ✅ Error states with actionable recovery options
 - ✅ Input validation and guidance
 - ✅ Citation display with source attribution
+- ✅ Document browsing interface with real-time updates
+- ✅ Full-featured PDF and image viewers
+- ✅ Role-based document management UI
 
 ### **Performance & Scalability**
 - ✅ Event-isolated vector search

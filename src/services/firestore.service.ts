@@ -1305,6 +1305,99 @@ export class FirestoreService {
   }
 
   /**
+   * Get all documents for a specific event
+   */
+  static async getEventDocuments(
+    eventId: string,
+  ): Promise<ApiResponse<import('../types').EventDocument[]>> {
+    try {
+      const documentsRef = collection(
+        firestore,
+        COLLECTIONS.EVENTS,
+        eventId,
+        EVENT_SUBCOLLECTIONS.DOCUMENTS,
+      );
+
+      const q = query(documentsRef, orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+
+      const documents: import('../types').EventDocument[] = [];
+
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        documents.push({
+          id: doc.id,
+          eventId,
+          name: data.name,
+          storagePath: data.storagePath,
+          downloadUrl: data.downloadUrl,
+          contentType: data.contentType,
+          type: data.type,
+          uploadedBy: data.uploadedBy,
+          size: data.size,
+          createdAt: data.createdAt.toDate(),
+          pageCount: data.pageCount,
+        });
+      });
+
+      return {
+        success: true,
+        data: documents,
+      };
+    } catch (_error) {
+      return {
+        success: false,
+        error: 'Failed to get event documents',
+      };
+    }
+  }
+
+  /**
+   * Subscribe to event documents in real-time
+   */
+  static subscribeToEventDocuments(
+    eventId: string,
+    callback: (_documents: import('../types').EventDocument[]) => void,
+    onError?: (_error: string) => void,
+  ): Unsubscribe {
+    const documentsRef = collection(
+      firestore,
+      COLLECTIONS.EVENTS,
+      eventId,
+      EVENT_SUBCOLLECTIONS.DOCUMENTS,
+    );
+
+    const q = query(documentsRef, orderBy('createdAt', 'desc'));
+
+    return onSnapshot(
+      q,
+      querySnapshot => {
+        const documents: import('../types').EventDocument[] = [];
+        querySnapshot.forEach(doc => {
+          const data = doc.data();
+          documents.push({
+            id: doc.id,
+            eventId,
+            name: data.name,
+            storagePath: data.storagePath,
+            downloadUrl: data.downloadUrl,
+            contentType: data.contentType,
+            type: data.type,
+            uploadedBy: data.uploadedBy,
+            size: data.size,
+            createdAt: data.createdAt.toDate(),
+            pageCount: data.pageCount,
+          });
+        });
+        callback(documents);
+      },
+      error => {
+        onError?.(error.message);
+      },
+    );
+  }
+
+  /**
    * Generate a random 6-digit join code
    */
   private static generateJoinCode(): string {
