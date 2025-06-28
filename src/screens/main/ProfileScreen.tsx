@@ -423,6 +423,12 @@ export const ProfileScreen: React.FC = () => {
                 variant='secondary'
                 size='small'
               />
+              <Button
+                title='View Documents'
+                onPress={() => navigation.navigate('DocumentList')}
+                variant='secondary'
+                size='small'
+              />
               {role === 'host' && (
                 <>
                   <Button

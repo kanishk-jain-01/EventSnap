@@ -27,7 +27,15 @@ export type MainStackParamList = {
   UserSearch: undefined;
   HostList: undefined;
   DocumentUpload: undefined;
-  DocumentViewer: { documentId: string; documentName: string; documentUrl: string; documentType: 'pdf' | 'image' };
+  DocumentViewer: { 
+    documentId: string; 
+    documentName: string; 
+    documentUrl: string; 
+    documentType: 'pdf' | 'image';
+    // Optional citation highlighting parameters
+    highlightText?: string;
+    chunkIndex?: number;
+  };
   DocumentList: undefined;
 };
 

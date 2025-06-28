@@ -1353,6 +1353,65 @@ export class FirestoreService {
   }
 
   /**
+   * Get a single event document by ID
+   */
+  static async getEventDocument(
+    documentId: string,
+  ): Promise<ApiResponse<import('../types').EventDocument>> {
+    try {
+      // We need to search across all events since we only have documentId
+      // This is a limitation of the current design - ideally we'd store eventId with citations
+      // For now, we'll use a more expensive query
+      const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
+      const eventsSnapshot = await getDocs(eventsRef);
+      
+      for (const eventDoc of eventsSnapshot.docs) {
+        const eventId = eventDoc.id;
+        const docRef = doc(
+          firestore,
+          COLLECTIONS.EVENTS,
+          eventId,
+          EVENT_SUBCOLLECTIONS.DOCUMENTS,
+          documentId,
+        );
+        
+        const docSnapshot = await getDoc(docRef);
+        if (docSnapshot.exists()) {
+          const data = docSnapshot.data();
+          const document: import('../types').EventDocument = {
+            id: docSnapshot.id,
+            eventId,
+            name: data.name,
+            storagePath: data.storagePath,
+            downloadUrl: data.downloadUrl,
+            contentType: data.contentType,
+            type: data.type,
+            uploadedBy: data.uploadedBy,
+            size: data.size,
+            createdAt: data.createdAt.toDate(),
+            pageCount: data.pageCount,
+          };
+          
+          return {
+            success: true,
+            data: document,
+          };
+        }
+      }
+      
+      return {
+        success: false,
+        error: 'Document not found',
+      };
+    } catch (_error) {
+      return {
+        success: false,
+        error: 'Failed to get event document',
+      };
+    }
+  }
+
+  /**
    * Subscribe to event documents in real-time
    */
   static subscribeToEventDocuments(

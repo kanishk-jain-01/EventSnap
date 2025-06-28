@@ -25,7 +25,7 @@ const DocumentViewerScreen: React.FC = () => {
   const navigation = useNavigation();
   const colors = useThemeColors();
   
-  const { documentName, documentUrl, documentType } = route.params;
+  const { documentName, documentUrl, documentType, highlightText, chunkIndex } = route.params;
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -162,6 +162,45 @@ const DocumentViewerScreen: React.FC = () => {
     </View>
   );
 
+  const renderHighlightBanner = () => {
+    if (!highlightText) return null;
+
+    return (
+      <View 
+        className={`absolute left-0 right-0 z-10 px-4 py-3 ${
+          documentType === 'image' ? 'bg-yellow-500/90' : 'bg-yellow-100 border-b border-yellow-200'
+        }`}
+        style={{ top: documentType === 'image' ? 90 : 80 }}
+      >
+        <View className="flex-row items-center">
+          <Ionicons 
+            name="search" 
+            size={16} 
+            color={documentType === 'image' ? 'white' : '#f59e0b'} 
+            style={{ marginRight: 8 }}
+          />
+          <View className="flex-1">
+            <Text 
+              className={`text-sm font-medium ${
+                documentType === 'image' ? 'text-white' : 'text-yellow-800'
+              }`}
+            >
+              Citation Reference
+            </Text>
+            <Text 
+              className={`text-xs ${
+                documentType === 'image' ? 'text-yellow-100' : 'text-yellow-600'
+              }`}
+              numberOfLines={2}
+            >
+              "{highlightText}"
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const renderControls = () => {
     if (!showControls && documentType === 'image') return null;
 
@@ -207,12 +246,16 @@ const DocumentViewerScreen: React.FC = () => {
                 }`}
               >
                 {documentType.toUpperCase()}
+                {chunkIndex !== undefined && ` • Section ${chunkIndex + 1}`}
               </Text>
             </View>
 
             {/* Additional actions could go here */}
           </View>
         </View>
+        
+        {/* Citation Highlight Banner */}
+        {renderHighlightBanner()}
       </>
     );
   };
@@ -241,7 +284,14 @@ const DocumentViewerScreen: React.FC = () => {
       )}
 
       {/* Document Content */}
-      <View className="flex-1" style={{ marginTop: documentType === 'image' ? 0 : 80 }}>
+      <View 
+        className="flex-1" 
+        style={{ 
+          marginTop: documentType === 'image' 
+            ? (highlightText ? 140 : 0) 
+            : (highlightText ? 140 : 80),
+        }}
+      >
         {documentType === 'pdf' ? renderPDFViewer() : renderImageViewer()}
       </View>
     </View>

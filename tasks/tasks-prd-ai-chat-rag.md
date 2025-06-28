@@ -1,18 +1,18 @@
 ## Relevant Files
 
-- `src/services/firestore.service.ts` – Add `uploadEventDocument()`, `getEventDocuments()`, and `subscribeToEventDocuments()` methods.
+- `src/services/firestore.service.ts` – Add `uploadEventDocument()`, `getEventDocuments()`, `subscribeToEventDocuments()`, and `getEventDocument()` methods.
 - `src/screens/main/DocumentUploadScreen.tsx` – UI for hosts to upload PDFs/images. (created)
 - `src/screens/main/DocumentListScreen.tsx` – Browsable list of documents for participants. (created)
-- `src/components/features/documents/CitationLink.tsx` – Tappable citation component in chat. (created)
+- `src/components/features/documents/CitationLink.tsx` – Tappable citation component with navigation to DocumentViewer. (created)
 - `src/components/features/chat/AIMessageBubble.tsx` – AI response component with distinct styling. (created)
 - `src/store/chatStore.ts` – Add `sendAIQuery` and state for AI responses.
 - `src/screens/main/ChatScreen.tsx` – Refactor UI for AI chat, citation handling.
 - `src/screens/main/AiChatScreen.tsx` – New AI chat UI with single input and placeholder responses.
 - `src/navigation/MainTabNavigator.tsx` – Switched Chat tab to use `AiChatScreen`.
 - `src/navigation/MainNavigator.tsx` – Added `DocumentUpload`, `DocumentList`, and `DocumentViewer` screens.
-- `src/navigation/types.ts` – Added `DocumentUpload`, `DocumentList`, and `DocumentViewer` routes.
-- `src/screens/main/DocumentViewerScreen.tsx` – PDF and image viewer with WebView and expo-image. (created)
-- `src/screens/main/ProfileScreen.tsx` – Added "Upload Document" button for hosts.
+- `src/navigation/types.ts` – Added `DocumentUpload`, `DocumentList`, and `DocumentViewer` routes with citation highlighting parameters.
+- `src/screens/main/DocumentViewerScreen.tsx` – PDF and image viewer with WebView and expo-image, citation highlighting support. (created)
+- `src/screens/main/ProfileScreen.tsx` – Added "Upload Document" button for hosts and "View Documents" button for all participants.
 - `functions/ingestPDFEmbeddings/index.ts` – Extend to write vectors to Pinecone.
 - `functions/ingestImageEmbeddings/index.ts` – Add full-text OCR + vector push.
 - `functions/ragAnswer/index.ts` – New HTTPS callable Cloud Function for RAG responses. (created)
@@ -51,8 +51,8 @@
   - [x] 4.3 Render AI responses with distinct styling and `CitationLink` components.
   - [x] 4.4 Add loading and error states during AI response fetch.
 
-- [ ] 5.0 Implement Document Browser & Citation Interaction
+- [x] 5.0 Implement Document Browser & Citation Interaction
   - [x] 5.1 Build `DocumentListScreen` listing documents from Firestore for active event.
   - [x] 5.2 Show document thumbnails/titles and open in appropriate viewer (PDF WebView, Image viewer).
-  - [ ] 5.3 Implement `CitationLink` that navigates to the document and highlights referenced page/section.
-  - [ ] 5.4 Add navigation entry point (e.g., menu item or tab) visible to all participants. 
+  - [x] 5.3 Implement `CitationLink` that navigates to the document and highlights referenced page/section.
+  - [x] 5.4 Add navigation entry point (e.g., menu item or tab) visible to all participants. 

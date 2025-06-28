@@ -1,5 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStackParamList } from '../../../navigation/types';
+import { FirestoreService } from '../../../services/firestore.service';
 
 interface Citation {
   documentId: string;
@@ -8,6 +12,8 @@ interface Citation {
   excerpt: string;
   storagePath: string;
 }
+
+type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
 interface CitationLinkProps {
   citation: Citation;
@@ -20,12 +26,36 @@ export const CitationLink: React.FC<CitationLinkProps> = ({
   index,
   onPress,
 }) => {
-  const handlePress = () => {
+  const navigation = useNavigation<NavigationProp>();
+
+  const handlePress = async () => {
     if (onPress) {
       onPress(citation);
-    } else {
-      // TODO: Default navigation to document viewer (will be implemented in task 5.0)
-      console.log('Opening document:', citation.documentName);
+      return;
+    }
+
+    try {
+      // Get document details from Firestore to determine type and URL
+      const docResult = await FirestoreService.getEventDocument(citation.documentId);
+      
+      if (!docResult.success || !docResult.data) {
+        console.error('Failed to load document details:', docResult.error);
+        return;
+      }
+
+      const document = docResult.data;
+      
+      // Navigate to DocumentViewer with citation highlighting
+      navigation.navigate('DocumentViewer', {
+        documentId: citation.documentId,
+        documentName: citation.documentName,
+        documentUrl: document.downloadUrl,
+        documentType: document.type,
+        highlightText: citation.excerpt,
+        chunkIndex: citation.chunkIndex,
+      });
+    } catch (error) {
+      console.error('Error navigating to document:', error);
     }
   };
 
