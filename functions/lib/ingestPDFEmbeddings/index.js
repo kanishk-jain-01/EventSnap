@@ -36,7 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ingestPDFEmbeddings = void 0;
+exports.ingestPDFEmbeddings = exports.processPdfEmbeddings = void 0;
 const functions = __importStar(require("firebase-functions/v2"));
 const admin = __importStar(require("firebase-admin"));
 const fs = __importStar(require("fs"));
@@ -84,6 +84,61 @@ const chunkText = (text) => {
     }
     return chunks;
 };
+/**
+ * Internal helper used by both callable and Storage trigger implementations.
+ */
+const processPdfEmbeddings = async (eventId, storagePath) => {
+    // 1. Download PDF from Firebase Storage
+    const bucket = admin.storage().bucket();
+    const tempFile = `/tmp/${Date.now()}-asset.pdf`;
+    await bucket.file(storagePath).download({ destination: tempFile });
+    // 2. Extract text
+    const fileBuffer = await fs.promises.readFile(tempFile);
+    const parsed = await pdf(fileBuffer);
+    const fullText = parsed.text.trim();
+    if (!fullText) {
+        throw new Error('No text extracted');
+    }
+    // 3. Chunk
+    const chunks = chunkText(fullText);
+    // 4. Generate embeddings batch-wise
+    const vectors = [];
+    let chunkIndex = 0;
+    for (const chunk of chunks) {
+        const embeddingResponse = await getOpenAI().embeddings.create({
+            model: 'text-embedding-3-small',
+            input: chunk,
+        });
+        const vector = embeddingResponse.data[0].embedding;
+        vectors.push({
+            id: `${storagePath}#${chunkIndex}`,
+            values: vector,
+            metadata: { eventId, storagePath, chunkIndex, text: chunk },
+        });
+        chunkIndex += 1;
+    }
+    // 5. Upsert to Pinecone
+    const namespace = eventId;
+    const BATCH_SIZE = 100;
+    for (let i = 0; i < vectors.length; i += BATCH_SIZE) {
+        await getPineconeIndex().namespace(namespace).upsert(vectors.slice(i, i + BATCH_SIZE));
+    }
+    // 6. Firestore metadata
+    await admin
+        .firestore()
+        .collection('events')
+        .doc(eventId)
+        .collection('assets')
+        .doc(storagePath.split('/').pop())
+        .set({
+        storagePath,
+        embedded: true,
+        chunks: vectors.length,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    return { success: true, chunks: vectors.length };
+};
+exports.processPdfEmbeddings = processPdfEmbeddings;
 /** Cloud Function: ingestPDFEmbeddings */
 exports.ingestPDFEmbeddings = functions.https.onCall(async (request) => {
     // Authentication (require host role handled via security rules on callable path)
@@ -95,62 +150,7 @@ exports.ingestPDFEmbeddings = functions.https.onCall(async (request) => {
         throw new functions.https.HttpsError('invalid-argument', 'eventId and storagePath are required');
     }
     try {
-        // 1. Download PDF from Firebase Storage
-        const bucket = admin.storage().bucket();
-        const tempFile = `/tmp/${Date.now()}-asset.pdf`;
-        await bucket.file(storagePath).download({ destination: tempFile });
-        // 2. Extract text
-        const fileBuffer = await fs.promises.readFile(tempFile);
-        const parsed = await pdf(fileBuffer);
-        const fullText = parsed.text.trim();
-        if (!fullText) {
-            throw new Error('No text extracted');
-        }
-        // 3. Chunk
-        const chunks = chunkText(fullText);
-        // 4. Generate embeddings batch-wise
-        const vectors = [];
-        let chunkIndex = 0;
-        for (const chunk of chunks) {
-            const embeddingResponse = await getOpenAI().embeddings.create({
-                model: 'text-embedding-3-small',
-                input: chunk,
-            });
-            const vector = embeddingResponse.data[0].embedding;
-            vectors.push({
-                id: `${storagePath}#${chunkIndex}`,
-                values: vector,
-                metadata: {
-                    eventId,
-                    storagePath,
-                    chunkIndex,
-                    text: chunk,
-                },
-            });
-            chunkIndex += 1;
-        }
-        // 5. Upsert to Pinecone
-        const namespace = eventId; // event scoped
-        // Split into batches of 100
-        const BATCH_SIZE = 100;
-        for (let i = 0; i < vectors.length; i += BATCH_SIZE) {
-            const batch = vectors.slice(i, i + BATCH_SIZE);
-            await getPineconeIndex().namespace(namespace).upsert(batch);
-        }
-        // 6. Write back to Firestore assets sub-collection
-        await admin
-            .firestore()
-            .collection('events')
-            .doc(eventId)
-            .collection('assets')
-            .doc(storagePath.split('/').pop())
-            .set({
-            storagePath,
-            embedded: true,
-            chunks: vectors.length,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
-        return { success: true, chunks: vectors.length };
+        return await (0, exports.processPdfEmbeddings)(eventId, storagePath);
     }
     catch (error) {
         console.error('Embedding ingestion failed', error);

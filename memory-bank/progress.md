@@ -11,6 +11,7 @@ _Last updated: {{date:YYYY-MM-DD}}_
 - Story ring UI and viewer with 24h TTL logic
 - Basic AI chat screen skeleton with service layer hooks
 - Cloud Functions for cleanup and embedding ingestion
+- Vector ingestion (PDF & image) functions deployed; Storage trigger auto-upserts to Pinecone
 
 ## In Progress 🚧
 - AI Chat Retrieval-Augmented Generation (RAG) pipeline integration
@@ -29,6 +30,7 @@ _Last updated: {{date:YYYY-MM-DD}}_
 - Occasional duplicate story documents (race condition on upload)
 - Memory leaks when leaving CameraScreen rapidly
 - Unhandled promise rejection in `ai/cleanup.service.ts` on network loss
+- `uploadEventDocument` fails for some hosts (likely Storage rule / role mismatch)
 
 ---
 Generated automatically by Cursor AI to bootstrap the Memory Bank. 

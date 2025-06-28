@@ -4,3 +4,4 @@ export {
   deleteExpiredContent,
   cleanupExpiredEventsScheduled,
 } from './deleteExpiredContent';
+export { ingestEmbeddingsOnFinalize } from './embeddingStorageTrigger';

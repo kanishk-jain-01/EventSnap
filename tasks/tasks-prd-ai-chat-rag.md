@@ -22,7 +22,7 @@
 
 ## Tasks
 
-- [ ] 1.0 Enable Document Upload & Metadata Storage
+- [x] 1.0 Enable Document Upload & Metadata Storage
   - [x] 1.1 Define `EventDocument` interface and Firestore path `events/{eventId}/documents`.
   - [x] 1.2 Implement `uploadEventDocument()` in `FirestoreService` (metadata write + Storage upload helper).
   - [x] 1.3 Create `DocumentUploadScreen` with file picker (PDF & image) visible to hosts only.
@@ -30,10 +30,10 @@
   - [x] 1.5 Update `firestore.rules` & `storage.rules` to enforce host-only writes, participant reads.
 
 - [ ] 2.0 Implement Vector Ingestion Pipeline to Pinecone
-  - [ ] 2.1 Extend `ingestPDFEmbeddings` function to parse PDF, chunk text, embed, and upsert to Pinecone (`namespace=eventId`).
-  - [ ] 2.2 Enhance `ingestImageEmbeddings` with full-text OCR on images, then embed & upsert.
-  - [ ] 2.3 Create `pineconeClient.ts` util and add Pinecone env vars via `functions:config:set`.
-  - [ ] 2.4 Wire invocation of ingestion functions via Storage trigger (onFinalize).
+  - [x] 2.1 Extend `ingestPDFEmbeddings` function to parse PDF, chunk text, embed, and upsert to Pinecone (`namespace=eventId`).
+  - [x] 2.2 Enhance `ingestImageEmbeddings` with full-text OCR on images, then embed & upsert.
+  - [x] 2.3 Create `pineconeClient.ts` util and add Pinecone env vars via `functions:config:set`.
+  - [x] 2.4 Wire invocation of ingestion functions via Storage trigger (onFinalize).
   - [ ] 2.5 Deploy updated Cloud Functions & verify upserts.
 
 - [ ] 3.0 Build `ragAnswer` Cloud Function for RAG responses
