@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../../navigation/types';
@@ -61,62 +61,23 @@ export const CitationLink: React.FC<CitationLinkProps> = ({
 
   return (
     <TouchableOpacity
-      style={styles.container}
+      className='bg-bg-secondary rounded-xl p-3 my-1 border border-border active:bg-interactive-pressed'
       onPress={handlePress}
       activeOpacity={0.7}
     >
-      <View style={styles.header}>
-        <View style={styles.indexContainer}>
-          <Text style={styles.indexText}>{index + 1}</Text>
+      <View className='flex-row items-center mb-2'>
+        <View className='w-5 h-5 bg-primary rounded-full items-center justify-center mr-3'>
+          <Text className='text-white text-xs font-semibold'>
+            {index + 1}
+          </Text>
         </View>
-        <Text style={styles.documentName} numberOfLines={1}>
+        <Text className='flex-1 text-text-primary text-sm font-semibold' numberOfLines={1}>
           {citation.documentName}
         </Text>
       </View>
-      <Text style={styles.excerpt} numberOfLines={2}>
+      <Text className='text-text-secondary text-xs leading-relaxed ml-8' numberOfLines={2}>
         {citation.excerpt}
       </Text>
     </TouchableOpacity>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
-    padding: 12,
-    marginVertical: 4,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  indexContainer: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#007bff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-  },
-  indexText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  documentName: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#212529',
-  },
-  excerpt: {
-    fontSize: 12,
-    color: '#6c757d',
-    lineHeight: 16,
-  },
-}); 
+}; 

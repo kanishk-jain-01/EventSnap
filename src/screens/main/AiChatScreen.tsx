@@ -95,64 +95,87 @@ export const AiChatScreen: React.FC = () => {
 
   return (
     <KeyboardAvoidingView
-      className='flex-1 bg-snap-dark'
+      className='flex-1 bg-bg-primary'
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={
         Platform.OS === 'ios' ? headerHeight + insets.bottom : 0
       }
     >
-      {/* AI Processing Status Bar */}
-      {isLoadingAI && (
-        <View className='bg-blue-900 border-b border-blue-700 px-4 py-2'>
-          <View className='flex-row items-center justify-center'>
-            <LoadingSpinner size='small' color='#60a5fa' />
-            <Text className='text-blue-300 text-sm ml-2 font-medium'>
-              AI is analyzing documents...
-            </Text>
-          </View>
-        </View>
-      )}
+
 
       <FlatList
         ref={flatListRef}
         data={aiMessages}
         keyExtractor={item => item.id}
         renderItem={renderItem}
-        contentContainerStyle={{ paddingVertical: 16 }}
+        contentContainerStyle={{ 
+          paddingTop: 24,
+          paddingBottom: 24,
+          paddingHorizontal: 16,
+          flexGrow: 1,
+        }}
         showsVerticalScrollIndicator={false}
         onContentSizeChange={() =>
           flatListRef.current?.scrollToEnd({ animated: true })
         }
         ListEmptyComponent={
-          <View className='flex-1 items-center justify-center px-8 py-16'>
-            <Text className='text-gray-400 text-lg text-center mb-2'>
-              Ask anything about this event!
-            </Text>
-            <Text className='text-gray-500 text-sm text-center'>
-              Example: "What\'s at 2 p.m. today?"
-            </Text>
+          <View className='flex-1 items-center justify-center px-6 py-12'>
+            {/* AI Assistant Header */}
+            <View className='items-center mb-8'>
+              <View className='w-16 h-16 bg-primary rounded-full items-center justify-center mb-4 shadow-soft'>
+                <Text className='text-2xl'>🤖</Text>
+              </View>
+              <Text className='text-text-primary text-xl font-semibold mb-2'>
+                AI Assistant
+              </Text>
+              <Text className='text-text-secondary text-sm text-center leading-relaxed'>
+                I can help you find information about this event
+              </Text>
+            </View>
+
+            {/* Welcome Message */}
+            <View className='bg-surface rounded-2xl p-6 shadow-soft border border-border mb-6 w-full max-w-sm'>
+              <Text className='text-text-primary text-lg font-medium text-center mb-3'>
+                Ask anything about this event!
+              </Text>
+              <View className='bg-bg-secondary rounded-xl p-4'>
+                <Text className='text-text-secondary text-sm text-center italic'>
+                  "What's happening at 2 p.m. today?"
+                </Text>
+              </View>
+              <Text className='text-text-tertiary text-xs text-center mt-3'>
+                Try asking about schedules, locations, or event details
+              </Text>
+            </View>
+
+            {/* Error State */}
             {aiError && (
-              <View className='mt-4 p-4 bg-red-900 rounded-lg border border-red-700'>
-                <View className='flex-row items-center justify-center mb-2'>
-                  <Text className='text-red-300 text-lg mr-2'>⚠️</Text>
-                  <Text className='text-red-300 text-sm font-semibold'>
+              <View className='w-full max-w-sm bg-error/5 rounded-2xl p-6 border border-error/20'>
+                <View className='flex-row items-center justify-center mb-3'>
+                  <View className='w-8 h-8 bg-error/10 rounded-full items-center justify-center mr-3'>
+                    <Text className='text-error text-sm'>⚠️</Text>
+                  </View>
+                  <Text className='text-error text-base font-semibold'>
                     Connection Error
                   </Text>
                 </View>
-                <Text className='text-red-300 text-xs text-center mb-3'>
+                <Text className='text-error/80 text-sm text-center mb-4 leading-relaxed'>
                   {aiError}
                 </Text>
-                <View className='flex-row justify-center space-x-4'>
+                <View className='flex-row justify-center space-x-3'>
                   <TouchableOpacity 
                     onPress={handleRetryLastQuery} 
-                    className='bg-red-700 px-3 py-1 rounded'
+                    className='bg-error px-4 py-2 rounded-xl'
                   >
-                    <Text className='text-red-200 text-xs font-medium'>
+                    <Text className='text-white text-sm font-medium'>
                       Retry
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={clearAIError} className='px-3 py-1'>
-                    <Text className='text-red-400 text-xs underline'>
+                  <TouchableOpacity 
+                    onPress={clearAIError} 
+                    className='bg-surface border border-error/30 px-4 py-2 rounded-xl'
+                  >
+                    <Text className='text-error text-sm font-medium'>
                       Dismiss
                     </Text>
                   </TouchableOpacity>
@@ -163,13 +186,13 @@ export const AiChatScreen: React.FC = () => {
         }
       />
 
-      {/* Composer */}
-      <View className='border-t border-gray-800 px-4 py-3'>
-        {/* Character count and validation */}
+      {/* Input Composer */}
+      <View className='bg-surface border-t border-border px-4 py-4 shadow-soft'>
+        {/* Input Validation Feedback */}
         {inputText.length > 0 && (
-          <View className='flex-row justify-between items-center mb-2 px-2'>
-            <Text className={`text-xs ${
-              inputText.trim().length < 3 ? 'text-yellow-400' : 'text-gray-500'
+          <View className='flex-row justify-between items-center mb-3 px-2'>
+            <Text className={`text-xs font-medium ${
+              inputText.trim().length < 3 ? 'text-warning' : 'text-success'
             }`}>
               {inputText.trim().length < 3 
                 ? 'Ask a more detailed question...' 
@@ -177,23 +200,32 @@ export const AiChatScreen: React.FC = () => {
               }
             </Text>
             <Text className={`text-xs ${
-              inputText.length > 450 ? 'text-red-400' : 'text-gray-500'
+              inputText.length > 450 ? 'text-error' : 'text-text-tertiary'
             }`}>
               {inputText.length}/500
             </Text>
           </View>
         )}
         
-        <View className='flex-row items-end space-x-3'>
-          <View className={`flex-1 rounded-2xl px-4 py-2 min-h-[40px] justify-center ${
-            isLoadingAI ? 'bg-gray-800' : 'bg-gray-700'
+        {/* Input Row */}
+        <View className='flex-row items-center'>
+          {/* Text Input Container */}
+          <View className={`flex-1 rounded-2xl px-4 min-h-[48px] border ${
+            isLoadingAI 
+              ? 'bg-interactive-disabled border-border' 
+              : 'bg-bg-secondary border-border focus:border-primary'
           }`}>
             <TextInput
               value={inputText}
               onChangeText={setInputText}
               placeholder={isLoadingAI ? 'Please wait...' : 'Type your question...'}
-              placeholderTextColor='#9CA3AF'
-              className='text-white text-base'
+              placeholderTextColor='#94A3B8'
+              className='text-text-primary text-base leading-relaxed py-3'
+              style={{ 
+                textAlignVertical: 'center',
+                paddingTop: 12,
+                paddingBottom: 12
+              }}
               multiline
               maxLength={500}
               onSubmitEditing={handleSend}
@@ -201,19 +233,23 @@ export const AiChatScreen: React.FC = () => {
               editable={!isLoadingAI}
             />
           </View>
+
+          {/* Send Button */}
           <TouchableOpacity
             onPress={handleSend}
             disabled={!inputText.trim() || isLoadingAI}
-            className={`w-10 h-10 rounded-full items-center justify-center ${
-              inputText.trim() && !isLoadingAI ? 'bg-snap-yellow' : 'bg-gray-600'
+            className={`w-12 h-12 rounded-2xl items-center justify-center shadow-soft ml-4 ${
+              inputText.trim() && !isLoadingAI 
+                ? 'bg-primary' 
+                : 'bg-interactive-disabled border border-border'
             }`}
           >
             {isLoadingAI ? (
-              <LoadingSpinner size='small' color='#000000' />
+              <LoadingSpinner size='small' color='#7C3AED' />
             ) : (
               <Text
                 className={`text-lg font-bold ${
-                  inputText.trim() ? 'text-black' : 'text-gray-400'
+                  inputText.trim() ? 'text-white' : 'text-text-tertiary'
                 }`}
               >
                 ➤
