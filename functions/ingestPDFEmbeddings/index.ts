@@ -11,7 +11,11 @@ if (!admin.apps.length) {
 }
 
 // ***** Environment Variables ***** //
-const PINECONE_INDEX = process.env.PINECONE_INDEX ?? 'event-embeddings';
+const getPineconeIndexName = () => {
+  const index = process.env.PINECONE_INDEX;
+  if (!index) throw new Error('PINECONE_INDEX env var not set');
+  return index;
+};
 
 // ****** External Clients ****** //
 let _openai: OpenAI | null = null;
@@ -31,7 +35,7 @@ const getPineconeIndex = () => {
     if (!key) throw new Error('PINECONE_API_KEY env var not set');
     _pinecone = new Pinecone({ apiKey: key });
   }
-  return _pinecone.index(PINECONE_INDEX);
+  return _pinecone.index(getPineconeIndexName());
 };
 
 // Token-friendly chunk size (approx 800 tokens ≈ 3k chars)
@@ -42,11 +46,18 @@ const OVERLAP = 300; // chars to overlap between chunks for context
 const chunkText = (text: string): string[] => {
   const chunks: string[] = [];
   let start = 0;
+  
   while (start < text.length) {
     const end = Math.min(start + MAX_CHARS, text.length);
     chunks.push(text.slice(start, end));
-    start = end - OVERLAP; // overlap
+    
+    if (end >= text.length) break;
+    
+    // Calculate next start position, ensuring forward progress
+    const nextStart = end - OVERLAP;
+    start = nextStart <= start ? start + 1 : nextStart;
   }
+  
   return chunks;
 };
 
@@ -57,62 +68,90 @@ export const processPdfEmbeddings = async (
   eventId: string,
   storagePath: string,
 ) => {
-  // 1. Download PDF from Firebase Storage
-  const bucket = admin.storage().bucket();
-  const tempFile = `/tmp/${Date.now()}-asset.pdf`;
-  await bucket.file(storagePath).download({ destination: tempFile });
+  let tempFile: string | null = null;
+  
+  try {
+    console.log(`📄 Processing PDF: ${storagePath}`);
+    
+    // 1. Download PDF from Firebase Storage
+    const bucket = admin.storage().bucket();
+    tempFile = `/tmp/${Date.now()}-asset.pdf`;
+    await bucket.file(storagePath).download({ destination: tempFile });
 
-  // 2. Extract text
-  const fileBuffer = await fs.promises.readFile(tempFile);
-  const parsed = await pdf(fileBuffer);
-  const fullText = parsed.text.trim();
+    // 2. Extract text
+    const fileBuffer = await fs.promises.readFile(tempFile);
+    const parsed = await pdf(fileBuffer);
+    const fullText = parsed.text.trim();
+    console.log(`📄 Extracted ${fullText.length} characters from PDF`);
+    
+    // Force garbage collection of large buffer
+    if (global.gc) {
+      global.gc();
+    }
 
-  if (!fullText) {
-    throw new Error('No text extracted');
+    if (!fullText) {
+      throw new Error('No text extracted from PDF');
+    }
+
+    // 3. Chunk
+    const chunks = chunkText(fullText);
+    console.log(`📄 Created ${chunks.length} text chunks`);
+
+    // 4. Generate embeddings batch-wise
+    const vectors = [] as { id: string; values: number[]; metadata: any }[];
+    let chunkIndex = 0;
+    for (const chunk of chunks) {
+      const embeddingResponse = await getOpenAI().embeddings.create({
+        model: 'text-embedding-3-small',
+        input: chunk,
+      });
+      const vector = embeddingResponse.data[0].embedding as number[];
+      vectors.push({
+        id: `${storagePath}#${chunkIndex}`,
+        values: vector,
+        metadata: { eventId, storagePath, chunkIndex, text: chunk },
+      });
+      chunkIndex += 1;
+    }
+    console.log(`🧠 Generated ${vectors.length} embeddings`);
+
+    // 5. Upsert to Pinecone
+    const namespace = eventId;
+    const BATCH_SIZE = 100;
+    for (let i = 0; i < vectors.length; i += BATCH_SIZE) {
+      await getPineconeIndex().namespace(namespace).upsert(vectors.slice(i, i + BATCH_SIZE));
+    }
+    console.log(`📌 Stored ${vectors.length} vectors in Pinecone`);
+
+    // 6. Firestore metadata
+    await admin
+      .firestore()
+      .collection('events')
+      .doc(eventId)
+      .collection('assets')
+      .doc(storagePath.split('/').pop()!)
+      .set({
+        storagePath,
+        embedded: true,
+        chunks: vectors.length,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+
+    console.log(`✅ PDF embedding completed successfully`);
+    return { success: true, chunks: vectors.length };
+  } catch (error) {
+    console.error('Error processing PDF embeddings:', error);
+    throw error;
+  } finally {
+    // Clean up temp file
+    if (tempFile && fs.existsSync(tempFile)) {
+      try {
+        await fs.promises.unlink(tempFile);
+      } catch (unlinkError) {
+        console.warn('Failed to clean up temp file:', unlinkError);
+      }
+    }
   }
-
-  // 3. Chunk
-  const chunks = chunkText(fullText);
-
-  // 4. Generate embeddings batch-wise
-  const vectors = [] as { id: string; values: number[]; metadata: any }[];
-  let chunkIndex = 0;
-  for (const chunk of chunks) {
-    const embeddingResponse = await getOpenAI().embeddings.create({
-      model: 'text-embedding-3-small',
-      input: chunk,
-    });
-    const vector = embeddingResponse.data[0].embedding as number[];
-    vectors.push({
-      id: `${storagePath}#${chunkIndex}`,
-      values: vector,
-      metadata: { eventId, storagePath, chunkIndex, text: chunk },
-    });
-    chunkIndex += 1;
-  }
-
-  // 5. Upsert to Pinecone
-  const namespace = eventId;
-  const BATCH_SIZE = 100;
-  for (let i = 0; i < vectors.length; i += BATCH_SIZE) {
-    await getPineconeIndex().namespace(namespace).upsert(vectors.slice(i, i + BATCH_SIZE));
-  }
-
-  // 6. Firestore metadata
-  await admin
-    .firestore()
-    .collection('events')
-    .doc(eventId)
-    .collection('assets')
-    .doc(storagePath.split('/').pop()!)
-    .set({
-      storagePath,
-      embedded: true,
-      chunks: vectors.length,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
-
-  return { success: true, chunks: vectors.length };
 };
 
 /** Cloud Function: ingestPDFEmbeddings */
@@ -145,4 +184,5 @@ export const ingestPDFEmbeddings = functions.https.onCall(async request => {
       error.message ?? 'Processing failed',
     );
   }
-});
+  },
+);

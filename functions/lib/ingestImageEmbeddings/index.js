@@ -39,7 +39,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ingestImageEmbeddings = exports.processImageEmbeddings = void 0;
 const functions = __importStar(require("firebase-functions/v2"));
 const admin = __importStar(require("firebase-admin"));
-const fs = __importStar(require("fs"));
 const vision_1 = require("@google-cloud/vision");
 const pinecone_1 = require("@pinecone-database/pinecone");
 const openai_1 = __importDefault(require("openai"));
@@ -75,7 +74,11 @@ const chunkText = (txt, size = 3000, overlap = 300) => {
     while (start < txt.length) {
         const end = Math.min(start + size, txt.length);
         chunks.push(txt.slice(start, end));
-        start = end - overlap;
+        if (end >= txt.length)
+            break;
+        // Calculate next start position, ensuring forward progress
+        const nextStart = end - overlap;
+        start = nextStart <= start ? start + 1 : nextStart;
     }
     return chunks;
 };
@@ -83,6 +86,7 @@ const chunkText = (txt, size = 3000, overlap = 300) => {
  * Internal helper used by both callable and Storage trigger implementations for image assets.
  */
 const processImageEmbeddings = async (eventId, storagePath) => {
+    console.log(`🖼️ Processing image: ${storagePath}`);
     // Download image to tmp
     const bucket = admin.storage().bucket();
     const tempFile = `/tmp/${Date.now()}-asset`;
@@ -91,20 +95,22 @@ const processImageEmbeddings = async (eventId, storagePath) => {
     const [result] = await visionClient.textDetection(tempFile);
     const textAnnotations = result.textAnnotations || [];
     const rawText = textAnnotations[0]?.description?.trim() ?? '';
+    console.log(`🖼️ OCR extracted ${rawText.length} characters`);
     // Prepare vectors array
     const vectors = [];
     if (!rawText) {
-        // Fallback embedding using image
-        const base64 = fs.readFileSync(tempFile, { encoding: 'base64' });
+        // No text found via OCR - create a minimal embedding with filename/metadata
+        const fallbackText = `Image file: ${storagePath.split('/').pop() || 'unknown'} - No text detected via OCR`;
         const embedResp = await getOpenAI().embeddings.create({
-            model: 'image-embedding-ada-002',
-            input: base64,
+            model: 'text-embedding-3-small',
+            input: fallbackText,
         });
         vectors.push({
             id: `${storagePath}#0`,
             values: embedResp.data[0].embedding,
-            metadata: { eventId, storagePath, chunkIndex: 0, text: '' },
+            metadata: { eventId, storagePath, chunkIndex: 0, text: fallbackText, isImageFallback: true },
         });
+        console.log(`🖼️ Created fallback embedding (no text found)`);
     }
     else {
         const chunks = chunkText(rawText);
@@ -121,6 +127,7 @@ const processImageEmbeddings = async (eventId, storagePath) => {
             });
             idx += 1;
         }
+        console.log(`🧠 Generated ${vectors.length} embeddings from OCR text`);
     }
     // Upsert to Pinecone
     const BATCH = 100;
@@ -129,6 +136,7 @@ const processImageEmbeddings = async (eventId, storagePath) => {
             .namespace(eventId)
             .upsert(vectors.slice(i, i + BATCH));
     }
+    console.log(`📌 Stored ${vectors.length} vectors in Pinecone`);
     // Firestore metadata update
     await admin
         .firestore()
@@ -142,6 +150,7 @@ const processImageEmbeddings = async (eventId, storagePath) => {
         chunks: vectors.length,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
+    console.log(`✅ Image embedding completed successfully`);
     return { success: true, chunks: vectors.length };
 };
 exports.processImageEmbeddings = processImageEmbeddings;

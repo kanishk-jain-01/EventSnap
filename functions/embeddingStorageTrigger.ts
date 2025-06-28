@@ -11,12 +11,13 @@ import { processImageEmbeddings } from './ingestImageEmbeddings';
  */
 export const ingestEmbeddingsOnFinalize = onObjectFinalized(
   {
-    memory: '1GiB',
+    memory: '2GiB', // Increased to handle PDF parsing memory spikes
     timeoutSeconds: 540, // max for long PDF processing
   },
   async event => {
     const file = event.data;
     const storagePath = file.name;
+    
     if (!storagePath) {
       logger.warn('onFinalize: no file name');
       return;
@@ -28,21 +29,21 @@ export const ingestEmbeddingsOnFinalize = onObjectFinalized(
       logger.debug(`Skipping file outside docs folder: ${storagePath}`);
       return;
     }
+    
     const eventId = match[1];
     const contentType = file.contentType ?? '';
+    logger.info(`📁 Processing ${contentType} file: ${storagePath} (${Math.round((file.size || 0) / 1024)}KB)`);
 
     try {
       if (contentType === 'application/pdf') {
-        logger.info(`Processing PDF embeddings for ${storagePath}`);
         await processPdfEmbeddings(eventId, storagePath);
       } else if (contentType.startsWith('image/')) {
-        logger.info(`Processing image embeddings for ${storagePath}`);
         await processImageEmbeddings(eventId, storagePath);
       } else {
         logger.info(`Unhandled content type ${contentType} for ${storagePath}`);
       }
     } catch (err) {
-      logger.error('Embedding onFinalize error', err);
+      logger.error('Embedding processing failed', err);
       throw err;
     }
   },

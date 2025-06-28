@@ -40,7 +40,11 @@ const chunkText = (txt: string, size = 3000, overlap = 300) => {
   while (start < txt.length) {
     const end = Math.min(start + size, txt.length);
     chunks.push(txt.slice(start, end));
-    start = end - overlap;
+    if (end >= txt.length) break;
+    
+    // Calculate next start position, ensuring forward progress
+    const nextStart = end - overlap;
+    start = nextStart <= start ? start + 1 : nextStart;
   }
   return chunks;
 };
@@ -52,6 +56,8 @@ export const processImageEmbeddings = async (
   eventId: string,
   storagePath: string,
 ) => {
+  console.log(`🖼️ Processing image: ${storagePath}`);
+  
   // Download image to tmp
   const bucket = admin.storage().bucket();
   const tempFile = `/tmp/${Date.now()}-asset`;
@@ -61,22 +67,24 @@ export const processImageEmbeddings = async (
   const [result] = await visionClient.textDetection(tempFile);
   const textAnnotations = result.textAnnotations || [];
   const rawText = textAnnotations[0]?.description?.trim() ?? '';
+  console.log(`🖼️ OCR extracted ${rawText.length} characters`);
 
   // Prepare vectors array
   const vectors: { id: string; values: number[]; metadata: any }[] = [];
 
   if (!rawText) {
-    // Fallback embedding using image
-    const base64 = fs.readFileSync(tempFile, { encoding: 'base64' });
+    // No text found via OCR - create a minimal embedding with filename/metadata
+    const fallbackText = `Image file: ${storagePath.split('/').pop() || 'unknown'} - No text detected via OCR`;
     const embedResp = await getOpenAI().embeddings.create({
-      model: 'image-embedding-ada-002',
-      input: base64,
+      model: 'text-embedding-3-small',
+      input: fallbackText,
     });
     vectors.push({
       id: `${storagePath}#0`,
       values: embedResp.data[0].embedding as number[],
-      metadata: { eventId, storagePath, chunkIndex: 0, text: '' },
+      metadata: { eventId, storagePath, chunkIndex: 0, text: fallbackText, isImageFallback: true },
     });
+    console.log(`🖼️ Created fallback embedding (no text found)`);
   } else {
     const chunks = chunkText(rawText);
     let idx = 0;
@@ -92,6 +100,7 @@ export const processImageEmbeddings = async (
       });
       idx += 1;
     }
+    console.log(`🧠 Generated ${vectors.length} embeddings from OCR text`);
   }
 
   // Upsert to Pinecone
@@ -101,6 +110,7 @@ export const processImageEmbeddings = async (
       .namespace(eventId)
       .upsert(vectors.slice(i, i + BATCH));
   }
+  console.log(`📌 Stored ${vectors.length} vectors in Pinecone`);
 
   // Firestore metadata update
   await admin
@@ -119,6 +129,7 @@ export const processImageEmbeddings = async (
       { merge: true },
     );
 
+  console.log(`✅ Image embedding completed successfully`);
   return { success: true, chunks: vectors.length };
 };
 

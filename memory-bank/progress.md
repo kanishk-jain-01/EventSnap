@@ -5,7 +5,7 @@ This document tracks the implementation progress of the AI Chat RAG feature, bas
 ## What Works
 
 -   **Task 1.0: Document Upload & Metadata Storage:** Complete. Hosts can upload documents (PDFs, images), which are stored in Firebase Storage, and the corresponding metadata is saved to Firestore. Security rules are in place.
--   **Task 2.0: Vector Ingestion Pipeline:** Complete. Cloud Functions are triggered on document upload. They process the files (text extraction, OCR), generate embeddings, and successfully upsert the vectors into Pinecone, namespaced by `eventId`.
+-   **Task 2.0: Vector Ingestion Pipeline:** Complete and production-ready. Cloud Functions are triggered on document upload, process files (text extraction, OCR), generate embeddings using OpenAI's `text-embedding-3-small` model, and successfully upsert vectors into Pinecone (namespaced by `eventId`). Fixed memory issues, infinite loop bugs, and added robust error handling with clean logging.
 -   **Partial UI Refactor (Task 4.2):** The chat screen composer has been updated to a single input field in preparation for the AI chat interface.
 
 ## What's Left to Build
