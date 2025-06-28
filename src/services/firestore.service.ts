@@ -28,10 +28,7 @@ import { StorageService, UploadProgressCallback, StoragePaths } from './storage.
 export const COLLECTIONS = {
   USERS: 'users',
   STORIES: 'stories',
-  CHATS: 'chats',
-  MESSAGES: 'messages',
   EVENTS: 'events',
-  CONTACTS: 'contacts', // Sub-collection name for user contacts (planned)
 } as const;
 
 /**
@@ -66,7 +63,6 @@ export interface UserDocument {
   createdAt: Timestamp;
   lastSeen: Timestamp;
   storyCount?: number;
-  contacts?: string[]; // UIDs of friends/contacts
   // Event tracking fields - replaces AsyncStorage
   activeEventId?: string | null;
   eventRole?: 'host' | 'guest' | null;
@@ -75,11 +71,7 @@ export interface UserDocument {
   contactVisible?: boolean;
 }
 
-// Contact document interface for Firestore
-export interface ContactDocument {
-  createdAt: Timestamp;
-  status: 'accepted'; // MVP uses auto-accepted contacts
-}
+
 
 /**
  * EVENT (Event-Driven Networking) document interface for Firestore
@@ -652,130 +644,9 @@ export class FirestoreService {
   /**
    * Add a contact (friend) for a user
    */
-  static async addContact(
-    userId: string,
-    contactUserId: string,
-  ): Promise<ApiResponse<void>> {
-    try {
-      // Add contact to user's contacts sub-collection
-      const contactDocRef = doc(
-        firestore,
-        COLLECTIONS.USERS,
-        userId,
-        COLLECTIONS.CONTACTS,
-        contactUserId,
-      );
-
-      const contactData: ContactDocument = {
-        createdAt: serverTimestamp() as Timestamp,
-        status: 'accepted',
-      };
-
-      await setDoc(contactDocRef, contactData);
-
-      return { success: true };
-    } catch (_error) {
-      return {
-        success: false,
-        error: 'Failed to add contact',
-      };
-    }
-  }
-
-  /**
-   * Remove a contact
-   */
-  static async removeContact(
-    userId: string,
-    contactUserId: string,
-  ): Promise<ApiResponse<void>> {
-    try {
-      const contactDocRef = doc(
-        firestore,
-        COLLECTIONS.USERS,
-        userId,
-        COLLECTIONS.CONTACTS,
-        contactUserId,
-      );
-
-      await deleteDoc(contactDocRef);
-
-      return { success: true };
-    } catch (_error) {
-      return {
-        success: false,
-        error: 'Failed to remove contact',
-      };
-    }
-  }
-
-  /**
-   * Get user's contacts (returns array of user IDs)
-   */
-  static async getContacts(userId: string): Promise<ApiResponse<string[]>> {
-    try {
-      const q = query(
-        collection(firestore, COLLECTIONS.USERS, userId, COLLECTIONS.CONTACTS),
-        orderBy('createdAt', 'desc'),
-      );
-
-      const querySnapshot = await getDocs(q);
-      const contactIds: string[] = [];
-
-      querySnapshot.forEach(doc => {
-        contactIds.push(doc.id); // Document ID is the contact's user ID
-      });
-
-      return {
-        success: true,
-        data: contactIds,
-      };
-    } catch (_error) {
-      return {
-        success: false,
-        error: 'Failed to get contacts',
-      };
-    }
-  }
-
-  /**
-   * Subscribe to user's contacts in real-time
-   */
-  static subscribeToContacts(
-    userId: string,
-    callback: (_contactIds: string[]) => void,
-    onError?: (_error: string) => void,
-  ): Unsubscribe {
-    const q = query(
-      collection(firestore, COLLECTIONS.USERS, userId, COLLECTIONS.CONTACTS),
-      orderBy('createdAt', 'desc'),
-    );
-
-    return onSnapshot(
-      q,
-      querySnapshot => {
-        const contactIds: string[] = [];
-        querySnapshot.forEach(doc => {
-          contactIds.push(doc.id);
-        });
-        callback(contactIds);
-      },
-      error => {
-        onError?.(error.message);
-      },
-    );
-  }
-
   /**
    * UTILITY OPERATIONS
    */
-
-  /**
-   * Generate a consistent chat ID for two users
-   */
-  static generateChatId(userId1: string, userId2: string): string {
-    return [userId1, userId2].sort().join('_');
-  }
 
   /**
    * Check if a document exists

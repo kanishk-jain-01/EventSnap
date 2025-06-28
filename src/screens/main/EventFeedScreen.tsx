@@ -13,7 +13,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuthStore } from '../../store/authStore';
 import { useStoryStore } from '../../store/storyStore';
 import { useEventStore } from '../../store/eventStore';
-import { useUserStore } from '../../store/userStore';
 import { Story, User } from '../../types';
 import { StoryRing } from '../../components/social/StoryRing';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
@@ -38,7 +37,7 @@ export const EventFeedScreen: React.FC = () => {
     clearError: clearStoriesError,
   } = useStoryStore();
 
-  const { fetchContacts } = useUserStore();
+
 
   const [refreshing, setRefreshing] = useState(false);
   const [storyOwners, setStoryOwners] = useState<Map<string, User>>(new Map());
@@ -51,7 +50,7 @@ export const EventFeedScreen: React.FC = () => {
     useCallback(() => {
       if (user && activeEvent) {
         loadStoriesForEvent(activeEvent.id);
-        fetchContacts();
+    
 
         // Set up real-time subscriptions
         const unsubscribeStories = subscribeToStoriesForEvent(activeEvent.id);
@@ -97,7 +96,7 @@ export const EventFeedScreen: React.FC = () => {
     try {
       await Promise.all([
         loadStoriesForEvent(activeEvent.id),
-        fetchContacts(),
+  
       ]);
     } catch (_error) {
       // Refresh errors will be handled by individual store error states

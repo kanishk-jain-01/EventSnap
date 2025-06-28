@@ -21,7 +21,6 @@ export type AuthStackParamList = {
 // Main Stack Navigator (contains tabs and modal screens)
 export type MainStackParamList = {
   MainTabs: NavigatorScreenParams<MainTabParamList>;
-  ChatScreen: { chatId: string; recipientName: string; recipientId: string };
   StoryViewer: { stories: Story[]; initialIndex: number };
   UserProfile: { userId: string };
   UserSearch: undefined;

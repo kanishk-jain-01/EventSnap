@@ -45,62 +45,7 @@ export interface StoryState {
   error: string | null;
 }
 
-// Chat Types
-export type MessageStatus = 'sent' | 'delivered' | 'read';
 
-export interface ChatMessage {
-  id: string;
-  senderId: string;
-  recipientId: string;
-  content: string;
-  type: 'text' | 'image';
-  timestamp: number | object; // Firebase serverTimestamp
-  status: MessageStatus;
-  readAt: number | object | null; // Firebase serverTimestamp
-}
-
-export interface ChatConversation {
-  id: string;
-  participants: string[];
-  createdAt: number | object; // Firebase serverTimestamp
-  lastMessage: string | null;
-  lastMessageAt: number | object | null; // Firebase serverTimestamp
-  unreadCount: {
-    [userId: string]: number;
-  };
-}
-
-export interface UserPresence {
-  isOnline: boolean;
-  lastSeen: number | object; // Firebase serverTimestamp
-}
-
-export interface ChatState {
-  conversations: ChatConversation[];
-  messages: { [chatId: string]: ChatMessage[] };
-  activeChat: string | null;
-  isLoading: boolean;
-  error: string | null;
-  isTyping: { [chatId: string]: boolean };
-}
-
-// Legacy types for backward compatibility
-export interface Message {
-  id: string;
-  chatId: string;
-  senderId: string;
-  text: string;
-  timestamp: Date;
-  status: 'sent' | 'delivered' | 'read';
-}
-
-export interface Conversation {
-  id: string;
-  participants: string[];
-  lastMessage?: Message;
-  lastMessageAt?: Date;
-  unreadCount: number;
-}
 
 // Navigation Types
 export type RootStackParamList = {
@@ -123,7 +68,6 @@ export type MainTabParamList = {
 
 export type MainStackParamList = {
   MainTabs: undefined;
-  ChatScreen: { chatId: string; recipientName: string };
   StoryViewer: { stories: Story[]; initialIndex: number };
   UserProfile: { userId: string };
 };

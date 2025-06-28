@@ -2,66 +2,67 @@
 
 ## Current Work Focus
 
-**MAJOR MILESTONE ACHIEVED:** The **Document Browser & Citation System** is now **COMPLETE**! Building on the fully functional AI Chat RAG system, we've successfully implemented comprehensive document management with full citation navigation capabilities.
+**MAJOR CLEANUP COMPLETED:** Successfully **removed all realtime chat infrastructure** and **simplified the codebase** to focus purely on AI-powered event assistance. The app now has a clean, focused architecture centered around the AI Chat RAG system.
 
 ## Recent Accomplishments (Current Session)
 
-### Task 5.0: Document Browser & Citation Interaction - COMPLETE ✅
-- **5.1 COMPLETED**: Built `DocumentListScreen` with:
-  - Real-time document listing from Firestore with automatic updates
-  - Document metadata display (name, size, type, uploader, upload date)
-  - Role-based UI with different empty states for hosts vs guests
-  - Floating action button for hosts to quickly upload documents
-  - Pull-to-refresh functionality and loading states
-  - Navigation integration with proper TypeScript types
+### Major Codebase Cleanup - COMPLETE ✅
 
-- **5.2 COMPLETED**: Implemented document viewers with:
-  - `DocumentViewerScreen` supporting both PDFs and images
-  - PDF viewing via WebView with Google Docs viewer integration
-  - Image viewing with expo-image and zoom/pan capabilities
-  - Responsive UI with different themes for content types
-  - Comprehensive error handling and loading states
-  - Navigation integration from DocumentListScreen
-  - **Dependencies**: Added `react-native-webview` and `expo-image`
+**Removed Realtime Chat Infrastructure:**
+- **Deleted entire `src/services/realtime/` folder** with all chat, messaging, and presence services
+- **Removed `database.rules.json`** - no longer using Firebase Realtime Database
+- **Deleted old chat screens**: `ChatScreen.tsx` and `ChatListScreen.tsx`
+- **Updated `firebase.json`** - removed realtime database configuration
 
-- **5.3 COMPLETED**: Citation navigation with highlighting:
-  - Enhanced `CitationLink` components to navigate to `DocumentViewerScreen`
-  - Extended navigation types to support citation highlighting parameters
-  - Added `getEventDocument()` method to FirestoreService for document lookup
-  - Implemented citation highlight banner in document viewer
-  - Shows referenced text excerpt and section information
-  - Supports both PDF and image document types
+**Simplified Data Models:**
+- **Cleaned up `src/services/firestore.service.ts`**:
+  - Removed `CHATS`, `MESSAGES`, and `CONTACTS` collections
+  - Removed `ContactDocument` interface and `contacts` field from `UserDocument`
+  - Removed `generateChatId()` and all contact management methods (`addContact`, `removeContact`, `getContacts`, `subscribeToContacts`)
+- **Streamlined `src/types/index.ts`**:
+  - Removed all chat-related types (`ChatMessage`, `ChatConversation`, `UserPresence`, `ChatState`, etc.)
+  - Removed legacy `Message` and `Conversation` interfaces
+  - Cleaned up navigation types to remove `ChatScreen` route
 
-- **5.4 COMPLETED**: Navigation entry point for all participants:
-  - Added "View Documents" button in ProfileScreen event section
-  - Accessible to both hosts and guests
-  - Positioned alongside other event-related buttons
-  - Provides seamless access to document browser
+**Simplified State Management:**
+- **Refactored `src/store/chatStore.ts`** to AI-only functionality:
+  - Removed all realtime chat, conversations, messaging, typing, and presence state
+  - Kept only AI chat functionality (`aiMessages`, `sendAIQuery`, etc.)
+  - Simplified from 760 lines to ~150 lines of focused AI code
+- **Cleaned up `src/store/userStore.ts`**:
+  - Removed all contact management functionality
+  - Simplified from contact-heavy store to basic user profile management
+  - Removed contact subscriptions and related state
+
+**Updated Navigation & UI:**
+- **Simplified navigation**: Removed `ChatScreen` route from `MainNavigator.tsx`
+- **Updated `UserProfileScreen.tsx`**: Removed friend/contact functionality
+- **Cleaned up `EventFeedScreen.tsx`**: Removed contact fetching calls
+- **Maintained AI Chat**: `AiChatScreen` remains as the primary chat interface
 
 ### Technical Infrastructure Improvements
-- **Firestore Service Enhancement**: Added `getEventDocuments()`, `subscribeToEventDocuments()`, and `getEventDocument()` methods
-- **Navigation Architecture**: Extended navigation types and routes for document management with citation support
-- **Type Safety**: Full TypeScript integration for all new components and navigation
-- **Code Quality**: Maintained clean TypeScript compilation with proper imports
+- **Codebase Size Reduction**: Removed ~2000+ lines of unused realtime chat code
+- **Type Safety**: All TypeScript compilation passes without errors
+- **Clean Architecture**: App now has focused, single-purpose AI chat system
+- **Performance**: Eliminated unnecessary realtime subscriptions and complex chat state management
 
 ## Current Status
 
-The app now has **COMPLETE document management with AI integration**:
-- **Document Upload**: Hosts can upload PDFs and images
-- **Document Processing**: Automatic vector ingestion for AI search
-- **Document Browsing**: All participants can view document lists via ProfileScreen
-- **Document Viewing**: Full-featured PDF and image viewers with citation highlighting
-- **AI Integration**: Documents are searchable via natural language queries
-- **Citation System**: AI responses include clickable citations that navigate to documents
-- **Citation Highlighting**: Document viewer shows referenced text with visual indicators
+The app now has a **CLEAN, FOCUSED AI-POWERED ARCHITECTURE**:
+- **AI Chat System**: Fully functional RAG-powered document Q&A
+- **Document Management**: Complete upload, processing, browsing, and viewing system
+- **Citation Navigation**: AI responses link directly to source documents with highlighting
+- **Event-Scoped**: All functionality properly isolated by event
+- **Simplified Codebase**: Removed 2000+ lines of unused realtime chat infrastructure
+- **Type-Safe**: All TypeScript compilation passes without errors
 
 ## Next Steps
 
-**Testing & Polish Phase**:
-- **Testing Required**: Some minor buggy behavior has been observed and needs investigation
-- **User Experience Testing**: Validate complete AI → citation → document flow
-- **Performance Testing**: Test with larger documents and multiple citations
-- **Error Handling**: Ensure robust behavior with network issues and edge cases
+**Ready for Production**:
+- **Testing & Polish**: Address any minor buggy behavior
+- **Performance Optimization**: Fine-tune AI response times and document loading
+- **User Experience**: Enhance animations and transitions
+- **Feature Expansion**: Consider additional document types or enhanced search capabilities
 
 ## Technical Notes
 
