@@ -3,7 +3,7 @@ import * as admin from 'firebase-admin';
 import * as fs from 'fs';
 import { Pinecone } from '@pinecone-database/pinecone';
 import OpenAI from 'openai';
-import * as pdf from 'pdf-parse';
+import pdf from 'pdf-parse';
 
 // Initialize Firebase Admin if not already
 if (!admin.apps.length) {
