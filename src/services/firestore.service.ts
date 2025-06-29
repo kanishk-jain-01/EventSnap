@@ -1274,19 +1274,16 @@ export class FirestoreService {
 
   /**
    * Get a single event document by ID
+   * @param documentId The Firestore document ID
+   * @param eventId Optional event ID for optimized lookup
    */
   static async getEventDocument(
     documentId: string,
+    eventId?: string,
   ): Promise<ApiResponse<import('../types').EventDocument>> {
     try {
-      // We need to search across all events since we only have documentId
-      // This is a limitation of the current design - ideally we'd store eventId with citations
-      // For now, we'll use a more expensive query
-      const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
-      const eventsSnapshot = await getDocs(eventsRef);
-      
-      for (const eventDoc of eventsSnapshot.docs) {
-        const eventId = eventDoc.id;
+      if (eventId) {
+        // Optimized path: direct lookup when eventId is known
         const docRef = doc(
           firestore,
           COLLECTIONS.EVENTS,
@@ -1301,6 +1298,49 @@ export class FirestoreService {
           const document: import('../types').EventDocument = {
             id: docSnapshot.id,
             eventId,
+            name: data.name,
+            storagePath: data.storagePath,
+            downloadUrl: data.downloadUrl,
+            contentType: data.contentType,
+            type: data.type,
+            uploadedBy: data.uploadedBy,
+            size: data.size,
+            createdAt: data.createdAt.toDate(),
+            pageCount: data.pageCount,
+          };
+          
+          return {
+            success: true,
+            data: document,
+          };
+        }
+        
+        return {
+          success: false,
+          error: 'Document not found',
+        };
+      }
+      
+      // Fallback: search across all events (less efficient)
+      const eventsRef = collection(firestore, COLLECTIONS.EVENTS);
+      const eventsSnapshot = await getDocs(eventsRef);
+      
+      for (const eventDoc of eventsSnapshot.docs) {
+        const currentEventId = eventDoc.id;
+        const docRef = doc(
+          firestore,
+          COLLECTIONS.EVENTS,
+          currentEventId,
+          EVENT_SUBCOLLECTIONS.DOCUMENTS,
+          documentId,
+        );
+        
+        const docSnapshot = await getDoc(docRef);
+        if (docSnapshot.exists()) {
+          const data = docSnapshot.data();
+          const document: import('../types').EventDocument = {
+            id: docSnapshot.id,
+            eventId: currentEventId,
             name: data.name,
             storagePath: data.storagePath,
             downloadUrl: data.downloadUrl,

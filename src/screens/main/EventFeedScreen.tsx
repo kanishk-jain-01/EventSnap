@@ -267,8 +267,17 @@ export const EventFeedScreen: React.FC = () => {
               return groups;
             }, {} as Record<string, Story[]>);
 
-            // Create one ring per user
-            return Object.entries(storyGroups).map(([userId, userStories]) => {
+            // Create one ring per user, with current user first
+            const storyEntries = Object.entries(storyGroups);
+            
+            // Sort to put current user first
+            const sortedEntries = storyEntries.sort(([userIdA], [userIdB]) => {
+              if (userIdA === user?.uid) return -1; // Current user first
+              if (userIdB === user?.uid) return 1;  // Current user first
+              return 0; // Maintain original order for others
+            });
+            
+            return sortedEntries.map(([userId, userStories]) => {
               const owner = storyOwners.get(userId);
               const hasUnviewed = userStories.some(story => 
                 !story.viewedBy.includes(user?.uid || ''),

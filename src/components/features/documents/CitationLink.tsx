@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../../../navigation/types';
 import { FirestoreService } from '../../../services/firestore.service';
+import { useEventStore } from '../../../store/eventStore';
 
 interface Citation {
   documentId: string;
@@ -27,6 +28,7 @@ export const CitationLink: React.FC<CitationLinkProps> = ({
   onPress,
 }) => {
   const navigation = useNavigation<NavigationProp>();
+  const { activeEvent } = useEventStore();
 
   const handlePress = async () => {
     if (onPress) {
@@ -36,7 +38,10 @@ export const CitationLink: React.FC<CitationLinkProps> = ({
 
     try {
       // Get document details from Firestore to determine type and URL
-      const docResult = await FirestoreService.getEventDocument(citation.documentId);
+      const docResult = await FirestoreService.getEventDocument(
+        citation.documentId,
+        activeEvent?.id // Pass eventId for optimized lookup
+      );
       
       if (!docResult.success || !docResult.data) {
         console.error('Failed to load document details:', docResult.error);
@@ -48,7 +53,7 @@ export const CitationLink: React.FC<CitationLinkProps> = ({
       // Navigate to DocumentViewer with citation highlighting
       navigation.navigate('DocumentViewer', {
         documentId: citation.documentId,
-        documentName: citation.documentName,
+        documentName: document.name, // Use actual document name from Firestore
         documentUrl: document.downloadUrl,
         documentType: document.type,
         highlightText: citation.excerpt,

@@ -203,22 +203,44 @@ Please provide a helpful answer based on the event documents provided above.`;
     
     console.log(`✅ Generated AI response (${aiResponse.length} characters)`);
     
-    // Prepare citations with better document naming
-    const citations: Citation[] = relevantChunks.map((chunk, _idx) => {
-      // Extract document name from storage path
-      const pathParts = chunk.storagePath.split('/');
-      const fileName = pathParts[pathParts.length - 1] || 'unknown';
-      // Remove file extension and decode if needed
-      const documentName = fileName.replace(/\.[^/.]+$/, '').replace(/%20/g, ' ');
+    // Prepare citations with correct document IDs and fetch document names
+    const citations: Citation[] = [];
+    
+    for (let idx = 0; idx < relevantChunks.length; idx++) {
+      const chunk = relevantChunks[idx];
       
-      return {
-        documentId: fileName,
+      // Extract document ID from storage path: events/{eventId}/docs/{docId}
+      const pathParts = chunk.storagePath.split('/');
+      const docId = pathParts[pathParts.length - 1] || 'unknown';
+      
+      // Fetch document name from Firestore
+      let documentName = `Document ${idx + 1}`; // Fallback name
+      try {
+        const docSnapshot = await admin
+          .firestore()
+          .collection('events')
+          .doc(eventId)
+          .collection('documents')
+          .doc(docId)
+          .get();
+          
+        if (docSnapshot.exists) {
+          const docData = docSnapshot.data();
+          documentName = docData?.name || documentName;
+        }
+      } catch (error) {
+        console.warn(`Failed to fetch document name for ${docId}:`, error);
+        // Keep fallback name
+      }
+      
+      citations.push({
+        documentId: docId, // This is the Firestore document ID
         documentName: documentName,
         chunkIndex: chunk.chunkIndex,
         excerpt: chunk.text.substring(0, 200) + (chunk.text.length > 200 ? '...' : ''),
         storagePath: chunk.storagePath,
-      };
-    });
+      });
+    }
     
     console.log(`📋 Returning response with ${citations.length} citations`);
     
