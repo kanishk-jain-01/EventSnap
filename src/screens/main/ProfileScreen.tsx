@@ -160,9 +160,7 @@ export const ProfileScreen: React.FC = () => {
   };
 
   const handleManageEvent = () => {
-    if (role === 'host') {
-      (navigation as any).navigate('EventSetup');
-    }
+    navigation.navigate('EventManagement');
   };
 
   const handlePromoteToHost = async () => {
@@ -196,16 +194,7 @@ export const ProfileScreen: React.FC = () => {
     }
   };
 
-  const copyHostCode = () => {
-    if (activeEvent?.hostCode) {
-      // In a real app, you'd use Clipboard API
-      Alert.alert(
-        'Host Code',
-        `Host Code: ${activeEvent.hostCode}\n\nShare this code with guests to make them hosts.`,
-        [{ text: 'OK' }],
-      );
-    }
-  };
+
 
   const formatEventTime = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
@@ -430,20 +419,12 @@ export const ProfileScreen: React.FC = () => {
                 size='small'
               />
               {role === 'host' && (
-                <>
-                  <Button
-                    title='Manage Event'
-                    onPress={handleManageEvent}
-                    variant='secondary'
-                    size='small'
-                  />
-                  <Button
-                    title='Show Host Code'
-                    onPress={copyHostCode}
-                    variant='outline'
-                    size='small'
-                  />
-                </>
+                <Button
+                  title='Manage Event'
+                  onPress={handleManageEvent}
+                  variant='secondary'
+                  size='small'
+                />
               )}
             </View>
           </View>

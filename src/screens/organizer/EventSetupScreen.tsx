@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { useEventStore } from '../../store/eventStore';
@@ -36,6 +36,20 @@ export const EventSetupScreen: React.FC = () => {
   const { userId } = useAuth();
   const createEvent = useEventStore(state => state.createEvent);
   const activeEvent = useEventStore(state => state.activeEvent);
+
+  // Reset form state when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      // Reset all form state to initial values
+      setName('');
+      setStartTime(new Date());
+      setEndTime(new Date(Date.now() + 3 * 60 * 60 * 1000));
+      setShowStartPicker(false);
+      setShowEndPicker(false);
+      setSubmitting(false);
+      setEventCreated(false);
+    }, []),
+  );
 
   const handleStartChange = (_event: any, selectedDate?: Date) => {
     setShowStartPicker(Platform.OS === 'ios');

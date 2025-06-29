@@ -2,11 +2,45 @@
 
 ## Current Work Focus
 
-**MAJOR CLEANUP COMPLETED:** Successfully **removed all realtime chat infrastructure** and **simplified the codebase** to focus purely on AI-powered event assistance. The app now has a clean, focused architecture centered around the AI Chat RAG system.
+**EVENT MANAGEMENT SYSTEM IMPLEMENTED:** Successfully **replaced automated event cleanup with manual host-controlled event ending**. Implemented comprehensive Event Management screen with complete data deletion capabilities including Pinecone vectors, Firebase Storage files, and Firestore documents.
 
 ## Recent Accomplishments (Current Session)
 
-### Major Codebase Cleanup - COMPLETE ✅
+### Event Management System Implementation - COMPLETE ✅
+
+**New Event Management Screen:**
+- **Created `EventManagementScreen.tsx`** with comprehensive event management interface
+- **Event Details Display**: Shows event name, dates, and host/guest role
+- **Event Codes Section**: Displays both Join Code (6-digit) and Host Code (8-digit) with share functionality
+- **End Event Functionality**: Host-only "Danger Zone" with confirmation dialog for permanent event deletion
+- **Navigation Integration**: Added to MainNavigator with proper TypeScript types
+
+**Manual Event Deletion System:**
+- **Created `endEvent` Cloud Function** with complete data cleanup:
+  - Clears `activeEventId` and `eventRole` for all participants (triggers automatic app navigation)
+  - Deletes all event documents from Firestore and their files from Firebase Storage
+  - Deletes all event stories from Firestore and their images from Firebase Storage
+  - Deletes all vector embeddings from Pinecone namespace
+  - Deletes entire event storage folder and remaining files
+  - Finally deletes the event document itself
+- **Comprehensive Error Handling**: Continues cleanup even if individual steps fail
+- **Detailed Logging**: Full audit trail of deletion process
+- **Security Validation**: Only event hosts can trigger deletion
+
+**UI/UX Improvements:**
+- **Removed "Show Host Code" button** from ProfileScreen (functionality moved to Event Management)
+- **Updated "Manage Event" button** to navigate to new Event Management screen
+- **Consolidated Code Access**: Both join and host codes now accessible in one place
+- **Confirmation Dialog**: Prevents accidental event deletion with detailed warning
+- **Success Feedback**: Shows deletion summary after completion
+
+**Cleanup of Legacy Code:**
+- **Removed automated cleanup functions**: `deleteExpiredContent` and `cleanupExpiredEventsScheduled`
+- **Deleted `functions/deleteExpiredContent/` directory** entirely
+- **Updated `functions/index.ts`** to export new `endEvent` function
+- **Removed unused `copyHostCode` function** from ProfileScreen
+
+### Previous Major Codebase Cleanup - COMPLETE ✅
 
 **Removed Realtime Chat Infrastructure:**
 - **Deleted entire `src/services/realtime/` folder** with all chat, messaging, and presence services
@@ -48,21 +82,24 @@
 
 ## Current Status
 
-The app now has a **CLEAN, FOCUSED AI-POWERED ARCHITECTURE**:
+The app now has a **COMPLETE EVENT MANAGEMENT SYSTEM WITH AI-POWERED ARCHITECTURE**:
+- **Event Management**: Full host-controlled event lifecycle with manual deletion
 - **AI Chat System**: Fully functional RAG-powered document Q&A
 - **Document Management**: Complete upload, processing, browsing, and viewing system
 - **Citation Navigation**: AI responses link directly to source documents with highlighting
 - **Event-Scoped**: All functionality properly isolated by event
-- **Simplified Codebase**: Removed 2000+ lines of unused realtime chat infrastructure
+- **Clean Architecture**: Consolidated event management with automated navigation
 - **Type-Safe**: All TypeScript compilation passes without errors
 
 ## Next Steps
 
-**Ready for Production**:
-- **Testing & Polish**: Address any minor buggy behavior
-- **Performance Optimization**: Fine-tune AI response times and document loading
-- **User Experience**: Enhance animations and transitions
-- **Feature Expansion**: Consider additional document types or enhanced search capabilities
+**Ready for Testing & Deployment**:
+- **Test Event Management Flow**: Verify end-to-end event creation, management, and deletion
+- **Test Navigation Behavior**: Confirm users are properly redirected when activeEventId becomes null
+- **Deploy Cloud Functions**: Deploy the new `endEvent` function to production
+- **Performance Testing**: Test complete event deletion with large datasets
+- **User Experience Polish**: Enhance animations and transitions
+- **Feature Expansion**: Consider additional event management features
 
 ## Technical Notes
 

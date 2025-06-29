@@ -36,6 +36,7 @@ export type MainStackParamList = {
     chunkIndex?: number;
   };
   DocumentList: undefined;
+  EventManagement: undefined;
 };
 
 // Main Tab Navigator

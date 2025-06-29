@@ -8,6 +8,7 @@ import { HostListScreen } from '../screens/main/HostListScreen';
 import DocumentUploadScreen from '../screens/main/DocumentUploadScreen';
 import DocumentViewerScreen from '../screens/main/DocumentViewerScreen';
 import DocumentListScreen from '../screens/main/DocumentListScreen';
+import { EventManagementScreen } from '../screens/main/EventManagementScreen';
 import { MainStackParamList } from '../navigation/types';
 
 const MainStack = createNativeStackNavigator<MainStackParamList>();
@@ -116,6 +117,16 @@ export const MainNavigator: React.FC = () => {
           presentation: 'fullScreenModal',
           headerShown: false,
           gestureEnabled: false,
+        }}
+      />
+
+      {/* Event Management Screen */}
+      <MainStack.Screen
+        name='EventManagement'
+        component={EventManagementScreen}
+        options={{
+          presentation: 'card',
+          headerShown: false,
         }}
       />
 
