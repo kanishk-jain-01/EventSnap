@@ -381,18 +381,7 @@ export const CameraScreen: React.FC = () => {
     }
   };
 
-  const showImageSourceDialog = () => {
-    CameraService.showImageSourceDialog(
-      () => {
-        // Camera option - stay in current camera view
-        // No action needed as user can use the camera directly
-      },
-      () => {
-        // Gallery option
-        pickImageFromGallery();
-      },
-    );
-  };
+
 
   const toggleOptimization = () => {
     setAutoOptimize(!autoOptimize);
@@ -517,9 +506,9 @@ export const CameraScreen: React.FC = () => {
   // Loading screen
   if (isLoading) {
     return (
-      <View className='flex-1 bg-snap-dark items-center justify-center'>
-        <StatusBar style='light' />
-        <LoadingSpinner size='large' text='Checking camera...' />
+      <View className='flex-1 bg-bg-primary items-center justify-center'>
+        <StatusBar style='dark' />
+        <LoadingSpinner size='large' text='Checking camera...' color={colors.primary} />
       </View>
     );
   }
@@ -527,36 +516,36 @@ export const CameraScreen: React.FC = () => {
   // Permission request screen
   if (!permissions?.camera || !cameraAvailable) {
     return (
-      <View className='flex-1 bg-snap-dark'>
-        <StatusBar style='light' />
+      <View className='flex-1 bg-bg-primary'>
+        <StatusBar style='dark' />
 
         {/* Header */}
         <View className='pt-12 pb-6 px-6'>
-          <Text className='text-snap-yellow text-2xl font-bold text-center'>
+          <Text className='text-primary text-2xl font-bold text-center'>
             Camera Setup
           </Text>
-          <Text className='text-white text-base text-center mt-2'>
-            Phase 4.5: Camera + Gallery + Optimization
+          <Text className='text-text-secondary text-base text-center mt-2'>
+            Get ready to capture amazing moments
           </Text>
         </View>
 
         <View className='flex-1 px-6'>
           {/* Camera Availability Status */}
-          <View className='bg-snap-gray p-4 rounded-lg mb-6'>
-            <Text className='text-white text-lg font-semibold mb-2'>
+          <View className='bg-surface p-4 rounded-2xl mb-6 shadow-soft border border-border'>
+            <Text className='text-text-primary text-lg font-semibold mb-3'>
               Camera Availability
             </Text>
             <View className='flex-row items-center'>
               <View
                 className={`w-3 h-3 rounded-full mr-3 ${
                   cameraAvailable === true
-                    ? 'bg-green-500'
+                    ? 'bg-success'
                     : cameraAvailable === false
-                      ? 'bg-red-500'
-                      : 'bg-gray-500'
+                      ? 'bg-error'
+                      : 'bg-text-tertiary'
                 }`}
               />
-              <Text className='text-white'>
+              <Text className='text-text-secondary'>
                 {cameraAvailable === true
                   ? 'Camera is available'
                   : cameraAvailable === false
@@ -568,18 +557,18 @@ export const CameraScreen: React.FC = () => {
 
           {/* Permissions Status */}
           {permissions && (
-            <View className='bg-snap-gray p-4 rounded-lg mb-6'>
-              <Text className='text-white text-lg font-semibold mb-3'>
+            <View className='bg-surface p-4 rounded-2xl mb-6 shadow-soft border border-border'>
+              <Text className='text-text-primary text-lg font-semibold mb-3'>
                 Permissions Status
               </Text>
 
-              <View className='flex-row items-center mb-2'>
+              <View className='flex-row items-center mb-3'>
                 <View
                   className={`w-3 h-3 rounded-full mr-3 ${
-                    permissions.camera ? 'bg-green-500' : 'bg-red-500'
+                    permissions.camera ? 'bg-success' : 'bg-error'
                   }`}
                 />
-                <Text className='text-white'>
+                <Text className='text-text-secondary'>
                   Camera: {permissions.camera ? 'Granted' : 'Denied'}
                 </Text>
               </View>
@@ -587,10 +576,10 @@ export const CameraScreen: React.FC = () => {
               <View className='flex-row items-center'>
                 <View
                   className={`w-3 h-3 rounded-full mr-3 ${
-                    permissions.mediaLibrary ? 'bg-green-500' : 'bg-red-500'
+                    permissions.mediaLibrary ? 'bg-success' : 'bg-error'
                   }`}
                 />
-                <Text className='text-white'>
+                <Text className='text-text-secondary'>
                   Photo Library:{' '}
                   {permissions.mediaLibrary ? 'Granted' : 'Denied'}
                 </Text>
@@ -600,8 +589,8 @@ export const CameraScreen: React.FC = () => {
 
           {/* Error Display */}
           {error && (
-            <View className='bg-snap-red/20 border border-snap-red rounded-lg p-4 mb-6'>
-              <Text className='text-snap-red text-sm text-center'>{error}</Text>
+            <View className='bg-error/10 border border-error/30 rounded-2xl p-4 mb-6'>
+              <Text className='text-error text-sm text-center font-medium'>{error}</Text>
             </View>
           )}
 
@@ -636,8 +625,8 @@ export const CameraScreen: React.FC = () => {
           </View>
 
           {/* Info */}
-          <View className='mt-8 p-4 bg-snap-light-gray/20 rounded-lg'>
-            <Text className='text-gray-300 text-sm text-center'>
+          <View className='mt-8 p-4 bg-primary/5 border border-primary/10 rounded-2xl'>
+            <Text className='text-text-secondary text-sm text-center leading-5'>
               Camera permission is required to take photos.{'\n'}
               You can also select images from your gallery as an alternative.
               {'\n'}
@@ -700,32 +689,32 @@ export const CameraScreen: React.FC = () => {
   // Show selected image preview if available
   if (selectedImage && capturedPhoto) {
     return (
-      <View className='flex-1 bg-snap-dark'>
-        <StatusBar style='light' />
+      <View className='flex-1 bg-bg-primary'>
+        <StatusBar style='dark' />
 
         {/* Header */}
         <View className='absolute top-12 left-0 right-0 z-10 px-4'>
-          <View className='flex-row justify-between items-center'>
+          <View className='bg-white/95 backdrop-blur-sm rounded-2xl p-3 shadow-soft flex-row justify-between items-center'>
             <TouchableOpacity
               onPress={() => {
                 setSelectedImage(null);
                 setCapturedPhoto(null);
                 setImageSource(null);
               }}
-              className='bg-black/60 px-4 py-2 rounded-full'
+              className='bg-bg-secondary px-4 py-2 rounded-xl'
             >
-              <Text className='text-white font-semibold'>← Back</Text>
+              <Text className='text-text-primary font-semibold'>← Back</Text>
             </TouchableOpacity>
 
-            <Text className='text-white text-lg font-bold'>
+            <Text className='text-text-primary text-lg font-bold'>
               {imageSource === 'camera' ? 'Photo Taken' : 'Gallery Image'}
             </Text>
 
             <TouchableOpacity
               onPress={() => setShowImageEditor(true)}
-              className='bg-snap-yellow/80 px-4 py-2 rounded-full'
+              className='bg-primary px-4 py-2 rounded-xl'
             >
-              <Text className='text-black font-semibold'>✏️ Edit</Text>
+              <Text className='text-white font-semibold'>✏️ Edit</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -778,50 +767,58 @@ export const CameraScreen: React.FC = () => {
           )}
         </View>
 
-        {/* Enhanced Bottom Controls for Task 4.6 */}
+        {/* Modern Bottom Controls */}
         <View className='absolute bottom-8 left-0 right-0 px-4'>
-          <View className='bg-black/60 p-4 rounded-xl'>
-            <Text className='text-white text-center text-sm'>
+          <View className='bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-soft border border-border'>
+            <Text className='text-text-primary text-center text-sm font-medium'>
               ✅ Image ready! Source:{' '}
               {imageSource === 'camera' ? 'Camera' : 'Gallery'}
               {selectedImage.optimized && ' • Optimized'}
             </Text>
 
-            {/* Enhanced metadata display */}
-            <View className='flex-row justify-center items-center mt-2 space-x-4'>
+            {/* Modern metadata display */}
+            <View className='flex-row justify-center items-center mt-3 flex-wrap'>
               {selectedImage.fileSize && (
-                <Text className='text-gray-300 text-xs'>
-                  📦 {formatFileSize(selectedImage.fileSize)}
-                </Text>
+                <View className='bg-bg-secondary px-2 py-1 rounded-lg mr-2 mb-1'>
+                  <Text className='text-text-secondary text-xs font-medium'>
+                    📦 {formatFileSize(selectedImage.fileSize)}
+                  </Text>
+                </View>
               )}
               {selectedImage.width > 0 && selectedImage.height > 0 && (
-                <Text className='text-gray-300 text-xs'>
-                  📐 {selectedImage.width}x{selectedImage.height}
-                </Text>
+                <View className='bg-bg-secondary px-2 py-1 rounded-lg mr-2 mb-1'>
+                  <Text className='text-text-secondary text-xs font-medium'>
+                    📐 {selectedImage.width}x{selectedImage.height}
+                  </Text>
+                </View>
               )}
               {selectedImage.optimized && (
-                <Text className='text-green-400 text-xs'>⚡ Optimized</Text>
+                <View className='bg-success/10 px-2 py-1 rounded-lg mr-2 mb-1'>
+                  <Text className='text-success text-xs font-medium'>⚡ Optimized</Text>
+                </View>
               )}
               {selectedImage.compressionRatio &&
                 selectedImage.compressionRatio > 1 && (
-                  <Text className='text-blue-400 text-xs'>
-                    🗜️ {selectedImage.compressionRatio.toFixed(1)}x
-                  </Text>
+                  <View className='bg-primary/10 px-2 py-1 rounded-lg mb-1'>
+                    <Text className='text-primary text-xs font-medium'>
+                      🗜️ {selectedImage.compressionRatio.toFixed(1)}x
+                    </Text>
+                  </View>
                 )}
             </View>
 
-            {/* Text Overlay Controls for Task 5.4 */}
+            {/* Text Overlay Controls */}
             {overlayText && (
               <View className='flex-row justify-center items-center mt-3 mb-2'>
-                <View className='bg-purple-500/20 px-3 py-2 rounded-full flex-1 mr-2'>
-                  <Text className='text-purple-300 text-xs text-center'>
+                <View className='bg-accent/10 px-3 py-2 rounded-xl flex-1 mr-2'>
+                  <Text className='text-accent text-xs text-center font-medium'>
                     Text: "{overlayText.substring(0, 30)}
                     {overlayText.length > 30 ? '...' : ''}"
                   </Text>
                 </View>
                 <TouchableOpacity
                   onPress={clearTextOverlay}
-                  className='bg-red-500/80 px-3 py-2 rounded-full'
+                  className='bg-error px-3 py-2 rounded-xl'
                 >
                   <Text className='text-white text-xs font-semibold'>
                     Clear
@@ -830,23 +827,23 @@ export const CameraScreen: React.FC = () => {
               </View>
             )}
 
-            {/* Role-based Action Buttons for Task 5.5 */}
-            <View className='flex-row justify-center space-x-2 mt-4'>
-              {/* Add Text Button - Available to all users */}
+            {/* Modern Action Buttons */}
+            <View className='flex-row justify-center space-x-3 mt-4'>
+              {/* Add Text Button */}
               <TouchableOpacity
                 onPress={handleTextOverlayPress}
                 style={{ backgroundColor: colors.primary }}
-                className='px-3 py-3 rounded-full flex-1'
+                className='px-4 py-3 rounded-xl flex-1'
               >
                 <Text className='text-white font-semibold text-center text-sm'>
                   {overlayText ? '✏️ Edit Text' : '📝 Add Text'}
                 </Text>
               </TouchableOpacity>
 
-              {/* Post Story - Available to all users in events */}
+              {/* Post Story */}
               <TouchableOpacity
                 onPress={handlePostStory}
-                className='bg-blue-500 px-3 py-3 rounded-full flex-1'
+                className='bg-accent px-4 py-3 rounded-xl flex-1'
                 disabled={isPostingStory}
               >
                 <Text className='text-white font-semibold text-center text-sm'>
@@ -856,17 +853,15 @@ export const CameraScreen: React.FC = () => {
                 </Text>
               </TouchableOpacity>
 
-              {/* Edit Button - Available to all users */}
+              {/* Edit Button */}
               <TouchableOpacity
                 onPress={() => setShowImageEditor(true)}
-                className='bg-snap-yellow px-3 py-3 rounded-full flex-1'
+                className='bg-warning px-4 py-3 rounded-xl flex-1'
               >
-                <Text className='text-black font-semibold text-center text-sm'>
+                <Text className='text-white font-semibold text-center text-sm'>
                   ✏️ Edit
                 </Text>
               </TouchableOpacity>
-
-
             </View>
           </View>
         </View>
@@ -876,8 +871,8 @@ export const CameraScreen: React.FC = () => {
 
   // Main camera interface with enhanced controls
   return (
-    <View className='flex-1 bg-snap-dark'>
-      <StatusBar style='light' />
+    <View className='flex-1 bg-bg-primary'>
+      <StatusBar style='dark' />
 
       {/* Camera View */}
       <View className='flex-1'>
@@ -896,108 +891,114 @@ export const CameraScreen: React.FC = () => {
           {showGrid && (
             <View className='absolute inset-0 pointer-events-none'>
               {/* Horizontal lines */}
-              <View className='absolute top-1/3 left-0 right-0 h-px bg-white/30' />
-              <View className='absolute top-2/3 left-0 right-0 h-px bg-white/30' />
+              <View className='absolute top-1/3 left-0 right-0 h-px bg-white/40' />
+              <View className='absolute top-2/3 left-0 right-0 h-px bg-white/40' />
               {/* Vertical lines */}
-              <View className='absolute left-1/3 top-0 bottom-0 w-px bg-white/30' />
-              <View className='absolute left-2/3 top-0 bottom-0 w-px bg-white/30' />
+              <View className='absolute left-1/3 top-0 bottom-0 w-px bg-white/40' />
+              <View className='absolute left-2/3 top-0 bottom-0 w-px bg-white/40' />
             </View>
           )}
 
           {/* Timer Countdown Overlay */}
           {isTimerActive && timerCount > 0 && (
-            <View className='absolute inset-0 bg-black/50 items-center justify-center'>
-              <View className='bg-white/20 rounded-full w-32 h-32 items-center justify-center'>
-                <Text className='text-white text-6xl font-bold'>
+            <View className='absolute inset-0 bg-black/60 items-center justify-center'>
+              <View className='bg-white/90 rounded-full w-32 h-32 items-center justify-center shadow-strong'>
+                <Text className='text-primary text-6xl font-bold'>
                   {timerCount}
                 </Text>
               </View>
             </View>
           )}
 
-          {/* Enhanced Top Controls Bar for Task 4.5 */}
-          <View className='absolute top-12 left-0 right-0 flex-row justify-between items-center px-4'>
-            {/* Left Side Controls */}
-            <View className='flex-row items-center space-x-2'>
-              {/* Flash Control */}
-              <TouchableOpacity
-                onPress={toggleFlashMode}
-                className='bg-black/60 px-3 py-2 rounded-full flex-row items-center'
-              >
-                <Text className='text-white text-lg mr-1'>
-                  {getFlashModeIcon()}
-                </Text>
-                <Text className='text-white text-xs font-semibold'>
-                  {getFlashModeText()}
-                </Text>
-              </TouchableOpacity>
+          {/* Modern Top Controls Bar */}
+          <View className='absolute top-12 left-0 right-0 px-4'>
+            <View className='bg-white/95 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-soft'>
+              <View className='flex-row justify-between items-center'>
+                {/* Left Side Controls */}
+                <View className='flex-row items-center space-x-3'>
+                  {/* Flash Control */}
+                  <TouchableOpacity
+                    onPress={toggleFlashMode}
+                    className={`px-3 py-2 rounded-xl flex-row items-center ${
+                      flashMode !== 'off' ? 'bg-primary/10' : 'bg-bg-secondary'
+                    }`}
+                  >
+                    <Text className={`text-lg mr-1 ${
+                      flashMode !== 'off' ? 'text-primary' : 'text-text-secondary'
+                    }`}>
+                      {getFlashModeIcon()}
+                    </Text>
+                    <Text className={`text-xs font-medium ${
+                      flashMode !== 'off' ? 'text-primary' : 'text-text-secondary'
+                    }`}>
+                      {getFlashModeText()}
+                    </Text>
+                  </TouchableOpacity>
 
-              {/* Timer Control */}
-              <TouchableOpacity
-                onPress={toggleTimer}
-                className={`px-3 py-2 rounded-full flex-row items-center ${
-                  timerMode > 0 ? 'bg-snap-yellow/80' : 'bg-black/60'
-                }`}
-              >
-                <Text className='text-white text-lg mr-1'>⏱️</Text>
-                <Text className='text-white text-xs font-semibold'>
-                  {timerMode === 0 ? 'OFF' : `${timerMode}s`}
-                </Text>
-              </TouchableOpacity>
-            </View>
+                  {/* Timer Control */}
+                  <TouchableOpacity
+                    onPress={toggleTimer}
+                    className={`px-3 py-2 rounded-xl flex-row items-center ${
+                      timerMode > 0 ? 'bg-accent/10' : 'bg-bg-secondary'
+                    }`}
+                  >
+                    <Text className={`text-lg mr-1 ${
+                      timerMode > 0 ? 'text-accent' : 'text-text-secondary'
+                    }`}>⏱️</Text>
+                    <Text className={`text-xs font-medium ${
+                      timerMode > 0 ? 'text-accent' : 'text-text-secondary'
+                    }`}>
+                      {timerMode === 0 ? 'OFF' : `${timerMode}s`}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
 
-            {/* Center Title */}
-            <Text className='text-white text-lg font-bold'>Camera</Text>
+                {/* Center Title */}
+                <Text className='text-text-primary text-lg font-bold'>Camera</Text>
 
-            {/* Right Side Controls */}
-            <View className='flex-row items-center space-x-2'>
-              {/* Optimization Toggle */}
-              <TouchableOpacity
-                onPress={toggleOptimization}
-                className={`p-2 rounded-full ${
-                  autoOptimize ? 'bg-green-500/80' : 'bg-black/60'
-                }`}
-              >
-                <Text className='text-white text-lg'>⚡</Text>
-              </TouchableOpacity>
+                {/* Right Side Controls */}
+                <View className='flex-row items-center space-x-3'>
+                  {/* Grid Toggle */}
+                  <TouchableOpacity
+                    onPress={toggleGrid}
+                    className={`p-2 rounded-xl ${
+                      showGrid ? 'bg-warning/10' : 'bg-bg-secondary'
+                    }`}
+                  >
+                    <Text className={`text-lg ${
+                      showGrid ? 'text-warning' : 'text-text-secondary'
+                    }`}>⊞</Text>
+                  </TouchableOpacity>
 
-              {/* Grid Toggle */}
-              <TouchableOpacity
-                onPress={toggleGrid}
-                className={`p-2 rounded-full ${
-                  showGrid ? 'bg-snap-yellow/80' : 'bg-black/60'
-                }`}
-              >
-                <Text className='text-white text-lg'>⊞</Text>
-              </TouchableOpacity>
-
-              {/* Camera Switch */}
-              <TouchableOpacity
-                onPress={toggleCameraType}
-                className='bg-black/60 p-2 rounded-full'
-              >
-                <Text className='text-white text-lg'>🔄</Text>
-              </TouchableOpacity>
+                  {/* Camera Switch */}
+                  <TouchableOpacity
+                    onPress={toggleCameraType}
+                    className='bg-bg-secondary p-2 rounded-xl'
+                  >
+                    <Text className='text-text-secondary text-lg'>🔄</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
           </View>
 
-          {/* Side Zoom Controls */}
+          {/* Modern Side Zoom Controls */}
           <View className='absolute right-4 top-1/2 -translate-y-1/2'>
-            <View className='bg-black/60 rounded-full py-2 px-1'>
+            <View className='bg-white/95 backdrop-blur-sm rounded-2xl py-3 px-2 shadow-soft'>
               <TouchableOpacity
                 onPress={() => adjustZoom('in')}
                 className='p-2'
                 disabled={zoom >= 1}
               >
                 <Text
-                  className={`text-lg ${zoom >= 1 ? 'text-gray-500' : 'text-white'}`}
+                  className={`text-lg font-bold ${zoom >= 1 ? 'text-text-tertiary' : 'text-primary'}`}
                 >
                   +
                 </Text>
               </TouchableOpacity>
-              <View className='h-20 w-1 bg-white/30 mx-auto my-2'>
+              <View className='h-20 w-1 bg-border mx-auto my-2 rounded-full'>
                 <View
-                  className='bg-white w-full rounded-full'
+                  className='bg-primary w-full rounded-full'
                   style={{ height: `${zoom * 100}%` }}
                 />
               </View>
@@ -1007,7 +1008,7 @@ export const CameraScreen: React.FC = () => {
                 disabled={zoom <= 0}
               >
                 <Text
-                  className={`text-lg ${zoom <= 0 ? 'text-gray-500' : 'text-white'}`}
+                  className={`text-lg font-bold ${zoom <= 0 ? 'text-text-tertiary' : 'text-primary'}`}
                 >
                   −
                 </Text>
@@ -1015,83 +1016,110 @@ export const CameraScreen: React.FC = () => {
             </View>
           </View>
 
-          {/* Bottom Controls */}
+          {/* Modern Bottom Controls */}
           <View className='absolute bottom-0 left-0 right-0 pb-8'>
             {/* Main Control Row */}
-            <View className='flex-row items-center justify-between px-8 mb-6'>
+            <View className='flex-row items-center justify-center px-8 mb-6'>
               {/* Gallery Button */}
-              <TouchableOpacity
-                onPress={pickImageFromGallery}
-                disabled={isPickingImage}
-                className='bg-black/60 p-4 rounded-full'
-              >
-                {isPickingImage ? (
-                  <LoadingSpinner size='small' />
-                ) : (
-                  <Text className='text-white text-2xl'>🖼️</Text>
-                )}
-              </TouchableOpacity>
+              <View className='absolute left-8'>
+                <TouchableOpacity
+                  onPress={pickImageFromGallery}
+                  disabled={isPickingImage}
+                  className='bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-soft'
+                >
+                  {isPickingImage ? (
+                    <LoadingSpinner size='small' color={colors.primary} />
+                  ) : (
+                    <Text className='text-primary text-2xl'>🖼️</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
 
               {/* Capture Button */}
               <TouchableOpacity
                 onPress={startTimerCapture}
                 disabled={!isCameraReady || isCapturing || isTimerActive}
-                className={`w-20 h-20 rounded-full border-4 border-white items-center justify-center ${
-                  isCapturing || isTimerActive ? 'bg-gray-500' : 'bg-white/20'
+                className={`w-20 h-20 rounded-full border-4 items-center justify-center shadow-medium ${
+                  isCapturing || isTimerActive 
+                    ? 'bg-text-tertiary border-text-tertiary' 
+                    : 'bg-white border-primary'
                 }`}
               >
                 {isCapturing || isTimerActive ? (
-                  <LoadingSpinner size='small' />
+                  <LoadingSpinner size='small' color={colors.textInverse} />
                 ) : (
-                  <View className='w-16 h-16 rounded-full bg-white' />
+                  <View className='w-16 h-16 rounded-full bg-primary' />
                 )}
               </TouchableOpacity>
 
-              {/* Image Source Dialog Button */}
-              <TouchableOpacity
-                onPress={showImageSourceDialog}
-                className='bg-black/60 p-4 rounded-full'
-              >
-                <Text className='text-white text-2xl'>📋</Text>
-              </TouchableOpacity>
+              {/* Optimization Status Indicator */}
+              <View className='absolute right-8'>
+                <TouchableOpacity
+                  onPress={toggleOptimization}
+                  className={`px-3 py-2 rounded-2xl shadow-soft ${
+                    autoOptimize ? 'bg-success/90' : 'bg-white/95'
+                  }`}
+                >
+                  <View className='flex-row items-center'>
+                    <Text className={`text-lg mr-1 ${
+                      autoOptimize ? 'text-white' : 'text-text-secondary'
+                    }`}>⚡</Text>
+                    <Text className={`text-xs font-medium ${
+                      autoOptimize ? 'text-white' : 'text-text-secondary'
+                    }`}>
+                      {autoOptimize ? 'ON' : 'OFF'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
             </View>
 
-            {/* Enhanced Status and Info Bar for Task 4.5 */}
+            {/* Modern Status and Info Bar */}
             <View className='px-4'>
-              <View className='bg-black/60 p-3 rounded-xl'>
-                <Text className='text-white text-center text-sm'>
+              <View className='bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-soft'>
+                <Text className='text-text-primary text-center text-sm font-medium'>
                   {!isCameraReady
                     ? 'Camera initializing...'
                     : isTimerActive
                       ? `Timer: ${timerCount}s`
                       : capturedPhoto
-                        ? '✅ Photo captured! Enhanced controls + Gallery + Optimization active'
-                        : 'Tap to capture • Gallery: select photos • Optimization: auto-compress'}
+                        ? '✅ Photo captured successfully!'
+                        : 'Tap to capture • Swipe for gallery'}
                 </Text>
 
-                {/* Enhanced Camera Settings Info */}
-                <View className='flex-row justify-center items-center mt-2 space-x-3'>
-                  <Text className='text-gray-300 text-xs'>
-                    📷 {cameraType === 'back' ? 'Back' : 'Front'}
-                  </Text>
-                  <Text className='text-gray-300 text-xs'>
-                    🔍 {Math.round(zoom * 100)}%
-                  </Text>
+                {/* Modern Camera Settings Info */}
+                <View className='flex-row justify-center items-center mt-3 flex-wrap'>
+                  <View className='bg-bg-secondary px-2 py-1 rounded-lg mr-2 mb-1'>
+                    <Text className='text-text-secondary text-xs font-medium'>
+                      📷 {cameraType === 'back' ? 'Back' : 'Front'}
+                    </Text>
+                  </View>
+                  <View className='bg-bg-secondary px-2 py-1 rounded-lg mr-2 mb-1'>
+                    <Text className='text-text-secondary text-xs font-medium'>
+                      🔍 {Math.round(zoom * 100)}%
+                    </Text>
+                  </View>
                   {showGrid && (
-                    <Text className='text-gray-300 text-xs'>⊞ Grid</Text>
+                    <View className='bg-warning/10 px-2 py-1 rounded-lg mr-2 mb-1'>
+                      <Text className='text-warning text-xs font-medium'>⊞ Grid</Text>
+                    </View>
                   )}
                   {timerMode > 0 && (
-                    <Text className='text-gray-300 text-xs'>
-                      ⏱️ {timerMode}s
-                    </Text>
+                    <View className='bg-accent/10 px-2 py-1 rounded-lg mr-2 mb-1'>
+                      <Text className='text-accent text-xs font-medium'>
+                        ⏱️ {timerMode}s
+                      </Text>
+                    </View>
                   )}
-                  <Text className='text-gray-300 text-xs'>🖼️ Gallery</Text>
-                  <Text
-                    className={`text-xs ${autoOptimize ? 'text-green-400' : 'text-gray-500'}`}
-                  >
-                    ⚡ {autoOptimize ? 'Auto' : 'Off'}
-                  </Text>
-                  {/* Image context chip removed – only story context is supported */}
+                  <View className={`px-2 py-1 rounded-lg mb-1 ${
+                    autoOptimize ? 'bg-success/10' : 'bg-bg-secondary'
+                  }`}>
+                    <Text className={`text-xs font-medium ${
+                      autoOptimize ? 'text-success' : 'text-text-secondary'
+                    }`}>
+                      ⚡ {autoOptimize ? 'Auto' : 'Off'}
+                    </Text>
+                  </View>
                 </View>
               </View>
             </View>
