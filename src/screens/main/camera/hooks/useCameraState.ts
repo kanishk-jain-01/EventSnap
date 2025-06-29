@@ -21,7 +21,7 @@ type CameraScreenNavigationProp = NativeStackNavigationProp<
 
 export const useCameraState = () => {
   const navigation = useNavigation<CameraScreenNavigationProp>();
-  const { activeEvent } = useEventStore();
+  const { activeEvent, role } = useEventStore();
   const { postStory, isPosting: isPostingStory, postingProgress } = useStoryStore();
 
   // Camera ref
@@ -428,7 +428,10 @@ export const useCameraState = () => {
         navigation.navigate('MainTabs', { screen: 'Home' });
         resetImage();
       } else {
-        Alert.alert('Error', 'Failed to post story.');
+        // Get the specific error from the story store
+        const { postingError } = useStoryStore.getState();
+        const errorMessage = postingError || 'Failed to post story.';
+        Alert.alert('Error', errorMessage);
       }
     } catch (error) {
       console.error('Error posting story:', error);

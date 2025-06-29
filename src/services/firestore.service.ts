@@ -127,7 +127,7 @@ export class FirestoreService {
         viewedBy: [],
         metadata,
         eventId,
-        textOverlay,
+        ...(textOverlay && { textOverlay }),
       };
 
       const docRef = await addDoc(
