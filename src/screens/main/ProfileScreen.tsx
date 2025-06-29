@@ -163,6 +163,40 @@ export const ProfileScreen: React.FC = () => {
     navigation.navigate('EventManagement');
   };
 
+  const handleLeaveEvent = async () => {
+    if (!authUser?.uid || !activeEvent) return;
+
+    Alert.alert(
+      'Leave Event',
+      `Are you sure you want to leave "${activeEvent.name}"?\n\nYou will need to rejoin with the event code to participate again.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Leave Event',
+          style: 'destructive',
+          onPress: async () => {
+            const { leaveEvent } = useEventStore.getState();
+            const success = await leaveEvent(authUser.uid);
+            
+            if (success) {
+              Alert.alert(
+                'Left Event',
+                'You have successfully left the event. You can rejoin anytime with the event code.',
+                [{ text: 'OK' }],
+              );
+            } else {
+              Alert.alert(
+                'Error',
+                'Failed to leave event. Please try again.',
+                [{ text: 'OK' }],
+              );
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const handlePromoteToHost = async () => {
     if (!authUser?.uid) return;
     if (!hostCode.trim()) {
@@ -418,6 +452,14 @@ export const ProfileScreen: React.FC = () => {
                 variant='secondary'
                 size='small'
               />
+              {role === 'guest' && (
+                <Button
+                  title='Leave Event'
+                  onPress={handleLeaveEvent}
+                  variant='danger'
+                  size='small'
+                />
+              )}
               {role === 'host' && (
                 <Button
                   title='Manage Event'

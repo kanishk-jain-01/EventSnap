@@ -1065,6 +1065,44 @@ export class FirestoreService {
   }
 
   /**
+   * Leave an event (remove participant and clear user's active event)
+   */
+  static async leaveEvent(
+    eventId: string,
+    userId: string,
+  ): Promise<ApiResponse<void>> {
+    try {
+      // Check if user is a participant in this event
+      const participantRes = await this.getParticipant(eventId, userId);
+      if (!participantRes.success) {
+        return {
+          success: false,
+          error: 'You are not a participant in this event',
+        };
+      }
+
+      // Remove user as participant
+      const removeRes = await this.removeParticipant(eventId, userId);
+      if (!removeRes.success) {
+        return { success: false, error: removeRes.error || 'Failed to remove participant' };
+      }
+
+      // Clear user's active event in their profile
+      const updateRes = await this.updateUserActiveEvent(userId, null, null);
+      if (!updateRes.success) {
+        return { success: false, error: updateRes.error || 'Failed to update user profile' };
+      }
+
+      return { success: true };
+    } catch (_error) {
+      return {
+        success: false,
+        error: 'Failed to leave event',
+      };
+    }
+  }
+
+  /**
    * Upload an Event Document (PDF or image) to Storage and store its metadata under
    * `/events/{eventId}/documents/{docId}` sub-collection.
    */

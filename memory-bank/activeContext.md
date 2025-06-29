@@ -6,6 +6,23 @@
 
 ## Recent Accomplishments (Current Session)
 
+### Guest Leave Event Feature - COMPLETE ✅
+
+**New Leave Event Functionality:**
+- **Added `leaveEvent` method** to EventStore with proper error handling and state management
+- **Created `leaveEvent` service method** in FirestoreService to handle participant removal and user profile updates
+- **Added Leave Event button** to ProfileScreen for guests with confirmation dialog
+- **Integrated with existing navigation flow**: Users are automatically redirected to EventSelectionScreen when activeEventId becomes null
+- **Complete state synchronization**: Clears both EventStore and AuthStore state when leaving event
+- **User-friendly confirmation**: Shows clear warning about needing to rejoin with event code
+
+**Implementation Details:**
+- **Database Operations**: Removes user from event participants collection and clears activeEventId/eventRole in user document
+- **State Management**: Properly clears local event state and updates auth store for immediate UI response
+- **Navigation Flow**: Leverages existing AppNavigator logic that redirects to EventSelectionScreen when no active event
+- **Error Handling**: Comprehensive error handling with user-friendly error messages
+- **UI/UX**: Leave Event button placed in the event information card (under "View Documents") for better visibility and accessibility, only shown to guests, with danger styling and confirmation dialog
+
 ### Event Management System Implementation - COMPLETE ✅
 
 **New Event Management Screen:**
@@ -83,7 +100,8 @@
 ## Current Status
 
 The app now has a **COMPLETE EVENT MANAGEMENT SYSTEM WITH AI-POWERED ARCHITECTURE**:
-- **Event Management**: Full host-controlled event lifecycle with manual deletion
+- **Event Management**: Full host-controlled event lifecycle with manual deletion and guest leave functionality
+- **Guest Experience**: Complete guest flow with join, promote to host, and leave event capabilities
 - **AI Chat System**: Fully functional RAG-powered document Q&A
 - **Document Management**: Complete upload, processing, browsing, and viewing system
 - **Citation Navigation**: AI responses link directly to source documents with highlighting

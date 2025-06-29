@@ -21,6 +21,7 @@ interface EventStoreState {
   ) => Promise<boolean>;
   joinEventByCode: (_joinCode: string, _userId: string) => Promise<boolean>;
   promoteToHost: (_hostCode: string, _userId: string) => Promise<boolean>;
+  leaveEvent: (_userId: string) => Promise<boolean>;
   fetchEvent: (_eventId: string) => Promise<void>;
   addParticipant: (
     _eventId: string,
@@ -358,6 +359,48 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
     } catch (error) {
       console.warn('Failed to update user active event:', error);
       // Don't throw - this is not critical for the operation to continue
+    }
+  },
+
+  /** Leave an event */
+  leaveEvent: async (userId: string) => {
+    const { activeEvent } = get();
+    if (!activeEvent) {
+      set({ error: 'No active event to leave' });
+      return false;
+    }
+
+    set({ isLoading: true, error: null });
+    try {
+      const res = await FirestoreService.leaveEvent(activeEvent.id, userId);
+      if (!res.success) {
+        set({ error: res.error || 'Failed to leave event', isLoading: false });
+        return false;
+      }
+      
+      // Clear local state and update auth store
+      set({ 
+        activeEvent: null, 
+        role: null, 
+        participants: {},
+        error: null,
+        isLoading: false 
+      });
+      
+      // Update auth store to reflect the change
+      const { user, setUser } = useAuthStore.getState();
+      if (user && user.uid === userId) {
+        setUser({
+          ...user,
+          activeEventId: null,
+          eventRole: null,
+        });
+      }
+      
+      return true;
+    } catch (_err) {
+      set({ error: 'Failed to leave event', isLoading: false });
+      return false;
     }
   },
 }));
