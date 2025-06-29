@@ -105,12 +105,7 @@ export const EventFeedScreen: React.FC = () => {
     }
   };
 
-  const handleStoryPress = (story: Story, index: number) => {
-    navigation.navigate('StoryViewer', {
-      stories: eventStories,
-      initialIndex: index,
-    });
-  };
+
 
   const handleUserStoryPress = (userId: string) => {
     // Get all stories from this user, sorted by timestamp
@@ -124,6 +119,8 @@ export const EventFeedScreen: React.FC = () => {
       initialIndex: 0,
     });
   };
+
+
 
   // No active event state
   if (!activeEvent) {

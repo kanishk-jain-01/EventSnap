@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
-import { PanGestureHandler } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
-import { formatFileSize } from '../../../../utils/imageUtils';
-import { ImagePreviewProps } from '../types';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import Animated, {
-  useAnimatedGestureHandler,
-  useAnimatedStyle,
   useSharedValue,
+  useAnimatedStyle,
+  useAnimatedGestureHandler,
   withSpring,
   runOnJS,
 } from 'react-native-reanimated';
+import { ImagePreviewProps } from '../types';
+import { formatFileSize } from '../../../../utils/imageUtils';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -28,69 +29,44 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
   onPostStory,
   onUpdateTextPosition,
 }) => {
+  const insets = useSafeAreaInsets();
   const [controlsVisible, setControlsVisible] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Animated values for text position
-  const textX = useSharedValue(textPosition.x);
-  const textY = useSharedValue(textPosition.y);
-
-  // Animated values for controls
+  // Animation values
   const controlsTranslateY = useSharedValue(0);
+  const textTranslateX = useSharedValue(textPosition.x);
+  const textTranslateY = useSharedValue(textPosition.y);
 
-  // Update text position when props change
-  React.useEffect(() => {
-    textX.value = textPosition.x;
-    textY.value = textPosition.y;
-  }, [textPosition]);
+  // Animated styles
+  const animatedControlsStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: controlsTranslateY.value }],
+  }));
+
+  const animatedTextStyle = useAnimatedStyle(() => ({
+    position: 'absolute',
+    transform: [
+      { translateX: textTranslateX.value },
+      { translateY: textTranslateY.value },
+    ],
+  }));
 
   // Pan gesture handler for dragging text
-  const panGestureHandler = useAnimatedGestureHandler({
+  const panGestureHandler = useAnimatedGestureHandler<PanGestureHandlerGestureEvent>({
     onStart: () => {
       runOnJS(setIsDragging)(true);
     },
     onActive: (event) => {
-      // Convert absolute coordinates to percentages
-      const newX = Math.max(10, Math.min(90, (event.absoluteX / screenWidth) * 100));
-      const newY = Math.max(15, Math.min(85, (event.absoluteY / screenHeight) * 100));
-      
-      textX.value = newX;
-      textY.value = newY;
+      textTranslateX.value = event.translationX + textPosition.x;
+      textTranslateY.value = event.translationY + textPosition.y;
     },
     onEnd: () => {
-      runOnJS(setIsDragging)(false);
-      // Update the parent component's state with the new position
-      const finalX = textX.value;
-      const finalY = textY.value;
-      runOnJS(onUpdateTextPosition)({ x: finalX, y: finalY });
+      const newX = textTranslateX.value;
+      const newY = textTranslateY.value;
       
-      // Animate to the final position
-      textX.value = withSpring(finalX);
-      textY.value = withSpring(finalY);
+      runOnJS(onUpdateTextPosition)({ x: newX, y: newY });
+      runOnJS(setIsDragging)(false);
     },
-  });
-
-  // Animated style for text overlay
-  const animatedTextStyle = useAnimatedStyle(() => {
-    return {
-      position: 'absolute' as const,
-      left: `${textX.value}%`,
-      top: `${textY.value}%`,
-      transform: [
-        { translateX: -50 },
-        { translateY: -50 },
-        { scale: isDragging ? 1.1 : 1 },
-      ],
-      maxWidth: screenWidth * 0.8,
-      zIndex: isDragging ? 1000 : 1,
-    };
-  });
-
-  // Animated style for controls
-  const animatedControlsStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateY: controlsTranslateY.value }],
-    };
   });
 
   // Toggle controls visibility
@@ -105,7 +81,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
       <StatusBar style='dark' />
 
       {/* Header */}
-      <View className='absolute top-12 left-0 right-0 z-10 px-4'>
+      <View className='absolute top-0 left-0 right-0 z-10 px-4' style={{ paddingTop: insets.top + 20 }}>
         <View className='bg-white/95 backdrop-blur-sm rounded-2xl p-3 shadow-soft flex-row justify-between items-center border border-white/20'>
           <TouchableOpacity
             onPress={onBack}

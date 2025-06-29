@@ -124,57 +124,38 @@ const ZoomControl: React.FC<ZoomControlProps> = ({ zoom, onAdjustZoom }) => {
 interface TopControlsBarProps {
   flashMode: 'on' | 'off' | 'auto';
   timerMode: 0 | 3 | 10;
-  showGrid: boolean;
   onToggleFlash: () => void;
   onToggleTimer: () => void;
-  onToggleGrid: () => void;
   onToggleCamera: () => void;
 }
 
 export const TopControlsBar: React.FC<TopControlsBarProps> = ({
   flashMode,
   timerMode,
-  showGrid,
   onToggleFlash,
   onToggleTimer,
-  onToggleGrid,
   onToggleCamera,
 }) => {
   return (
-    <View className='absolute top-12 left-0 right-0 px-4'>
+    <View className='absolute top-20 left-0 right-0 px-4'>
       <View className='bg-white/95 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-soft border border-white/20'>
         <View className='flex-row justify-between items-center'>
-          {/* Left Side Controls */}
-          <View className='flex-row items-center space-x-3'>
-            <FlashControl flashMode={flashMode} onToggle={onToggleFlash} />
-            <TimerControl timerMode={timerMode} onToggle={onToggleTimer} />
-          </View>
+          {/* Flash Control */}
+          <FlashControl flashMode={flashMode} onToggle={onToggleFlash} />
 
           {/* Center Title */}
           <Text className='text-text-primary text-lg font-bold'>📸 Camera</Text>
 
-          {/* Right Side Controls */}
-          <View className='flex-row items-center space-x-3'>
-            {/* Grid Toggle */}
-            <TouchableOpacity
-              onPress={onToggleGrid}
-              className={`p-2 rounded-xl ${
-                showGrid ? 'bg-warning/10' : 'bg-bg-secondary'
-              }`}
-            >
-              <Text className={`text-lg ${
-                showGrid ? 'text-warning' : 'text-text-secondary'
-              }`}>⊞</Text>
-            </TouchableOpacity>
+          {/* Timer Control */}
+          <TimerControl timerMode={timerMode} onToggle={onToggleTimer} />
 
-            {/* Camera Switch */}
-            <TouchableOpacity
-              onPress={onToggleCamera}
-              className='bg-bg-secondary p-2 rounded-xl'
-            >
-              <Text className='text-text-secondary text-lg'>🔄</Text>
-            </TouchableOpacity>
-          </View>
+          {/* Camera Switch */}
+          <TouchableOpacity
+            onPress={onToggleCamera}
+            className='bg-bg-secondary p-2 rounded-xl'
+          >
+            <Text className='text-text-secondary text-lg'>🔄</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -188,10 +169,12 @@ interface BottomControlsProps {
   isPickingImage: boolean;
   _capturedPhoto: string | null;
   _timerCount: number;
-  autoOptimize: boolean;
+  _autoOptimize: boolean;
+  showGrid: boolean;
   onCapture: () => void;
   onPickFromGallery: () => void;
-  onToggleOptimization: () => void;
+  _onToggleOptimization: () => void;
+  onToggleGrid: () => void;
   bottomInset: number;
 }
 
@@ -202,10 +185,12 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
   isPickingImage,
   _capturedPhoto,
   _timerCount,
-  autoOptimize,
+  _autoOptimize,
+  showGrid,
   onCapture,
   onPickFromGallery,
-  onToggleOptimization,
+  _onToggleOptimization,
+  onToggleGrid,
   bottomInset,
 }) => {
   const colors = useThemeColors();
@@ -213,26 +198,25 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
   return (
     <View 
       className='absolute bottom-0 left-0 right-0'
-      style={{ paddingBottom: bottomInset + 32 }}
+      style={{ paddingBottom: bottomInset }}
     >
       {/* Main Control Row */}
       <View className='flex-row items-center justify-center px-8 mb-6'>
-        {/* Gallery Button */}
+        {/* Grid Toggle Button (Left) */}
         <View className='absolute left-8'>
           <TouchableOpacity
-            onPress={onPickFromGallery}
-            disabled={isPickingImage}
-            className='bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-soft border border-white/20'
+            onPress={onToggleGrid}
+            className={`p-4 rounded-2xl shadow-soft border border-white/20 ${
+              showGrid ? 'bg-warning/90' : 'bg-white/95'
+            }`}
           >
-            {isPickingImage ? (
-              <LoadingSpinner size='small' color={colors.primary} />
-            ) : (
-              <Text className='text-primary text-2xl'>🖼️</Text>
-            )}
+            <Text className={`text-2xl ${
+              showGrid ? 'text-white' : 'text-text-secondary'
+            }`}>⊞</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Capture Button */}
+        {/* Capture Button (Center) */}
         <TouchableOpacity
           onPress={onCapture}
           disabled={!isCameraReady || isCapturing || isTimerActive}
@@ -249,17 +233,18 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
           )}
         </TouchableOpacity>
 
-        {/* Settings Button - replacing the duplicate flash button */}
+        {/* Gallery Button (Right) */}
         <View className='absolute right-8'>
           <TouchableOpacity
-            onPress={onToggleOptimization}
-            className={`px-4 py-4 rounded-2xl shadow-soft border border-white/20 ${
-              autoOptimize ? 'bg-success/90' : 'bg-white/95'
-            }`}
+            onPress={onPickFromGallery}
+            disabled={isPickingImage}
+            className='bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-soft border border-white/20'
           >
-            <Text className={`text-lg ${
-              autoOptimize ? 'text-white' : 'text-text-secondary'
-            }`}>⚙️</Text>
+            {isPickingImage ? (
+              <LoadingSpinner size='small' color={colors.primary} />
+            ) : (
+              <Text className='text-primary text-2xl'>🖼️</Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>

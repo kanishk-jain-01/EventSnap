@@ -98,10 +98,8 @@ export const CameraView: React.FC<CameraViewProps> = ({
           <TopControlsBar
             flashMode={flashMode}
             timerMode={timerMode}
-            showGrid={showGrid}
             onToggleFlash={onToggleFlash}
             onToggleTimer={onToggleTimer}
-            onToggleGrid={onToggleGrid}
             onToggleCamera={onToggleCamera}
           />
         </View>
@@ -120,10 +118,12 @@ export const CameraView: React.FC<CameraViewProps> = ({
           isPickingImage={isPickingImage}
           _capturedPhoto={capturedPhoto}
           _timerCount={timerCount}
-          autoOptimize={autoOptimize}
+          _autoOptimize={autoOptimize}
+          showGrid={showGrid}
           onCapture={onCapture}
           onPickFromGallery={onPickFromGallery}
-          onToggleOptimization={onToggleOptimization}
+          _onToggleOptimization={onToggleOptimization}
+          onToggleGrid={onToggleGrid}
           bottomInset={insets.bottom}
         />
 

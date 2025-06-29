@@ -21,7 +21,7 @@ type CameraScreenNavigationProp = NativeStackNavigationProp<
 
 export const useCameraState = () => {
   const navigation = useNavigation<CameraScreenNavigationProp>();
-  const { activeEvent, role } = useEventStore();
+  const { activeEvent, role: _role } = useEventStore();
   const { postStory, isPosting: isPostingStory, postingProgress } = useStoryStore();
 
   // Camera ref
