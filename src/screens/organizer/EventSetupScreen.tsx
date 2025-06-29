@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useNavigation } from '@react-navigation/native';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { useEventStore } from '../../store/eventStore';
@@ -20,6 +21,7 @@ import { useThemeColors } from '../../components/ui/ThemeProvider';
 
 export const EventSetupScreen: React.FC = () => {
   const colors = useThemeColors();
+  const navigation = useNavigation();
   const [name, setName] = useState('');
   const [startTime, setStartTime] = useState<Date>(new Date());
   const [endTime, setEndTime] = useState<Date>(
@@ -95,6 +97,11 @@ export const EventSetupScreen: React.FC = () => {
       Clipboard.setString(activeEvent.joinCode);
       Alert.alert('Copied!', 'Join code copied to clipboard');
     }
+  };
+
+  const handleDone = () => {
+    // Navigate to the main app (feed)
+    navigation.navigate('Main' as never);
   };
 
   return (
@@ -307,6 +314,14 @@ export const EventSetupScreen: React.FC = () => {
                   Share this code with participants so they can join your event
                 </Text>
               </View>
+
+              {/* Done Button */}
+              <Button
+                title='Done'
+                onPress={handleDone}
+                variant='primary'
+                size='large'
+              />
             </View>
           )}
         </ScrollView>
