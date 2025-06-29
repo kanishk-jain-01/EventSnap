@@ -2,7 +2,7 @@ import React from 'react';
 import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MainTabParamList } from '../types';
-import { CameraScreen } from '../screens/main/CameraScreen';
+import { CameraScreen } from '../screens/main/camera/CameraScreen';
 import { useThemeColors } from '../components/ui/ThemeProvider';
 import { useEventStore } from '../store/eventStore';
 
