@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Animated,
+  Text,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -157,6 +158,49 @@ export const StoryViewerScreen: React.FC = () => {
           style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT }}
           resizeMode='cover'
         />
+
+        {/* Text Overlay */}
+        {currentStory.textOverlay && (
+          <View
+            style={{
+              position: 'absolute',
+              left: `${currentStory.textOverlay.position.x}%`,
+              top: `${currentStory.textOverlay.position.y}%`,
+              transform: [
+                { translateX: -SCREEN_WIDTH * 0.4 }, // Center horizontally
+                { translateY: -50 }, // Center vertically
+              ],
+              maxWidth: SCREEN_WIDTH * 0.8,
+              zIndex: 1,
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                borderRadius: 12,
+                borderWidth: 2,
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+              }}
+            >
+              <Text
+                style={{
+                  color: 'white',
+                  fontSize: 18,
+                  fontWeight: '600',
+                  textAlign: 'center',
+                  textShadowColor: 'rgba(0, 0, 0, 0.8)',
+                  textShadowOffset: { width: 1, height: 1 },
+                  textShadowRadius: 3,
+                  lineHeight: 24,
+                }}
+              >
+                {currentStory.textOverlay.text}
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* Tap zones */}
         <TouchableOpacity

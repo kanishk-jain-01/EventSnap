@@ -58,9 +58,6 @@ export const useCameraState = () => {
   const [showCompressionInfo] = useState(true);
   const [imageContext] = useState<'story'>('story');
 
-  // Image editing states
-  const [showImageEditor, setShowImageEditor] = useState(false);
-
   // Text overlay states
   const [showTextOverlay, setShowTextOverlay] = useState(false);
   const [overlayText, setOverlayText] = useState('');
@@ -206,22 +203,50 @@ export const useCameraState = () => {
               );
             }
           } else {
-            throw new Error('Optimization failed');
+            // Fallback to original photo if optimization fails
+            setCapturedPhoto(photo.uri);
+            setSelectedImage({
+              uri: photo.uri,
+              width: photo.width || 0,
+              height: photo.height || 0,
+              type: 'image',
+              fileSize: undefined,
+              optimized: false,
+              originalSize: undefined,
+              compressionRatio: undefined,
+            });
+            setImageSource('camera');
+
+            Alert.alert(
+              'Photo Captured!',
+              'Photo captured successfully!',
+              [
+                {
+                  text: 'Take Another',
+                  onPress: resetImage,
+                },
+                { text: 'OK' },
+              ],
+            );
           }
         } catch {
+          // Fallback to original photo if optimization fails
           setCapturedPhoto(photo.uri);
           setSelectedImage({
             uri: photo.uri,
-            width: 0,
-            height: 0,
+            width: photo.width || 0,
+            height: photo.height || 0,
             type: 'image',
+            fileSize: undefined,
             optimized: false,
+            originalSize: undefined,
+            compressionRatio: undefined,
           });
           setImageSource('camera');
 
           Alert.alert(
             'Photo Captured!',
-            'Photo captured successfully (optimization failed, using original).',
+            'Photo captured successfully!',
             [
               {
                 text: 'Take Another',
@@ -235,27 +260,30 @@ export const useCameraState = () => {
         setCapturedPhoto(photo.uri);
         setSelectedImage({
           uri: photo.uri,
-          width: 0,
-          height: 0,
+          width: photo.width || 0,
+          height: photo.height || 0,
           type: 'image',
+          fileSize: undefined,
           optimized: false,
+          originalSize: undefined,
+          compressionRatio: undefined,
         });
         setImageSource('camera');
 
-        Alert.alert('Photo Captured!', 'Photo captured successfully!', [
-          {
-            text: 'Take Another',
-            onPress: resetImage,
-          },
-          { text: 'OK' },
-        ]);
+        Alert.alert(
+          'Photo Captured!',
+          'Photo captured successfully!',
+          [
+            {
+              text: 'Take Another',
+              onPress: resetImage,
+            },
+            { text: 'OK' },
+          ],
+        );
       }
     } catch {
-      Alert.alert(
-        'Capture Failed',
-        'Failed to capture photo. Please try again.',
-        [{ text: 'OK' }],
-      );
+      Alert.alert('Error', 'Failed to capture photo. Please try again.');
     } finally {
       setIsCapturing(false);
     }
@@ -266,21 +294,17 @@ export const useCameraState = () => {
     setError(null);
 
     try {
-      const result = await CameraService.pickImageFromGallery({
-        autoOptimize,
-        context: imageContext,
-        showCompressionInfo,
-      });
+      const result = await CameraService.pickImageFromGallery();
 
       if (result.success && result.data) {
-        setSelectedImage(result.data);
-        setCapturedPhoto(result.data.uri);
+        const imageData = result.data;
+        setCapturedPhoto(imageData.uri);
+        setSelectedImage(imageData);
         setImageSource('gallery');
 
-        const compressionText =
-          result.data.optimized && result.data.compressionPercentage
-            ? `\nCompression: ${result.data.compressionPercentage}% reduction`
-            : '';
+        const compressionText = imageData.compressionRatio
+          ? `\nCompressed ${imageData.compressionRatio.toFixed(1)}x`
+          : '';
 
         Alert.alert(
           'Image Selected!',
@@ -371,29 +395,43 @@ export const useCameraState = () => {
     setOverlayText('');
   };
 
+  const updateTextPosition = (newPosition: { x: number; y: number }) => {
+    _setTextPosition(newPosition);
+  };
+
   const resetImage = () => {
     setCapturedPhoto(null);
     setSelectedImage(null);
     setImageSource(null);
-  };
-
-  const showEditor = () => {
-    setShowImageEditor(true);
+    setOverlayText('');
+    _setTextPosition({ x: 50, y: 50 });
   };
 
   const handlePostStory = async () => {
     if (!capturedPhoto) return;
 
-    const success = await postStory(capturedPhoto, activeEvent?.id);
-    if (success) {
-      const message = overlayText
-        ? 'Story posted with text overlay!'
-        : 'Story posted successfully!';
-      Alert.alert('Story Posted!', message);
-      navigation.navigate('MainTabs', { screen: 'Home' });
-      resetImage();
-      setOverlayText('');
-    } else {
+    try {
+      // Prepare text overlay data if present
+      const textOverlayData = overlayText.trim() ? {
+        text: overlayText.trim(),
+        position: textPosition,
+      } : undefined;
+
+      // Post the story with text overlay metadata
+      const success = await postStory(capturedPhoto, activeEvent?.id, textOverlayData);
+      
+      if (success) {
+        const message = overlayText
+          ? 'Story posted with text overlay!'
+          : 'Story posted successfully!';
+        Alert.alert('Story Posted!', message);
+        navigation.navigate('MainTabs', { screen: 'Home' });
+        resetImage();
+      } else {
+        Alert.alert('Error', 'Failed to post story.');
+      }
+    } catch (error) {
+      console.error('Error posting story:', error);
       Alert.alert('Error', 'Failed to post story.');
     }
   };
@@ -419,7 +457,6 @@ export const useCameraState = () => {
     autoOptimize,
     showCompressionInfo,
     imageContext,
-    showImageEditor,
     showTextOverlay,
     overlayText,
     textPosition,
@@ -443,9 +480,9 @@ export const useCameraState = () => {
     handleTextOverlayConfirm,
     handleTextOverlayCancel,
     clearTextOverlay,
+    updateTextPosition,
     handlePostStory,
     resetImage,
-    showEditor,
   };
 
   return {
@@ -455,9 +492,7 @@ export const useCameraState = () => {
     permissions,
     isPostingStory,
     postingProgress,
-    setShowImageEditor,
-    setSelectedImage,
-    setCapturedPhoto,
     setOverlayText,
+    updateTextPosition,
   };
 }; 

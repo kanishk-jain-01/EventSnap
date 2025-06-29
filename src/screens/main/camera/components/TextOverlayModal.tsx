@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { Modal } from '../../../../components/ui/Modal';
 import { useThemeColors } from '../../../../components/ui/ThemeProvider';
 import { TextOverlayModalProps } from '../types';
@@ -17,108 +17,75 @@ export const TextOverlayModal: React.FC<TextOverlayModalProps> = ({
     <Modal
       visible={visible}
       onClose={onCancel}
-      title='Add Text Overlay'
+      title='Add Text to Photo'
+      showCloseButton={false}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-      >
-        <View style={{ padding: 20 }}>
-          <Text
+      <View>
+        <Text className='text-text-secondary text-center text-base mb-4'>
+          Add text that will appear on your photo ✨
+        </Text>
+
+        <View className='bg-bg-secondary border border-border rounded-2xl mb-4 p-4'>
+          <TextInput
+            value={text}
+            onChangeText={onTextChange}
+            placeholder='Type your message here...'
+            placeholderTextColor={colors.textTertiary}
             style={{
-              color: colors.textSecondary,
-              marginBottom: 12,
-              fontSize: 14,
+              color: colors.textPrimary,
+              fontSize: 16,
+              minHeight: 80,
+              textAlignVertical: 'top',
             }}
-          >
-            Add text to overlay on your photo (max 200 characters)
+            multiline
+            maxLength={200}
+            autoFocus
+            returnKeyType="done"
+            onSubmitEditing={text.trim() ? onConfirm : undefined}
+          />
+        </View>
+
+        <View className='flex-row justify-between items-center mb-6'>
+          <Text className='text-text-tertiary text-sm'>
+            {text.length}/200 characters
           </Text>
 
-          <View
-            style={{
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 8,
-              backgroundColor: colors.surface,
-              marginBottom: 16,
-            }}
-          >
-            <TextInput
-              value={text}
-              onChangeText={onTextChange}
-              placeholder='Enter your text here...'
-              placeholderTextColor={colors.textTertiary}
-              style={{
-                color: colors.textPrimary,
-                fontSize: 16,
-                padding: 16,
-                minHeight: 100,
-                textAlignVertical: 'top',
-              }}
-              multiline
-              maxLength={200}
-              autoFocus
-            />
-          </View>
-
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 20,
-            }}
-          >
-            <Text style={{ color: colors.textTertiary, fontSize: 12 }}>
-              {text.length}/200 characters
+          {text.length >= 180 && (
+            <Text className='text-error text-sm font-medium'>
+              {200 - text.length} left
             </Text>
-
-            {text.length >= 180 && (
-              <Text style={{ color: colors.error, fontSize: 12 }}>
-                {200 - text.length} characters remaining
-              </Text>
-            )}
-          </View>
-
-          <View style={{ flexDirection: 'row', gap: 12 }}>
-            <TouchableOpacity
-              onPress={onCancel}
-              style={{
-                flex: 1,
-                backgroundColor: colors.surface,
-                borderWidth: 1,
-                borderColor: colors.border,
-                paddingVertical: 12,
-                paddingHorizontal: 24,
-                borderRadius: 8,
-                alignItems: 'center',
-              }}
-            >
-              <Text style={{ color: colors.textPrimary, fontWeight: '600' }}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={onConfirm}
-              style={{
-                flex: 1,
-                backgroundColor: colors.primary,
-                paddingVertical: 12,
-                paddingHorizontal: 24,
-                borderRadius: 8,
-                alignItems: 'center',
-                opacity: text.trim() ? 1 : 0.5,
-              }}
-              disabled={!text.trim()}
-            >
-              <Text style={{ color: 'white', fontWeight: '600' }}>
-                {text ? 'Update Text' : 'Add Text'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+          )}
         </View>
-      </KeyboardAvoidingView>
+
+        <View className='flex-row gap-3'>
+          <TouchableOpacity
+            onPress={onCancel}
+            className='flex-1 bg-bg-secondary border border-border py-4 px-6 rounded-xl items-center'
+          >
+            <Text className='text-text-primary font-semibold text-base'>
+              Cancel
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={onConfirm}
+            disabled={!text.trim()}
+            className={`flex-1 py-4 px-6 rounded-xl items-center ${
+              text.trim() ? 'bg-primary' : 'bg-bg-tertiary'
+            }`}
+          >
+            <Text className={`font-semibold text-base ${
+              text.trim() ? 'text-white' : 'text-text-tertiary'
+            }`}>
+              {text.trim() ? 'Add Text' : 'Add Text'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text className='text-text-tertiary text-center text-sm mt-4'>
+          💡 Tip: Press "Add Text" or Return key to confirm
+        </Text>
+      </View>
     </Modal>
   );
 }; 

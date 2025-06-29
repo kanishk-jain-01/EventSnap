@@ -1,8 +1,7 @@
 import React from 'react';
-import { View, Alert } from 'react-native';
+import { View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LoadingSpinner } from '../../../components/ui/LoadingSpinner';
-import { ImageEditor } from '../../../components/media/ImageEditor';
 import { useThemeColors } from '../../../components/ui/ThemeProvider';
 import { useCameraState } from './hooks/useCameraState';
 import {
@@ -21,9 +20,6 @@ export const CameraScreen: React.FC = () => {
     permissions,
     isPostingStory,
     postingProgress,
-    setShowImageEditor,
-    setSelectedImage,
-    setCapturedPhoto,
     setOverlayText,
   } = useCameraState();
 
@@ -54,52 +50,6 @@ export const CameraScreen: React.FC = () => {
     );
   }
 
-  // Show image editor if editing
-  if (state.showImageEditor && state.selectedImage && state.capturedPhoto) {
-    return (
-      <ImageEditor
-        imageUri={state.capturedPhoto}
-        imageWidth={state.selectedImage.width}
-        imageHeight={state.selectedImage.height}
-        onSave={(editedUri: string) => {
-          // Update the selected image with edited version
-          setSelectedImage({
-            ...state.selectedImage!,
-            uri: editedUri,
-          });
-          setCapturedPhoto(editedUri);
-          setShowImageEditor(false);
-
-          Alert.alert(
-            'Image Saved!',
-            'Your edited image has been saved successfully.',
-            [{ text: 'OK' }],
-          );
-        }}
-        onCancel={() => {
-          setShowImageEditor(false);
-        }}
-        onDelete={() => {
-          Alert.alert(
-            'Delete Image',
-            'Are you sure you want to delete this image?',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'Delete',
-                style: 'destructive',
-                onPress: () => {
-                  actions.resetImage();
-                  setShowImageEditor(false);
-                },
-              },
-            ],
-          );
-        }}
-      />
-    );
-  }
-
   // Show selected image preview if available
   if (state.selectedImage && state.capturedPhoto) {
     return (
@@ -113,10 +63,10 @@ export const CameraScreen: React.FC = () => {
           isPostingStory={isPostingStory}
           postingProgress={postingProgress}
           onBack={actions.resetImage}
-          onEdit={actions.showEditor}
           onAddText={actions.handleTextOverlayPress}
           onClearText={actions.clearTextOverlay}
           onPostStory={actions.handlePostStory}
+          onUpdateTextPosition={actions.updateTextPosition}
         />
 
         {/* Text Overlay Modal */}

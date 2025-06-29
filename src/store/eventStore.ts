@@ -384,7 +384,7 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
         role: null, 
         participants: {},
         error: null,
-        isLoading: false 
+        isLoading: false, 
       });
       
       // Update auth store to reflect the change

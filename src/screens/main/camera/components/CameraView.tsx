@@ -71,8 +71,8 @@ export const CameraView: React.FC<CameraViewProps> = ({
     <View className='flex-1 bg-bg-primary'>
       <StatusBar style='dark' />
 
-      {/* Camera View */}
-      <View className='flex-1'>
+      {/* Camera View - No children inside */}
+      <View className='flex-1 relative'>
         <ExpoCameraView
           ref={cameraRef}
           style={{
@@ -83,14 +83,18 @@ export const CameraView: React.FC<CameraViewProps> = ({
           flash={flashMode}
           zoom={zoom}
           onCameraReady={onCameraReady}
-        >
-          {/* Grid Lines Overlay */}
-          <GridOverlay visible={showGrid} />
+        />
 
-          {/* Timer Countdown Overlay */}
-          <TimerCountdown visible={isTimerActive} count={timerCount} />
+        {/* All UI overlays are now outside the CameraView */}
+        
+        {/* Grid Lines Overlay */}
+        <GridOverlay visible={showGrid} />
 
-          {/* Top Controls Bar */}
+        {/* Timer Countdown Overlay */}
+        <TimerCountdown visible={isTimerActive} count={timerCount} />
+
+        {/* Top Controls Bar */}
+        <View className='absolute top-0 left-0 right-0' style={{ paddingTop: insets.top }}>
           <TopControlsBar
             flashMode={flashMode}
             timerMode={timerMode}
@@ -100,48 +104,48 @@ export const CameraView: React.FC<CameraViewProps> = ({
             onToggleGrid={onToggleGrid}
             onToggleCamera={onToggleCamera}
           />
+        </View>
 
-          {/* Side Zoom Controls */}
-          <SideZoomControls
-            zoom={zoom}
-            onAdjustZoom={onAdjustZoom}
-          />
+        {/* Side Zoom Controls */}
+        <SideZoomControls
+          zoom={zoom}
+          onAdjustZoom={onAdjustZoom}
+        />
 
-          {/* Bottom Controls */}
-          <BottomControls
-            isCameraReady={isCameraReady}
-            isCapturing={isCapturing}
-            isTimerActive={isTimerActive}
-            isPickingImage={isPickingImage}
-            _capturedPhoto={capturedPhoto}
-            _timerCount={timerCount}
-            autoOptimize={autoOptimize}
-            onCapture={onCapture}
-            onPickFromGallery={onPickFromGallery}
-            onToggleOptimization={onToggleOptimization}
-            bottomInset={insets.bottom}
-          />
+        {/* Bottom Controls */}
+        <BottomControls
+          isCameraReady={isCameraReady}
+          isCapturing={isCapturing}
+          isTimerActive={isTimerActive}
+          isPickingImage={isPickingImage}
+          _capturedPhoto={capturedPhoto}
+          _timerCount={timerCount}
+          autoOptimize={autoOptimize}
+          onCapture={onCapture}
+          onPickFromGallery={onPickFromGallery}
+          onToggleOptimization={onToggleOptimization}
+          bottomInset={insets.bottom}
+        />
 
-          {/* Status and Info Bar - Only show when photo is captured or timer is active */}
-          {(capturedPhoto || isTimerActive) && (
-            <View 
-              className='absolute bottom-0 left-0 right-0'
-              style={{ paddingBottom: insets.bottom + 32 }}
-            >
-              <CameraStatusBar
-                isCameraReady={isCameraReady}
-                isTimerActive={isTimerActive}
-                timerCount={timerCount}
-                capturedPhoto={capturedPhoto}
-                cameraType={cameraType}
-                zoom={zoom}
-                showGrid={showGrid}
-                timerMode={timerMode}
-                autoOptimize={autoOptimize}
-              />
-            </View>
-          )}
-        </ExpoCameraView>
+        {/* Status and Info Bar - Only show when photo is captured or timer is active */}
+        {(capturedPhoto || isTimerActive) && (
+          <View 
+            className='absolute bottom-0 left-0 right-0 px-4'
+            style={{ paddingBottom: insets.bottom + 140 }}
+          >
+            <CameraStatusBar
+              isCameraReady={isCameraReady}
+              isTimerActive={isTimerActive}
+              timerCount={timerCount}
+              capturedPhoto={capturedPhoto}
+              cameraType={cameraType}
+              zoom={zoom}
+              showGrid={showGrid}
+              timerMode={timerMode}
+              autoOptimize={autoOptimize}
+            />
+          </View>
+        )}
       </View>
     </View>
   );

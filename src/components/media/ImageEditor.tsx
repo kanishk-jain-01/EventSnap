@@ -6,11 +6,11 @@ import {
   Dimensions,
   Image,
   Alert,
-  ScrollView,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { manipulateAsync, SaveFormat, FlipType } from 'expo-image-manipulator';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { useThemeColors } from '../ui/ThemeProvider';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -41,6 +41,8 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
   onCancel,
   onDelete,
 }) => {
+  const _colors = useThemeColors();
+  
   // Edit states
   const [editState, setEditState] = useState<EditState>({
     brightness: 0,
@@ -54,9 +56,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
   // UI states
   const [isProcessing, setIsProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'adjust' | 'filters' | 'rotate'>(
-    'adjust',
-  );
+  const [activeTab, setActiveTab] = useState<'filters' | 'rotate'>('rotate');
   const [previewUri, setPreviewUri] = useState<string>(imageUri);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -174,51 +174,41 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
     }
   };
 
-  // Filter options
-  const filterOptions = [
-    { key: 'none', name: 'Original', preview: '🖼️' },
-    { key: 'sepia', name: 'Sepia', preview: '🟤' },
-    { key: 'noir', name: 'B&W', preview: '⚫' },
-    { key: 'chrome', name: 'Chrome', preview: '⚪' },
-    { key: 'fade', name: 'Fade', preview: '🌫️' },
-    { key: 'instant', name: 'Instant', preview: '📸' },
-  ];
-
   return (
-    <View className='flex-1 bg-black'>
-      <StatusBar style='light' />
+    <View className='flex-1 bg-bg-primary'>
+      <StatusBar style='dark' />
 
       {/* Header */}
       <View className='absolute top-12 left-0 right-0 z-20 px-4'>
-        <View className='flex-row justify-between items-center'>
+        <View className='bg-white/95 backdrop-blur-sm rounded-2xl p-3 shadow-soft flex-row justify-between items-center'>
           <TouchableOpacity
             onPress={onCancel}
-            className='bg-black/60 px-4 py-2 rounded-full'
+            className='bg-bg-secondary px-4 py-2 rounded-xl'
           >
-            <Text className='text-white font-semibold'>✕ Cancel</Text>
+            <Text className='text-text-primary font-semibold'>✕ Cancel</Text>
           </TouchableOpacity>
 
-          <Text className='text-white text-lg font-bold'>Edit Image</Text>
+          <Text className='text-text-primary text-lg font-bold'>Edit Image</Text>
 
           <View className='flex-row space-x-2'>
             {hasChanges && (
               <TouchableOpacity
                 onPress={resetEdits}
-                className='bg-gray-600/60 px-3 py-2 rounded-full'
+                className='bg-bg-secondary px-3 py-2 rounded-xl'
               >
-                <Text className='text-white text-sm'>Reset</Text>
+                <Text className='text-text-primary text-sm'>Reset</Text>
               </TouchableOpacity>
             )}
 
             <TouchableOpacity
               onPress={handleSave}
               disabled={isProcessing}
-              className='bg-snap-yellow px-4 py-2 rounded-full'
+              className='bg-primary px-4 py-2 rounded-xl'
             >
               {isProcessing ? (
-                <LoadingSpinner size='small' />
+                <LoadingSpinner size='small' color='white' />
               ) : (
-                <Text className='text-black font-semibold'>Save</Text>
+                <Text className='text-white font-semibold'>Save</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -238,8 +228,8 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
           />
 
           {isProcessing && (
-            <View className='absolute inset-0 bg-black/50 items-center justify-center'>
-              <LoadingSpinner size='large' />
+            <View className='absolute inset-0 bg-black/50 items-center justify-center rounded-xl'>
+              <LoadingSpinner size='large' color='white' />
               <Text className='text-white mt-2'>Processing...</Text>
             </View>
           )}
@@ -247,24 +237,23 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       </View>
 
       {/* Bottom Controls */}
-      <View className='absolute bottom-0 left-0 right-0 bg-black/90 pb-8'>
+      <View className='absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm pb-8 pt-4 rounded-t-3xl shadow-soft'>
         {/* Tab Navigation */}
-        <View className='flex-row justify-center space-x-4 py-4 border-b border-gray-600'>
+        <View className='flex-row justify-center space-x-4 py-4 border-b border-border'>
           {[
-            { key: 'adjust', name: 'Adjust', icon: '🎚️' },
             { key: 'filters', name: 'Filters', icon: '🎨' },
             { key: 'rotate', name: 'Rotate', icon: '🔄' },
           ].map(tab => (
             <TouchableOpacity
               key={tab.key}
               onPress={() => setActiveTab(tab.key as any)}
-              className={`px-4 py-2 rounded-full ${
-                activeTab === tab.key ? 'bg-snap-yellow' : 'bg-gray-700'
+              className={`px-6 py-3 rounded-xl ${
+                activeTab === tab.key ? 'bg-primary' : 'bg-bg-secondary'
               }`}
             >
               <Text
                 className={`${
-                  activeTab === tab.key ? 'text-black' : 'text-white'
+                  activeTab === tab.key ? 'text-white' : 'text-text-primary'
                 } font-medium`}
               >
                 {tab.icon} {tab.name}
@@ -275,58 +264,26 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
 
         {/* Tab Content */}
         <View className='px-4 py-4'>
-          {activeTab === 'adjust' && (
-            <View className='space-y-4'>
-              <Text className='text-white text-center text-sm mb-2'>
-                Image Adjustments (Coming Soon)
-              </Text>
-              <Text className='text-gray-400 text-center text-xs'>
-                Brightness, Contrast, and Saturation controls will be available
-                in the next update
-              </Text>
-            </View>
-          )}
-
           {activeTab === 'filters' && (
-            <View>
-              <Text className='text-white text-center text-sm mb-4'>
-                Choose Filter
+            <View className='space-y-4'>
+              <Text className='text-text-primary text-center text-lg font-semibold mb-2'>
+                🎨 Filters
               </Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View className='flex-row space-x-3 px-2'>
-                  {filterOptions.map(filter => (
-                    <TouchableOpacity
-                      key={filter.key}
-                      onPress={() =>
-                        handleAdjustmentChange('filter', filter.key)
-                      }
-                      className={`items-center p-3 rounded-xl ${
-                        editState.filter === filter.key
-                          ? 'bg-snap-yellow'
-                          : 'bg-gray-700'
-                      }`}
-                    >
-                      <Text className='text-2xl mb-1'>{filter.preview}</Text>
-                      <Text
-                        className={`text-xs ${
-                          editState.filter === filter.key
-                            ? 'text-black'
-                            : 'text-white'
-                        }`}
-                      >
-                        {filter.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </ScrollView>
+              <View className='bg-bg-secondary p-6 rounded-2xl border border-border'>
+                <Text className='text-text-primary text-center text-base font-medium mb-2'>
+                  Coming Soon!
+                </Text>
+                <Text className='text-text-secondary text-center text-sm'>
+                  Amazing filters and adjustments are on the way. Stay tuned for the next update! ✨
+                </Text>
+              </View>
             </View>
           )}
 
           {activeTab === 'rotate' && (
             <View className='space-y-4'>
-              <Text className='text-white text-center text-sm mb-4'>
-                Transform Image
+              <Text className='text-text-primary text-center text-lg font-semibold mb-4'>
+                🔄 Transform Image
               </Text>
 
               <View className='flex-row justify-center space-x-4'>
@@ -337,10 +294,10 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
                       (editState.rotation - 90) % 360,
                     )
                   }
-                  className='bg-gray-700 p-4 rounded-xl items-center flex-1'
+                  className='bg-bg-secondary p-4 rounded-2xl items-center flex-1 border border-border'
                 >
-                  <Text className='text-2xl mb-1'>↺</Text>
-                  <Text className='text-white text-xs'>Rotate Left</Text>
+                  <Text className='text-3xl mb-2'>↺</Text>
+                  <Text className='text-text-primary text-sm font-medium'>Rotate Left</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -350,10 +307,10 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
                       (editState.rotation + 90) % 360,
                     )
                   }
-                  className='bg-gray-700 p-4 rounded-xl items-center flex-1'
+                  className='bg-bg-secondary p-4 rounded-2xl items-center flex-1 border border-border'
                 >
-                  <Text className='text-2xl mb-1'>↻</Text>
-                  <Text className='text-white text-xs'>Rotate Right</Text>
+                  <Text className='text-3xl mb-2'>↻</Text>
+                  <Text className='text-text-primary text-sm font-medium'>Rotate Right</Text>
                 </TouchableOpacity>
               </View>
 
@@ -365,14 +322,16 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
                       !editState.flipHorizontal,
                     )
                   }
-                  className={`p-4 rounded-xl items-center flex-1 ${
-                    editState.flipHorizontal ? 'bg-snap-yellow' : 'bg-gray-700'
+                  className={`p-4 rounded-2xl items-center flex-1 border ${
+                    editState.flipHorizontal 
+                      ? 'bg-primary border-primary' 
+                      : 'bg-bg-secondary border-border'
                   }`}
                 >
-                  <Text className='text-2xl mb-1'>↔️</Text>
+                  <Text className='text-3xl mb-2'>↔️</Text>
                   <Text
-                    className={`text-xs ${
-                      editState.flipHorizontal ? 'text-black' : 'text-white'
+                    className={`text-sm font-medium ${
+                      editState.flipHorizontal ? 'text-white' : 'text-text-primary'
                     }`}
                   >
                     Flip H
@@ -386,14 +345,16 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
                       !editState.flipVertical,
                     )
                   }
-                  className={`p-4 rounded-xl items-center flex-1 ${
-                    editState.flipVertical ? 'bg-snap-yellow' : 'bg-gray-700'
+                  className={`p-4 rounded-2xl items-center flex-1 border ${
+                    editState.flipVertical 
+                      ? 'bg-primary border-primary' 
+                      : 'bg-bg-secondary border-border'
                   }`}
                 >
-                  <Text className='text-2xl mb-1'>↕️</Text>
+                  <Text className='text-3xl mb-2'>↕️</Text>
                   <Text
-                    className={`text-xs ${
-                      editState.flipVertical ? 'text-black' : 'text-white'
+                    className={`text-sm font-medium ${
+                      editState.flipVertical ? 'text-white' : 'text-text-primary'
                     }`}
                   >
                     Flip V
@@ -405,8 +366,8 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
         </View>
 
         {/* Image Info */}
-        <View className='px-4 pt-2 border-t border-gray-600'>
-          <Text className='text-gray-400 text-center text-xs'>
+        <View className='px-4 pt-4 border-t border-border'>
+          <Text className='text-text-secondary text-center text-sm'>
             {imageWidth}x{imageHeight} • {hasChanges ? 'Modified' : 'Original'}
           </Text>
         </View>
@@ -416,7 +377,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({
       {onDelete && (
         <TouchableOpacity
           onPress={onDelete}
-          className='absolute bottom-4 left-4 bg-red-600 p-3 rounded-full'
+          className='absolute bottom-4 left-4 bg-error p-3 rounded-full shadow-soft'
         >
           <Text className='text-white text-lg'>🗑️</Text>
         </TouchableOpacity>

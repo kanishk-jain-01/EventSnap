@@ -35,6 +35,11 @@ export interface Story {
   viewedBy: string[];
   /** ID of the event this story belongs to; null if legacy/global */
   eventId?: string;
+  /** Text overlay information if present */
+  textOverlay?: {
+    text: string;
+    position: { x: number; y: number };
+  };
 }
 
 export interface StoryState {

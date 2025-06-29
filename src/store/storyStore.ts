@@ -10,7 +10,7 @@ interface StoryStoreState extends StoryState {
   postingError: string | null;
 
   // Actions
-  postStory: (_imageUri: string, _eventId?: string) => Promise<boolean>;
+  postStory: (_imageUri: string, _eventId?: string, _textOverlay?: { text: string; position: { x: number; y: number } }) => Promise<boolean>;
   loadStories: () => Promise<void>;
   loadStoriesForEvent: (_eventId: string) => Promise<void>;
   subscribeToStories: () => () => void;
@@ -33,7 +33,7 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
   postingError: null,
 
   // Post a story
-  postStory: async (imageUri: string, eventId?: string): Promise<boolean> => {
+  postStory: async (imageUri: string, eventId?: string, textOverlay?: { text: string; position: { x: number; y: number } }): Promise<boolean> => {
     const { user } = useAuthStore.getState();
     if (!user) {
       set({ postingError: 'User not authenticated' });
@@ -67,7 +67,7 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
 
       set({ postingProgress: 90 });
 
-      // Create Firestore document with eventId
+      // Create Firestore document with eventId and textOverlay
       const createRes = await FirestoreService.createStory(
         user.uid,
         uploadRes.data.downloadURL,
@@ -78,6 +78,7 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
           compressed: true,
         },
         eventId,
+        textOverlay,
       );
 
       if (!createRes.success || !createRes.data) {

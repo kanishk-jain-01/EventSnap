@@ -32,9 +32,6 @@ export interface CameraState {
   showCompressionInfo: boolean;
   imageContext: 'story';
 
-  // Image editing states
-  showImageEditor: boolean;
-
   // Text overlay states
   showTextOverlay: boolean;
   overlayText: string;
@@ -66,13 +63,13 @@ export interface CameraActions {
   handleTextOverlayConfirm: () => void;
   handleTextOverlayCancel: () => void;
   clearTextOverlay: () => void;
+  updateTextPosition: (_position: { x: number; y: number }) => void;
 
   // Story posting
   handlePostStory: () => Promise<void>;
 
   // Navigation actions
   resetImage: () => void;
-  showEditor: () => void;
 }
 
 export interface TextPosition {
@@ -103,10 +100,10 @@ export interface ImagePreviewProps {
   isPostingStory: boolean;
   postingProgress: number;
   onBack: () => void;
-  onEdit: () => void;
   onAddText: () => void;
   onClearText: () => void;
   onPostStory: () => Promise<void>;
+  onUpdateTextPosition: (_position: { x: number; y: number }) => void;
 }
 
 export interface PermissionScreenProps {

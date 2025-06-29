@@ -88,7 +88,7 @@ interface ZoomControlProps {
 
 const ZoomControl: React.FC<ZoomControlProps> = ({ zoom, onAdjustZoom }) => {
   return (
-    <View className='bg-white/95 backdrop-blur-sm rounded-2xl py-3 px-2 shadow-soft'>
+    <View className='bg-white/95 backdrop-blur-sm rounded-2xl py-3 px-2 shadow-soft border border-white/20'>
       <TouchableOpacity
         onPress={() => onAdjustZoom('in')}
         className='p-2'
@@ -142,7 +142,7 @@ export const TopControlsBar: React.FC<TopControlsBarProps> = ({
 }) => {
   return (
     <View className='absolute top-12 left-0 right-0 px-4'>
-      <View className='bg-white/95 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-soft'>
+      <View className='bg-white/95 backdrop-blur-sm rounded-2xl px-4 py-3 shadow-soft border border-white/20'>
         <View className='flex-row justify-between items-center'>
           {/* Left Side Controls */}
           <View className='flex-row items-center space-x-3'>
@@ -151,7 +151,7 @@ export const TopControlsBar: React.FC<TopControlsBarProps> = ({
           </View>
 
           {/* Center Title */}
-          <Text className='text-text-primary text-lg font-bold'>Camera</Text>
+          <Text className='text-text-primary text-lg font-bold'>📸 Camera</Text>
 
           {/* Right Side Controls */}
           <View className='flex-row items-center space-x-3'>
@@ -222,7 +222,7 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
           <TouchableOpacity
             onPress={onPickFromGallery}
             disabled={isPickingImage}
-            className='bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-soft'
+            className='bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-soft border border-white/20'
           >
             {isPickingImage ? (
               <LoadingSpinner size='small' color={colors.primary} />
@@ -249,24 +249,17 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
           )}
         </TouchableOpacity>
 
-        {/* Optimization Status Indicator */}
+        {/* Settings Button - replacing the duplicate flash button */}
         <View className='absolute right-8'>
           <TouchableOpacity
             onPress={onToggleOptimization}
-            className={`px-3 py-2 rounded-2xl shadow-soft ${
+            className={`px-4 py-4 rounded-2xl shadow-soft border border-white/20 ${
               autoOptimize ? 'bg-success/90' : 'bg-white/95'
             }`}
           >
-            <View className='flex-row items-center'>
-              <Text className={`text-lg mr-1 ${
-                autoOptimize ? 'text-white' : 'text-text-secondary'
-              }`}>⚡</Text>
-              <Text className={`text-xs font-medium ${
-                autoOptimize ? 'text-white' : 'text-text-secondary'
-              }`}>
-                {autoOptimize ? 'ON' : 'OFF'}
-              </Text>
-            </View>
+            <Text className={`text-lg ${
+              autoOptimize ? 'text-white' : 'text-text-secondary'
+            }`}>⚙️</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -298,51 +291,49 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   autoOptimize,
 }) => {
   return (
-    <View className='px-4'>
-      <View className='bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-soft'>
-        <Text className='text-text-primary text-center text-sm font-medium'>
-          {!isCameraReady
-            ? 'Camera initializing...'
-            : isTimerActive
-              ? `Timer: ${timerCount}s`
-              : capturedPhoto
-                ? '✅ Photo captured successfully!'
-                : 'Tap to capture • Swipe for gallery'}
-        </Text>
+    <View className='bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-soft border border-white/20'>
+      <Text className='text-text-primary text-center text-sm font-medium'>
+        {!isCameraReady
+          ? '📷 Camera initializing...'
+          : isTimerActive
+            ? `⏱️ Timer: ${timerCount}s`
+            : capturedPhoto
+              ? '✅ Photo captured successfully!'
+              : '👆 Tap to capture • 🖼️ Swipe for gallery'}
+      </Text>
 
-        {/* Camera Settings Info */}
-        <View className='flex-row justify-center items-center mt-3 flex-wrap'>
-          <View className='bg-bg-secondary px-2 py-1 rounded-lg mr-2 mb-1'>
-            <Text className='text-text-secondary text-xs font-medium'>
-              📷 {cameraType === 'back' ? 'Back' : 'Front'}
+      {/* Camera Settings Info */}
+      <View className='flex-row justify-center items-center mt-3 flex-wrap'>
+        <View className='bg-bg-secondary px-2 py-1 rounded-lg mr-2 mb-1'>
+          <Text className='text-text-secondary text-xs font-medium'>
+            📷 {cameraType === 'back' ? 'Back' : 'Front'}
+          </Text>
+        </View>
+        <View className='bg-bg-secondary px-2 py-1 rounded-lg mr-2 mb-1'>
+          <Text className='text-text-secondary text-xs font-medium'>
+            🔍 {Math.round(zoom * 100)}%
+          </Text>
+        </View>
+        {showGrid && (
+          <View className='bg-warning/10 px-2 py-1 rounded-lg mr-2 mb-1'>
+            <Text className='text-warning text-xs font-medium'>⊞ Grid</Text>
+          </View>
+        )}
+        {timerMode > 0 && (
+          <View className='bg-accent/10 px-2 py-1 rounded-lg mr-2 mb-1'>
+            <Text className='text-accent text-xs font-medium'>
+              ⏱️ {timerMode}s
             </Text>
           </View>
-          <View className='bg-bg-secondary px-2 py-1 rounded-lg mr-2 mb-1'>
-            <Text className='text-text-secondary text-xs font-medium'>
-              🔍 {Math.round(zoom * 100)}%
-            </Text>
-          </View>
-          {showGrid && (
-            <View className='bg-warning/10 px-2 py-1 rounded-lg mr-2 mb-1'>
-              <Text className='text-warning text-xs font-medium'>⊞ Grid</Text>
-            </View>
-          )}
-          {timerMode > 0 && (
-            <View className='bg-accent/10 px-2 py-1 rounded-lg mr-2 mb-1'>
-              <Text className='text-accent text-xs font-medium'>
-                ⏱️ {timerMode}s
-              </Text>
-            </View>
-          )}
-          <View className={`px-2 py-1 rounded-lg mb-1 ${
-            autoOptimize ? 'bg-success/10' : 'bg-bg-secondary'
+        )}
+        <View className={`px-2 py-1 rounded-lg mb-1 ${
+          autoOptimize ? 'bg-success/10' : 'bg-bg-secondary'
+        }`}>
+          <Text className={`text-xs font-medium ${
+            autoOptimize ? 'text-success' : 'text-text-secondary'
           }`}>
-            <Text className={`text-xs font-medium ${
-              autoOptimize ? 'text-success' : 'text-text-secondary'
-            }`}>
-              ⚡ {autoOptimize ? 'Auto' : 'Off'}
-            </Text>
-          </View>
+            ⚡ {autoOptimize ? 'Auto' : 'Off'}
+          </Text>
         </View>
       </View>
     </View>
@@ -379,7 +370,7 @@ export const TimerCountdown: React.FC<{ visible: boolean; count: number }> = ({
   if (!visible || count <= 0) return null;
 
   return (
-    <View className='absolute inset-0 bg-black/60 items-center justify-center'>
+    <View className='absolute inset-0 bg-black/60 items-center justify-center pointer-events-none'>
       <View className='bg-white/90 rounded-full w-32 h-32 items-center justify-center shadow-strong'>
         <Text className='text-primary text-6xl font-bold'>
           {count}

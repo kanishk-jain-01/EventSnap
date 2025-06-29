@@ -53,6 +53,10 @@ export interface StoryDocument {
     contentType: string;
     compressed: boolean;
   };
+  textOverlay?: {
+    text: string;
+    position: { x: number; y: number };
+  };
 }
 
 // User document interface for Firestore
@@ -107,6 +111,7 @@ export class FirestoreService {
     imagePath: string,
     metadata?: StoryDocument['metadata'],
     eventId?: string,
+    textOverlay?: { text: string; position: { x: number; y: number } },
   ): Promise<ApiResponse<Story>> {
     try {
       // Calculate expiration time (24 hours from now)
@@ -122,6 +127,7 @@ export class FirestoreService {
         viewedBy: [],
         metadata,
         eventId,
+        textOverlay,
       };
 
       const docRef = await addDoc(
@@ -138,6 +144,7 @@ export class FirestoreService {
         expiresAt,
         viewedBy: [],
         eventId,
+        textOverlay,
       };
 
       return {
@@ -180,6 +187,7 @@ export class FirestoreService {
           expiresAt: data.expiresAt.toDate(),
           viewedBy: data.viewedBy,
           eventId: data.eventId,
+          textOverlay: data.textOverlay,
         });
       });
 
@@ -225,6 +233,7 @@ export class FirestoreService {
           expiresAt: data.expiresAt.toDate(),
           viewedBy: data.viewedBy,
           eventId: data.eventId,
+          textOverlay: data.textOverlay,
         });
       });
 
@@ -268,6 +277,7 @@ export class FirestoreService {
             expiresAt: data.expiresAt.toDate(),
             viewedBy: data.viewedBy,
             eventId: data.eventId,
+            textOverlay: data.textOverlay,
           });
         });
         callback(stories);
@@ -308,6 +318,7 @@ export class FirestoreService {
             expiresAt: data.expiresAt.toDate(),
             viewedBy: data.viewedBy,
             eventId: data.eventId,
+            textOverlay: data.textOverlay,
           });
         });
         callback(stories);
