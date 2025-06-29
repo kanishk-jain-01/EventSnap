@@ -293,9 +293,9 @@ const DocumentViewerScreen: React.FC = () => {
       <View 
         className="flex-1" 
         style={{ 
-          marginTop: documentType === 'image' 
-            ? (highlightText ? insets.top + 12 + 60 + 60 : 0) // header + banner
-            : (highlightText ? insets.top + 12 + 60 + 60 : insets.top + 12 + 60), // header only or header + banner
+          marginTop: showControls 
+            ? (highlightText ? insets.top + 72 + 60 : insets.top + 72) // header height (60) + padding (12) + banner if present
+            : 0,
         }}
       >
         {documentType === 'pdf' ? renderPDFViewer() : renderImageViewer()}

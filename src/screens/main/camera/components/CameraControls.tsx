@@ -192,6 +192,7 @@ interface BottomControlsProps {
   onCapture: () => void;
   onPickFromGallery: () => void;
   onToggleOptimization: () => void;
+  bottomInset: number;
 }
 
 export const BottomControls: React.FC<BottomControlsProps> = ({
@@ -205,11 +206,15 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
   onCapture,
   onPickFromGallery,
   onToggleOptimization,
+  bottomInset,
 }) => {
   const colors = useThemeColors();
 
   return (
-    <View className='absolute bottom-0 left-0 right-0 pb-8'>
+    <View 
+      className='absolute bottom-0 left-0 right-0'
+      style={{ paddingBottom: bottomInset + 32 }}
+    >
       {/* Main Control Row */}
       <View className='flex-row items-center justify-center px-8 mb-6'>
         {/* Gallery Button */}

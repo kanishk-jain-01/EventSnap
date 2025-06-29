@@ -92,7 +92,7 @@ export const AiChatScreen: React.FC = () => {
         keyExtractor={item => item.id}
         renderItem={renderItem}
         contentContainerStyle={{ 
-          paddingTop: 24,
+          paddingTop: insets.top + 24,
           paddingBottom: 24,
           paddingHorizontal: 16,
           flexGrow: 1,

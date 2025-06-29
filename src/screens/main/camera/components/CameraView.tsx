@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Dimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { CameraView as ExpoCameraView, CameraType } from 'expo-camera';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useThemeColors } from '../../../../components/ui/ThemeProvider';
 import {
   TopControlsBar,
@@ -64,6 +65,7 @@ export const CameraView: React.FC<CameraViewProps> = ({
   onPickFromGallery,
 }) => {
   const _colors = useThemeColors();
+  const insets = useSafeAreaInsets();
 
   return (
     <View className='flex-1 bg-bg-primary'>
@@ -117,22 +119,28 @@ export const CameraView: React.FC<CameraViewProps> = ({
             onCapture={onCapture}
             onPickFromGallery={onPickFromGallery}
             onToggleOptimization={onToggleOptimization}
+            bottomInset={insets.bottom}
           />
 
-          {/* Status and Info Bar */}
-          <View className='absolute bottom-0 left-0 right-0 pb-8'>
-            <CameraStatusBar
-              isCameraReady={isCameraReady}
-              isTimerActive={isTimerActive}
-              timerCount={timerCount}
-              capturedPhoto={capturedPhoto}
-              cameraType={cameraType}
-              zoom={zoom}
-              showGrid={showGrid}
-              timerMode={timerMode}
-              autoOptimize={autoOptimize}
-            />
-          </View>
+          {/* Status and Info Bar - Only show when photo is captured or timer is active */}
+          {(capturedPhoto || isTimerActive) && (
+            <View 
+              className='absolute bottom-0 left-0 right-0'
+              style={{ paddingBottom: insets.bottom + 32 }}
+            >
+              <CameraStatusBar
+                isCameraReady={isCameraReady}
+                isTimerActive={isTimerActive}
+                timerCount={timerCount}
+                capturedPhoto={capturedPhoto}
+                cameraType={cameraType}
+                zoom={zoom}
+                showGrid={showGrid}
+                timerMode={timerMode}
+                autoOptimize={autoOptimize}
+              />
+            </View>
+          )}
         </ExpoCameraView>
       </View>
     </View>
