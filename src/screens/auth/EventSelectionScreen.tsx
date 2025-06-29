@@ -26,7 +26,7 @@ type EventSelectionScreenNavigationProp =
 export const EventSelectionScreen: React.FC = () => {
   const navigation = useNavigation<EventSelectionScreenNavigationProp>();
   const colors = useThemeColors();
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const { joinEventByCode, isLoading, error } = useEventStore();
 
   const [joinCode, setJoinCode] = useState('');
@@ -80,6 +80,23 @@ export const EventSelectionScreen: React.FC = () => {
   const handleCreateEvent = () => {
     Keyboard.dismiss();
     navigation.navigate('EventSetup');
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+          },
+        },
+      ],
+    );
   };
 
   const dismissKeyboard = () => {
@@ -266,6 +283,16 @@ export const EventSelectionScreen: React.FC = () => {
                   loading={isJoiningEvent}
                 />
               </View>
+            </View>
+
+            {/* Logout Button */}
+            <View style={{ marginTop: 32, alignItems: 'center' }}>
+              <Button
+                title='Logout'
+                onPress={handleLogout}
+                variant='danger'
+                size='small'
+              />
             </View>
           </View>
         </KeyboardAvoidingView>

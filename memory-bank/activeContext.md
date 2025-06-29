@@ -22,6 +22,7 @@
 - **Navigation Flow**: Leverages existing AppNavigator logic that redirects to EventSelectionScreen when no active event
 - **Error Handling**: Comprehensive error handling with user-friendly error messages
 - **UI/UX**: Leave Event button placed in the event information card (under "View Documents") for better visibility and accessibility, only shown to guests, with danger styling and confirmation dialog
+- **Added Logout Button**: Added logout functionality to EventSelectionScreen (welcome page) for users who want to switch accounts
 
 ### Event Management System Implementation - COMPLETE ✅
 
