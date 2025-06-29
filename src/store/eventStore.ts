@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { Event as AppEvent, EventParticipant } from '../types';
 import { FirestoreService } from '../services/firestore.service';
 import { useAuthStore } from './authStore';
+import { useChatStore } from './chatStore';
 
 interface EventStoreState {
   activeEvent: AppEvent | null;
@@ -77,6 +78,9 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
       // Update user's active event in database
       await get()._updateUserActiveEvent(user.uid, res.data.id, 'host');
       
+      // Clear any previous event's chat messages
+      useChatStore.getState().clearAIMessages();
+      
       set({ activeEvent: res.data, role: 'host', isLoading: false });
       return true;
     } catch (_err) {
@@ -104,6 +108,9 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
         
         // Update user's active event in database
         await get()._updateUserActiveEvent(userId, eventId, role);
+        
+        // Clear any previous event's chat messages
+        useChatStore.getState().clearAIMessages();
         
         set({ activeEvent: evtRes.data, role, isLoading: false });
       } else {
@@ -150,6 +157,9 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
       
       // Update user's active event in database
       await get()._updateUserActiveEvent(userId, eventRes.data.id, role);
+      
+      // Clear any previous event's chat messages
+      useChatStore.getState().clearAIMessages();
       
       set({ activeEvent: eventRes.data, role, isLoading: false });
       return true;
@@ -247,6 +257,9 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
       error: null,
     });
 
+    // Clear event-specific chat messages since they don't apply to other events
+    useChatStore.getState().clearAIMessages();
+
     // Clear user's active event in database
     await get()._updateUserActiveEvent(userId, null, null);
   },
@@ -312,6 +325,9 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
         if (currentRole !== user.eventRole) {
           await get()._updateUserActiveEvent(userId, user.activeEventId, currentRole);
         }
+        
+        // Clear any stale chat messages from previous sessions
+        useChatStore.getState().clearAIMessages();
         
         set({
           activeEvent: eventRes.data,
@@ -386,6 +402,9 @@ export const useEventStore = create<EventStoreState>((set, get) => ({
         error: null,
         isLoading: false, 
       });
+      
+      // Clear event-specific chat messages when leaving event
+      useChatStore.getState().clearAIMessages();
       
       // Update auth store to reflect the change
       const { user, setUser } = useAuthStore.getState();

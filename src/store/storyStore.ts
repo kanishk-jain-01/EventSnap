@@ -17,6 +17,7 @@ interface StoryStoreState extends StoryState {
   subscribeToStoriesForEvent: (_eventId: string) => () => void;
   clearError: () => void;
   markStoryViewed: (_storyId: string) => Promise<void>;
+  clearState: () => void;
 }
 
 export const useStoryStore = create<StoryStoreState>((set, get) => ({
@@ -217,5 +218,19 @@ export const useStoryStore = create<StoryStoreState>((set, get) => ({
 
     // Update Firestore
     await FirestoreService.markStoryViewed(storyId, user.uid);
+  },
+
+  // Clear all state during logout to prevent data leakage between users
+  clearState: () => {
+    set({
+      stories: [],
+      myStories: [],
+      viewedStories: [],
+      isLoading: false,
+      error: null,
+      isPosting: false,
+      postingProgress: 0,
+      postingError: null,
+    });
   },
 }));

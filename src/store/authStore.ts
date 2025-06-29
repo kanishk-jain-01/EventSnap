@@ -4,6 +4,9 @@ import { auth } from '../services/firebase/config';
 import { AuthService } from '../services/auth.service';
 import { AuthState } from '../types';
 import { useEventStore } from './eventStore';
+import { useChatStore } from './chatStore';
+import { useUserStore } from './userStore';
+import { useStoryStore } from './storyStore';
 
 interface AuthStore extends AuthState {
   // Actions
@@ -98,8 +101,11 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
       const response = await AuthService.logout();
 
       if (response.success) {
-        // Clear event store when logging out
+        // Clear all stores when logging out to prevent data leakage between users
         useEventStore.getState().clearState();
+        useChatStore.getState().cleanup();
+        useUserStore.getState().reset();
+        useStoryStore.getState().clearState();
 
         set({
           user: null,
@@ -195,8 +201,11 @@ export const useAuthStore = create<AuthStore>((set, _get) => ({
             });
           }
         } else {
-          // User is signed out - clear event store as well
+          // User is signed out - clear all stores to prevent data leakage
           useEventStore.getState().clearState();
+          useChatStore.getState().cleanup();
+          useUserStore.getState().reset();
+          useStoryStore.getState().clearState();
 
           set({
             user: null,
