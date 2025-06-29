@@ -24,6 +24,14 @@
 - **UI/UX**: Leave Event button placed in the event information card (under "View Documents") for better visibility and accessibility, only shown to guests, with danger styling and confirmation dialog
 - **Added Logout Button**: Added logout functionality to EventSelectionScreen (welcome page) for users who want to switch accounts
 
+### UI Theme Consistency Fix - COMPLETE ✅
+
+**Fixed Dark Theme Headers:**
+- **Updated MainNavigator**: Replaced hardcoded dark theme colors (`#1F1F1F`, `#FFFFFF`, `#FFFC00`) with dynamic theme colors
+- **Screens Fixed**: UserSearchScreen, UserProfileScreen, HostListScreen, and DocumentUploadScreen now use proper theme styling
+- **Dynamic Colors**: Headers now use `colors.surface`, `colors.textPrimary`, and `colors.primary` for consistent theming
+- **Theme Integration**: All navigation headers now properly integrate with the app's theme system
+
 ### Event Management System Implementation - COMPLETE ✅
 
 **New Event Management Screen:**

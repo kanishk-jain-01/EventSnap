@@ -10,10 +10,13 @@ import DocumentViewerScreen from '../screens/main/DocumentViewerScreen';
 import DocumentListScreen from '../screens/main/DocumentListScreen';
 import { EventManagementScreen } from '../screens/main/EventManagementScreen';
 import { MainStackParamList } from '../navigation/types';
+import { useThemeColors } from '../components/ui/ThemeProvider';
 
 const MainStack = createNativeStackNavigator<MainStackParamList>();
 
 export const MainNavigator: React.FC = () => {
+  const colors = useThemeColors();
+  
   return (
     <MainStack.Navigator
       screenOptions={{
@@ -51,9 +54,9 @@ export const MainNavigator: React.FC = () => {
           presentation: 'card',
           headerShown: true,
           title: 'Find Friends',
-          headerStyle: { backgroundColor: '#1F1F1F' },
-          headerTitleStyle: { color: '#FFFFFF' },
-          headerTintColor: '#FFFC00',
+          headerStyle: { backgroundColor: colors.surface },
+          headerTitleStyle: { color: colors.textPrimary },
+          headerTintColor: colors.primary,
         }}
       />
 
@@ -65,9 +68,9 @@ export const MainNavigator: React.FC = () => {
           presentation: 'card',
           headerShown: true,
           title: 'Profile',
-          headerStyle: { backgroundColor: '#1F1F1F' },
-          headerTitleStyle: { color: '#FFFFFF' },
-          headerTintColor: '#FFFC00',
+          headerStyle: { backgroundColor: colors.surface },
+          headerTitleStyle: { color: colors.textPrimary },
+          headerTintColor: colors.primary,
         }}
       />
 
@@ -79,9 +82,9 @@ export const MainNavigator: React.FC = () => {
           presentation: 'card',
           headerShown: true,
           title: 'Event Hosts',
-          headerStyle: { backgroundColor: '#1F1F1F' },
-          headerTitleStyle: { color: '#FFFFFF' },
-          headerTintColor: '#FFFC00',
+          headerStyle: { backgroundColor: colors.surface },
+          headerTitleStyle: { color: colors.textPrimary },
+          headerTintColor: colors.primary,
         }}
       />
 
@@ -93,9 +96,9 @@ export const MainNavigator: React.FC = () => {
           presentation: 'card',
           headerShown: true,
           title: 'Upload Document',
-          headerStyle: { backgroundColor: '#1F1F1F' },
-          headerTitleStyle: { color: '#FFFFFF' },
-          headerTintColor: '#FFFC00',
+          headerStyle: { backgroundColor: colors.surface },
+          headerTitleStyle: { color: colors.textPrimary },
+          headerTintColor: colors.primary,
         }}
       />
 
