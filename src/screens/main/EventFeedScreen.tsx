@@ -112,6 +112,19 @@ export const EventFeedScreen: React.FC = () => {
     });
   };
 
+  const handleUserStoryPress = (userId: string) => {
+    // Get all stories from this user, sorted by timestamp
+    const userStories = eventStories.filter(story => story.userId === userId)
+      .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    
+    if (userStories.length === 0) return;
+
+    navigation.navigate('StoryViewer', {
+      stories: userStories,
+      initialIndex: 0,
+    });
+  };
+
   // No active event state
   if (!activeEvent) {
     return (
@@ -247,25 +260,42 @@ export const EventFeedScreen: React.FC = () => {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingRight: 16 }}
         >
-          {eventStories.map((story, index) => {
-            const owner = storyOwners.get(story.userId);
-            return (
-              <StoryRing
-                key={story.id}
-                user={
-                  owner || {
-                    uid: story.userId,
-                    displayName: 'Unknown',
-                    email: '',
-                    createdAt: new Date(),
+          {(() => {
+            // Group stories by user ID
+            const storyGroups = eventStories.reduce((groups, story) => {
+              if (!groups[story.userId]) {
+                groups[story.userId] = [];
+              }
+              groups[story.userId].push(story);
+              return groups;
+            }, {} as Record<string, Story[]>);
+
+            // Create one ring per user
+            return Object.entries(storyGroups).map(([userId, userStories]) => {
+              const owner = storyOwners.get(userId);
+              const hasUnviewed = userStories.some(story => 
+                !story.viewedBy.includes(user?.uid || ''),
+              );
+              
+              return (
+                <StoryRing
+                  key={userId}
+                  user={
+                    owner || {
+                      uid: userId,
+                      displayName: 'Unknown',
+                      email: '',
+                      createdAt: new Date(),
+                    }
                   }
-                }
-                hasUnviewed={!story.viewedBy.includes(user?.uid || '')}
-                size={80}
-                onPress={() => handleStoryPress(story, index)}
-              />
-            );
-          })}
+                  hasUnviewed={hasUnviewed}
+                  isCurrentUser={userId === user?.uid}
+                  size={80}
+                  onPress={() => handleUserStoryPress(userId)}
+                />
+              );
+            });
+          })()}
         </ScrollView>
       ) : (
         <View
